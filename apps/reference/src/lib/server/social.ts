@@ -1,8 +1,14 @@
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { likes, comments, bookmarks, contentItems, users } from '@snaplify/schema';
+import { likes, comments, bookmarks, contentItems, communityPosts, users } from '@snaplify/schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
+import type { CommentItem } from '../types';
+import type { SnaplifyConfig } from '@snaplify/config';
+import { federateLike } from './federation';
+
 type DB = NodePgDatabase<Record<string, unknown>>;
+
+export type { CommentItem };
 
 export async function toggleLike(
   db: DB,
@@ -16,7 +22,7 @@ export async function toggleLike(
     .where(
       and(
         eq(likes.userId, userId),
-        eq(likes.targetType, targetType as 'project' | 'article' | 'blog' | 'comment' | 'post'),
+        eq(likes.targetType, targetType as 'project' | 'article' | 'blog' | 'explainer' | 'comment' | 'post'),
         eq(likes.targetId, targetId),
       ),
     )
@@ -25,22 +31,36 @@ export async function toggleLike(
   if (existing.length > 0) {
     await db.delete(likes).where(eq(likes.id, existing[0]!.id));
     // Decrement denormalized count
-    await db
-      .update(contentItems)
-      .set({ likeCount: sql`GREATEST(${contentItems.likeCount} - 1, 0)` })
-      .where(eq(contentItems.id, targetId));
+    if (targetType === 'post') {
+      await db
+        .update(communityPosts)
+        .set({ likeCount: sql`GREATEST(${communityPosts.likeCount} - 1, 0)` })
+        .where(eq(communityPosts.id, targetId));
+    } else {
+      await db
+        .update(contentItems)
+        .set({ likeCount: sql`GREATEST(${contentItems.likeCount} - 1, 0)` })
+        .where(eq(contentItems.id, targetId));
+    }
     return { liked: false };
   }
 
   await db.insert(likes).values({
     userId,
-    targetType: targetType as 'project' | 'article' | 'blog' | 'comment' | 'post',
+    targetType: targetType as 'project' | 'article' | 'blog' | 'explainer' | 'comment' | 'post',
     targetId,
   });
-  await db
-    .update(contentItems)
-    .set({ likeCount: sql`${contentItems.likeCount} + 1` })
-    .where(eq(contentItems.id, targetId));
+  if (targetType === 'post') {
+    await db
+      .update(communityPosts)
+      .set({ likeCount: sql`${communityPosts.likeCount} + 1` })
+      .where(eq(communityPosts.id, targetId));
+  } else {
+    await db
+      .update(contentItems)
+      .set({ likeCount: sql`${contentItems.likeCount} + 1` })
+      .where(eq(contentItems.id, targetId));
+  }
   return { liked: true };
 }
 
@@ -56,29 +76,13 @@ export async function isLiked(
     .where(
       and(
         eq(likes.userId, userId),
-        eq(likes.targetType, targetType as 'project' | 'article' | 'blog' | 'comment' | 'post'),
+        eq(likes.targetType, targetType as 'project' | 'article' | 'blog' | 'explainer' | 'comment' | 'post'),
         eq(likes.targetId, targetId),
       ),
     )
     .limit(1);
 
   return result.length > 0;
-}
-
-export interface CommentItem {
-  id: string;
-  content: string;
-  likeCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-  parentId: string | null;
-  author: {
-    id: string;
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  };
-  replies?: CommentItem[];
 }
 
 export async function listComments(
@@ -102,7 +106,7 @@ export async function listComments(
       and(
         eq(
           comments.targetType,
-          targetType as 'project' | 'article' | 'blog' | 'post' | 'lesson',
+          targetType as 'project' | 'article' | 'blog' | 'explainer' | 'post' | 'lesson',
         ),
         eq(comments.targetId, targetId),
       ),
@@ -152,7 +156,7 @@ export async function createComment(
     .insert(comments)
     .values({
       authorId,
-      targetType: input.targetType as 'project' | 'article' | 'blog' | 'post' | 'lesson',
+      targetType: input.targetType as 'project' | 'article' | 'blog' | 'explainer' | 'post' | 'lesson',
       targetId: input.targetId,
       content: input.content,
       parentId: input.parentId ?? null,
@@ -243,4 +247,16 @@ export async function toggleBookmark(
     targetId,
   });
   return { bookmarked: true };
+}
+
+// --- Federation Hook ---
+
+export async function onContentLiked(
+  db: DB,
+  userId: string,
+  contentUri: string,
+  config: SnaplifyConfig,
+): Promise<void> {
+  if (!config.features.federation) return;
+  await federateLike(db, userId, contentUri, config.instance.domain).catch(() => {});
 }

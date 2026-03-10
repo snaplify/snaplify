@@ -99,6 +99,15 @@
 | **Reference app total** | **35** |
 | **Running total (all packages)** | **386** |
 
+## Post-Implementation Audit Fixes
+- **XSS**: Added `isomorphic-dompurify` for HTML sanitization in BlockTuple rendering
+- **XSS**: Added `escapeJsonLd()` for safe JSON-LD script tag content
+- **Broken code**: Fixed `ContentEditor.getContent()` to properly use `docToBlockTuples()`
+- **Client/server boundary**: Moved `CommentItem` type to `$lib/types.ts` (was imported from server file)
+- **Feature flags**: Added `config` to `App.Locals`, checked `features.content` on create/dashboard and `features.social` on all social API routes
+- **Input validation**: Added content type enum validation on create form action
+- **Error handling**: Added try-catch around `request.json()` in all social API routes
+
 ## What's Deferred
 - Component tests (ContentCard, SeoHead, Nav) — need browser environment setup
 - Integration tests with real DB — need Docker Postgres in CI

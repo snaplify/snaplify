@@ -1,10 +1,16 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getContentBySlug, incrementViewCount } from '$lib/server/content';
 import { urlSegmentToType } from '$lib/utils/content-helpers';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   const contentType = urlSegmentToType(params.type);
+
+  // Redirect explainers to their dedicated viewer
+  if (contentType === 'explainer') {
+    redirect(301, `/explainers/${params.slug}`);
+  }
+
   const item = await getContentBySlug(locals.db, params.slug, locals.user?.id);
 
   if (!item) {

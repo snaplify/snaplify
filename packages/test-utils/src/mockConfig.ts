@@ -21,6 +21,7 @@ export function createTestConfig(overrides?: Partial<SnaplifyConfig>): SnaplifyC
       learning: true,
       explainers: true,
       federation: false,
+      admin: false,
       ...overrides?.features,
     },
     auth: {

@@ -9,6 +9,8 @@ import type {
   UpdateContentInput,
   ContentFilters,
 } from '../types';
+import { federateContent, federateUpdate, federateDelete } from './federation';
+import type { SnaplifyConfig } from '@snaplify/config';
 
 type DB = NodePgDatabase<Record<string, unknown>>;
 
@@ -175,6 +177,7 @@ export async function createContent(
       coverImageUrl: input.coverImageUrl ?? null,
       category: input.category ?? null,
       difficulty: (input.difficulty as 'beginner' | 'intermediate' | 'advanced') ?? null,
+      sections: input.sections as typeof contentItems.$inferInsert.sections ?? null,
       status: 'draft',
       previewToken,
     })
@@ -220,6 +223,7 @@ export async function updateContent(
   if (input.category !== undefined) updates.category = input.category;
   if (input.difficulty !== undefined) updates.difficulty = input.difficulty;
   if (input.seoDescription !== undefined) updates.seoDescription = input.seoDescription;
+  if (input.sections !== undefined) updates.sections = input.sections;
 
   if (input.status !== undefined) {
     updates.status = input.status;
@@ -297,4 +301,35 @@ async function syncTags(db: DB, contentId: string, tagNames: string[]): Promise<
       .insert(contentTags)
       .values(tagRows.map((tag) => ({ contentId, tagId: tag.id })));
   }
+}
+
+// --- Federation Hooks ---
+// Called by route handlers after content mutations when federation is enabled
+
+export async function onContentPublished(
+  db: DB,
+  contentId: string,
+  config: SnaplifyConfig,
+): Promise<void> {
+  if (!config.features.federation) return;
+  await federateContent(db, contentId, config.instance.domain).catch(() => {});
+}
+
+export async function onContentUpdated(
+  db: DB,
+  contentId: string,
+  config: SnaplifyConfig,
+): Promise<void> {
+  if (!config.features.federation) return;
+  await federateUpdate(db, contentId, config.instance.domain).catch(() => {});
+}
+
+export async function onContentDeleted(
+  db: DB,
+  contentId: string,
+  authorUsername: string,
+  config: SnaplifyConfig,
+): Promise<void> {
+  if (!config.features.federation) return;
+  await federateDelete(db, contentId, config.instance.domain, authorUsername).catch(() => {});
 }

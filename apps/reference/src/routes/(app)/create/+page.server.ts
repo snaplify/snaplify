@@ -1,10 +1,15 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { authGuard } from '@snaplify/auth';
 import { createContent } from '$lib/server/content';
 import { typeToUrlSegment } from '$lib/utils/content-helpers';
 import type { Actions, PageServerLoad } from './$types';
 
+const VALID_CONTENT_TYPES = ['project', 'article', 'guide', 'blog', 'explainer'];
+
 export const load: PageServerLoad = async (event) => {
+  if (!event.locals.config.features.content) {
+    error(404, 'Content system is not enabled');
+  }
   const guard = authGuard(event);
   if (!guard.authorized) {
     redirect(guard.status ?? 303, guard.redirectTo ?? '/auth/sign-in');
@@ -30,8 +35,13 @@ export const actions: Actions = {
       return fail(400, { error: 'Title is required', title, type, description });
     }
 
-    if (!type) {
-      return fail(400, { error: 'Content type is required', title, type, description });
+    if (!type || !VALID_CONTENT_TYPES.includes(type)) {
+      return fail(400, { error: 'Valid content type is required', title, type, description });
+    }
+
+    // Explainers have a dedicated editor — redirect there
+    if (type === 'explainer') {
+      redirect(303, '/explainers/create');
     }
 
     let content: unknown = null;

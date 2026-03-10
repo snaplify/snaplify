@@ -52,13 +52,15 @@ export const contentItems = pgTable('content_items', {
       required: boolean;
     }>
   >(),
-  // Explainer sections
+  // Explainer sections — validated at runtime via @snaplify/explainer schemas
   sections: jsonb('sections').$type<
     Array<{
       id: string;
       title: string;
       anchor: string;
+      type: 'text' | 'interactive' | 'quiz' | 'checkpoint';
       content?: unknown;
+      [key: string]: unknown;
     }>
   >(),
   // Counters (denormalized for read performance)

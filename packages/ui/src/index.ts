@@ -1,5 +1,16 @@
 // @snaplify/ui — Headless Svelte 5 component library
 
+// Theme utilities
+export {
+  BUILT_IN_THEMES,
+  TOKEN_NAMES,
+  isValidThemeId,
+  validateTokenOverrides,
+  applyThemeToElement,
+  getThemeFromElement,
+} from './theme';
+export type { ThemeDefinition } from './theme';
+
 // Components
 export { default as VisuallyHidden } from './components/VisuallyHidden.svelte';
 export { default as Button } from './components/Button.svelte';

@@ -14,12 +14,22 @@
     "clean": "rm -rf .svelte-kit dist"
   },
   "dependencies": {
-    "@snaplify/schema": "workspace:*",
-    "@snaplify/config": "workspace:*",
+    "@codemirror/commands": "^6.10.2",
+    "@codemirror/lang-markdown": "^6.5.0",
+    "@codemirror/language": "^6.12.2",
+    "@codemirror/state": "^6.5.4",
+    "@codemirror/view": "^6.39.17",
     "@snaplify/auth": "workspace:*",
-    "@snaplify/ui": "workspace:*",
+    "@snaplify/config": "workspace:*",
+    "@snaplify/docs": "workspace:*",
     "@snaplify/editor": "workspace:*",
+    "@snaplify/explainer": "workspace:*",
+    "@snaplify/learning": "workspace:*",
+    "@snaplify/schema": "workspace:*",
+    "@snaplify/snaplify": "workspace:*",
+    "@snaplify/ui": "workspace:*",
     "drizzle-orm": "^0.41.0",
+    "isomorphic-dompurify": "^3.1.0",
     "pg": "^8.13.0"
   },
   "devDependencies": {

@@ -10,6 +10,7 @@ export const featureFlagsSchema = z.object({
   learning: z.boolean().default(true),
   explainers: z.boolean().default(true),
   federation: z.boolean().default(false),
+  admin: z.boolean().default(false),
 });
 
 export const authConfigSchema = z.object({
@@ -39,7 +40,7 @@ export const instanceConfigSchema = z.object({
   contactEmail: z.string().email().optional(),
   maxUploadSize: z.number().int().positive().default(10 * 1024 * 1024),
   contentTypes: z
-    .array(z.enum(['project', 'article', 'guide', 'blog']))
+    .array(z.enum(['project', 'article', 'guide', 'blog', 'explainer']))
     .default(['project', 'article', 'guide', 'blog']),
 });
 

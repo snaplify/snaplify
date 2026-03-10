@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { escapeJsonLd } from '$lib/utils/sanitize';
+
   let {
     title,
     description = '',
@@ -22,21 +24,26 @@
   const pageTitle = `${title} — Snaplify`;
   const jsonLdType = type === 'project' ? 'HowTo' : 'Article';
 
+  // Build JSON-LD with escaped values to prevent script tag injection
+  const safeTitle = escapeJsonLd(title);
+  const safeDescription = escapeJsonLd(description);
+  const safeAuthor = escapeJsonLd(authorName);
+
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': jsonLdType,
     ...(jsonLdType === 'Article'
       ? {
-          headline: title,
-          author: { '@type': 'Person', name: authorName },
+          headline: safeTitle,
+          author: { '@type': 'Person', name: safeAuthor },
           ...(publishedAt ? { datePublished: publishedAt } : {}),
           ...(updatedAt ? { dateModified: updatedAt } : {}),
-          description,
+          description: safeDescription,
           ...(image ? { image } : {}),
         }
       : {
-          name: title,
-          description,
+          name: safeTitle,
+          description: safeDescription,
           ...(image ? { image } : {}),
         }),
   });

@@ -37,6 +37,7 @@ export const likes = pgTable(
 export const follows = pgTable(
   'follows',
   {
+    id: uuid('id').defaultRandom().primaryKey(),
     followerId: uuid('follower_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),

@@ -29,6 +29,7 @@ describe('defineSnaplifyConfig', () => {
     expect(config.features.learning).toBe(true);
     expect(config.features.explainers).toBe(true);
     expect(config.features.federation).toBe(false);
+    expect(config.features.admin).toBe(false);
   });
 
   it('should allow disabling content feature flag', () => {
@@ -85,6 +86,19 @@ describe('defineSnaplifyConfig', () => {
     expect(config.features.contests).toBe(true);
     expect(config.features.federation).toBe(true);
     expect(config.features.communities).toBe(true); // default preserved
+  });
+
+  it('should default admin flag to false', () => {
+    const { config } = defineSnaplifyConfig({ instance: validInstance });
+    expect(config.features.admin).toBe(false);
+  });
+
+  it('should allow enabling admin flag', () => {
+    const { config } = defineSnaplifyConfig({
+      instance: validInstance,
+      features: { admin: true },
+    });
+    expect(config.features.admin).toBe(true);
   });
 
   it('should accept OAuth provider config', () => {

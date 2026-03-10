@@ -3,7 +3,7 @@
    White backgrounds, teal/pink/yellow accents
    =========================================== */
 
-:root {
+[data-theme="deveco"] {
   /* Surface */
   --color-surface: #ffffff;
   --color-surface-alt: #f7f9fc;

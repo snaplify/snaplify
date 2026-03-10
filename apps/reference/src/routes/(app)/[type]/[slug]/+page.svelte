@@ -5,6 +5,7 @@
   import BookmarkButton from '$lib/components/BookmarkButton.svelte';
   import CommentSection from '$lib/components/CommentSection.svelte';
   import { typeToUrlSegment } from '$lib/utils/content-helpers';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -41,7 +42,7 @@
       {#each item.content as block}
         {@const [type, attrs] = block as [string, Record<string, unknown>]}
         {#if type === 'text'}
-          {@html attrs.html}
+          {@html sanitizeHtml(String(attrs.html ?? ''))}
         {:else if type === 'heading'}
           {#if attrs.level === 1}<h1>{attrs.text}</h1>
           {:else if attrs.level === 2}<h2>{attrs.text}</h2>
@@ -57,12 +58,12 @@
           </figure>
         {:else if type === 'quote'}
           <blockquote>
-            {@html attrs.html}
+            {@html sanitizeHtml(String(attrs.html ?? ''))}
             {#if attrs.attribution}<cite>{attrs.attribution}</cite>{/if}
           </blockquote>
         {:else if type === 'callout'}
           <div class="callout callout-{attrs.variant}">
-            {@html attrs.html}
+            {@html sanitizeHtml(String(attrs.html ?? ''))}
           </div>
         {/if}
       {/each}

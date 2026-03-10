@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { authGuard } from '@snaplify/auth';
-import { getContentBySlug, updateContent, publishContent } from '$lib/server/content';
+import { getContentBySlug, updateContent, publishContent, onContentUpdated, onContentPublished } from '$lib/server/content';
 import { urlSegmentToType, typeToUrlSegment } from '$lib/utils/content-helpers';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -67,8 +67,11 @@ export const actions: Actions = {
       return fail(500, { error: 'Failed to update content' });
     }
 
+    await onContentUpdated(locals.db, item.id, locals.config);
+
     if (action === 'publish' && updated.status !== 'published') {
       await publishContent(locals.db, item.id, locals.user.id);
+      await onContentPublished(locals.db, item.id, locals.config);
     }
 
     redirect(303, `/${typeToUrlSegment(updated.type)}/${updated.slug}`);

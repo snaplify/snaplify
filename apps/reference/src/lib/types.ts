@@ -54,6 +54,7 @@ export interface CreateContentInput {
   category?: string;
   difficulty?: string;
   tags?: string[];
+  sections?: unknown;
 }
 
 export interface UpdateContentInput {
@@ -67,6 +68,7 @@ export interface UpdateContentInput {
   seoDescription?: string;
   tags?: string[];
   status?: string;
+  sections?: unknown;
 }
 
 export interface ContentFilters {
@@ -79,3 +81,233 @@ export interface ContentFilters {
 }
 
 export type TagItem = InferSelectModel<typeof tags>;
+
+// --- Learning types ---
+
+export interface LearningPathListItem {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  difficulty: string | null;
+  estimatedHours: string | null;
+  enrollmentCount: number;
+  completionCount: number;
+  averageRating: string | null;
+  status: string;
+  createdAt: Date;
+  author: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+}
+
+export interface LearningPathDetail extends LearningPathListItem {
+  reviewCount: number;
+  updatedAt: Date;
+  modules: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    sortOrder: number;
+    lessons: Array<{
+      id: string;
+      title: string;
+      slug: string;
+      type: string;
+      duration: number | null;
+      sortOrder: number;
+    }>;
+  }>;
+  isEnrolled: boolean;
+  enrollment: {
+    id: string;
+    progress: string;
+    startedAt: Date;
+    completedAt: Date | null;
+  } | null;
+}
+
+export interface EnrollmentItem {
+  id: string;
+  progress: string;
+  startedAt: Date;
+  completedAt: Date | null;
+  path: {
+    id: string;
+    title: string;
+    slug: string;
+    coverImageUrl: string | null;
+    difficulty: string | null;
+  };
+}
+
+export interface CertificateItem {
+  id: string;
+  verificationCode: string;
+  issuedAt: Date;
+  path: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+}
+
+export interface LearningPathFilters {
+  status?: string;
+  difficulty?: string;
+  authorId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+// --- Community types ---
+
+export interface CommunityListItem {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  iconUrl: string | null;
+  bannerUrl: string | null;
+  joinPolicy: string;
+  isOfficial: boolean;
+  memberCount: number;
+  postCount: number;
+  createdAt: Date;
+  createdBy: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+}
+
+export interface CommunityDetail extends CommunityListItem {
+  rules: string | null;
+  updatedAt: Date;
+  currentUserRole: string | null;
+  isBanned: boolean;
+}
+
+export interface CommunityMemberItem {
+  communityId: string;
+  userId: string;
+  role: string;
+  joinedAt: Date;
+  user: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+}
+
+export interface CommunityPostItem {
+  id: string;
+  communityId: string;
+  type: string;
+  content: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  likeCount: number;
+  replyCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  author: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+  sharedContent?: {
+    contentId: string;
+    title: string;
+    slug: string;
+    type: string;
+  };
+}
+
+export interface CommunityReplyItem {
+  id: string;
+  postId: string;
+  content: string;
+  likeCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  parentId: string | null;
+  author: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+  replies?: CommunityReplyItem[];
+}
+
+export interface CommunityFilters {
+  search?: string;
+  joinPolicy?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface CommunityPostFilters {
+  communityId: string;
+  type?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface CommunityInviteItem {
+  id: string;
+  token: string;
+  maxUses: number | null;
+  useCount: number;
+  expiresAt: Date | null;
+  createdAt: Date;
+  createdBy: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+}
+
+export interface CommunityBanItem {
+  id: string;
+  reason: string | null;
+  expiresAt: Date | null;
+  createdAt: Date;
+  user: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+  bannedBy: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+}
+
+export interface CommentItem {
+  id: string;
+  content: string;
+  likeCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  parentId: string | null;
+  author: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+  replies?: CommentItem[];
+}

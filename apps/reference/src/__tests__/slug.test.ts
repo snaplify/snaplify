@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { generateSlug } from '../lib/utils/slug';
+import { generateSlug, ensureUniqueCommunitySlug } from '../lib/utils/slug';
 
 describe('generateSlug', () => {
   it('should convert a simple title to a slug', () => {
@@ -32,5 +32,55 @@ describe('generateSlug', () => {
 
   it('should handle CJK and emoji by removing them', () => {
     expect(generateSlug('Hello 世界 🌍')).toBe('hello');
+  });
+});
+
+describe('ensureUniqueCommunitySlug', () => {
+  it('should return slug when no collision', async () => {
+    const mockChain = {
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      then: vi.fn().mockImplementation((resolve) => resolve([])),
+    };
+    const db = { select: vi.fn().mockReturnValue(mockChain) };
+
+    const result = await ensureUniqueCommunitySlug(
+      db as unknown as Parameters<typeof ensureUniqueCommunitySlug>[0],
+      'my-community',
+    );
+    expect(result).toBe('my-community');
+  });
+
+  it('should append timestamp on collision', async () => {
+    const mockChain = {
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      then: vi.fn().mockImplementation((resolve) => resolve([{ id: 'existing' }])),
+    };
+    const db = { select: vi.fn().mockReturnValue(mockChain) };
+
+    const result = await ensureUniqueCommunitySlug(
+      db as unknown as Parameters<typeof ensureUniqueCommunitySlug>[0],
+      'my-community',
+    );
+    expect(result).toMatch(/^my-community-\d+$/);
+  });
+
+  it('should generate fallback for empty slug', async () => {
+    const mockChain = {
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      then: vi.fn().mockImplementation((resolve) => resolve([])),
+    };
+    const db = { select: vi.fn().mockReturnValue(mockChain) };
+
+    const result = await ensureUniqueCommunitySlug(
+      db as unknown as Parameters<typeof ensureUniqueCommunitySlug>[0],
+      '',
+    );
+    expect(result).toMatch(/^community-\d+$/);
   });
 });

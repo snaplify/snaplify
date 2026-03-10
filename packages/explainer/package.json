@@ -20,8 +20,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@snaplify/editor": "workspace:*",
     "@snaplify/schema": "workspace:*",
-    "@snaplify/config": "workspace:*"
+    "@snaplify/config": "workspace:*",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

@@ -17,6 +17,8 @@ export interface FeatureFlags {
   explainers: boolean;
   /** Enable ActivityPub federation */
   federation: boolean;
+  /** Enable admin panel (user management, reports, instance settings) */
+  admin: boolean;
 }
 
 export interface AuthConfig {
@@ -52,7 +54,7 @@ export interface InstanceConfig {
   /** Maximum upload size in bytes (default: 10MB) */
   maxUploadSize?: number;
   /** Supported content types */
-  contentTypes?: Array<'project' | 'article' | 'guide' | 'blog'>;
+  contentTypes?: Array<'project' | 'article' | 'guide' | 'blog' | 'explainer'>;
 }
 
 export interface SnaplifyConfig {

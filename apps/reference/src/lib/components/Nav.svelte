@@ -12,6 +12,9 @@
       <a href="/projects">Projects</a>
       <a href="/blog">Blog</a>
       <a href="/articles">Articles</a>
+      <a href="/explainers">Explainers</a>
+      <a href="/learn">Learn</a>
+      <a href="/communities">Communities</a>
     </div>
 
     <div class="nav-actions">

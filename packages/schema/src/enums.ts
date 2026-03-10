@@ -30,6 +30,7 @@ export const likeTargetTypeEnum = pgEnum('like_target_type', [
   'project',
   'article',
   'blog',
+  'explainer',
   'comment',
   'post',
 ]);
@@ -37,6 +38,7 @@ export const commentTargetTypeEnum = pgEnum('comment_target_type', [
   'project',
   'article',
   'blog',
+  'explainer',
   'post',
   'lesson',
 ]);
@@ -120,6 +122,20 @@ export const filePurposeEnum = pgEnum('file_purpose', [
   'avatar',
   'banner',
   'attachment',
+]);
+
+// --- Federation ---
+export const activityDirectionEnum = pgEnum('activity_direction', ['inbound', 'outbound']);
+export const activityStatusEnum = pgEnum('activity_status', [
+  'pending',
+  'delivered',
+  'failed',
+  'processed',
+]);
+export const followRelationshipStatusEnum = pgEnum('follow_relationship_status', [
+  'pending',
+  'accepted',
+  'rejected',
 ]);
 
 // --- Tags ---

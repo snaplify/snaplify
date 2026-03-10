@@ -1,5 +1,5 @@
 import { eq, and, ne } from 'drizzle-orm';
-import { contentItems } from '@snaplify/schema';
+import { contentItems, communities } from '@snaplify/schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 /**
@@ -37,6 +37,37 @@ export async function ensureUniqueSlug(
   const existing = await db
     .select({ id: contentItems.id })
     .from(contentItems)
+    .where(and(...conditions))
+    .limit(1);
+
+  if (existing.length === 0) {
+    return slug;
+  }
+
+  return `${slug}-${Date.now()}`;
+}
+
+/**
+ * Ensure a slug is unique in the communities table.
+ * Appends a timestamp suffix on collision.
+ */
+export async function ensureUniqueCommunitySlug(
+  db: NodePgDatabase<Record<string, unknown>>,
+  slug: string,
+  excludeId?: string,
+): Promise<string> {
+  if (!slug) {
+    slug = `community-${Date.now()}`;
+  }
+
+  const conditions = [eq(communities.slug, slug)];
+  if (excludeId) {
+    conditions.push(ne(communities.id, excludeId));
+  }
+
+  const existing = await db
+    .select({ id: communities.id })
+    .from(communities)
     .where(and(...conditions))
     .limit(1);
 

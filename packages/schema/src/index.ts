@@ -28,5 +28,11 @@ export * from './contest';
 // Files
 export * from './files';
 
+// Federation
+export * from './federation';
+
+// Admin
+export * from './admin';
+
 // Validators
 export * from './validators';

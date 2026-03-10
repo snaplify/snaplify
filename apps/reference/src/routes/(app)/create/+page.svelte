@@ -49,6 +49,7 @@
           <option value="article">Article</option>
           <option value="guide">Guide</option>
           <option value="blog">Blog Post</option>
+          <option value="explainer">Explainer</option>
         </select>
       </div>
     </div>

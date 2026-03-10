@@ -1,3 +1,8 @@
+<script lang="ts" module>
+  import type { BlockTuple } from '@snaplify/editor';
+  export type { BlockTuple };
+</script>
+
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import type { Editor } from '@tiptap/core';
@@ -9,17 +14,19 @@
   }: {
     content?: unknown;
     editable?: boolean;
-    onupdate?: ((blocks: unknown[]) => void) | null;
+    onupdate?: ((blocks: BlockTuple[]) => void) | null;
   } = $props();
 
   let element: HTMLDivElement | undefined = $state();
   let editor: Editor | null = $state(null);
+  let docToBlockTuplesFn: ((doc: unknown) => BlockTuple[]) | null = null;
 
   onMount(async () => {
-    const { createSnaplifyEditor } = await import('@snaplify/editor');
+    const editorModule = await import('@snaplify/editor');
+    docToBlockTuplesFn = editorModule.docToBlockTuples;
 
-    editor = createSnaplifyEditor({
-      content: Array.isArray(content) ? (content as [string, Record<string, unknown>][]) : undefined,
+    editor = editorModule.createSnaplifyEditor({
+      content: Array.isArray(content) ? (content as BlockTuple[]) : undefined,
       editable,
       placeholder: 'Start writing...',
       onUpdate: onupdate ? (blocks) => onupdate(blocks) : undefined,
@@ -31,11 +38,9 @@
     editor?.destroy();
   });
 
-  export function getContent(): unknown[] {
-    if (!editor) return [];
-    // Use editor to get BlockTuples
-    const { docToBlockTuples } = import.meta.glob('@snaplify/editor', { eager: true }) as Record<string, { docToBlockTuples: (doc: unknown) => unknown[] }>;
-    return [];
+  export function getContent(): BlockTuple[] {
+    if (!editor || !docToBlockTuplesFn) return [];
+    return docToBlockTuplesFn(editor.state.doc);
   }
 </script>
 

@@ -1,9 +1,12 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { authGuard } from '@snaplify/auth';
-import { listContent, deleteContent } from '$lib/server/content';
+import { listContent, deleteContent, onContentDeleted } from '$lib/server/content';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
+  if (!event.locals.config.features.content) {
+    error(404, 'Content system is not enabled');
+  }
   const guard = authGuard(event);
   if (!guard.authorized) {
     redirect(guard.status ?? 303, guard.redirectTo ?? '/auth/sign-in');
@@ -37,6 +40,8 @@ export const actions: Actions = {
     if (!deleted) {
       return fail(403, { error: 'Not authorized or content not found' });
     }
+
+    await onContentDeleted(locals.db, contentId, locals.user.username, locals.config);
 
     return { success: true };
   },

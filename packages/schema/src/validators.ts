@@ -73,7 +73,7 @@ export const updateContentSchema = createContentSchema.partial().omit({ type: tr
 
 // --- Social validators ---
 
-export const likeTargetTypeSchema = z.enum(['project', 'article', 'blog', 'comment', 'post']);
+export const likeTargetTypeSchema = z.enum(['project', 'article', 'blog', 'comment', 'post', 'explainer', 'guide']);
 export const commentTargetTypeSchema = z.enum([
   'project',
   'article',
@@ -126,6 +126,55 @@ export const createLessonSchema = z.object({
   durationMinutes: z.number().int().positive().max(9999).optional(),
 });
 
+// --- Federation validators ---
+
+export const actorUriSchema = z.string().url().max(2048);
+
+export const activityDirectionSchema = z.enum(['inbound', 'outbound']);
+export const activityStatusSchema = z.enum(['pending', 'delivered', 'failed', 'processed']);
+export const followRelationshipStatusSchema = z.enum(['pending', 'accepted', 'rejected']);
+
+export const createRemoteActorSchema = z.object({
+  actorUri: actorUriSchema,
+  inbox: z.string().url(),
+  outbox: z.string().url().optional(),
+  publicKeyPem: z.string().optional(),
+  preferredUsername: z.string().max(64).optional(),
+  displayName: z.string().max(128).optional(),
+  avatarUrl: z.string().url().optional(),
+  instanceDomain: z.string().min(1).max(255),
+});
+
+export const createActivitySchema = z.object({
+  type: z.string().min(1).max(64),
+  actorUri: actorUriSchema,
+  objectUri: actorUriSchema.optional(),
+  payload: z.record(z.unknown()),
+  direction: activityDirectionSchema,
+});
+
+export const createFollowRelationshipSchema = z.object({
+  followerActorUri: actorUriSchema,
+  followingActorUri: actorUriSchema,
+});
+
+// --- Docs validators ---
+
+export const createDocsSiteSchema = z.object({
+  name: z.string().min(1).max(128),
+  slug: slugSchema,
+  description: z.string().max(2000).optional(),
+});
+
+export const createDocsPageSchema = z.object({
+  versionId: z.string().uuid(),
+  title: z.string().min(1).max(255),
+  slug: slugSchema,
+  content: z.string(),
+  sortOrder: z.number().int().min(0).optional(),
+  parentId: z.string().uuid().optional(),
+});
+
 // --- Report validators ---
 
 export const createReportSchema = z.object({
@@ -133,4 +182,27 @@ export const createReportSchema = z.object({
   targetId: z.string().uuid(),
   reason: z.enum(['spam', 'harassment', 'inappropriate', 'copyright', 'other']),
   description: z.string().max(2000).optional(),
+});
+
+// --- Admin validators ---
+
+export const updateInstanceSettingSchema = z.object({
+  key: z.string().min(1).max(128),
+  value: z.unknown(),
+});
+
+export const updateUserRoleSchema = z.object({
+  userId: z.string().uuid(),
+  role: z.enum(['member', 'pro', 'verified', 'staff', 'admin']),
+});
+
+export const updateUserStatusSchema = z.object({
+  userId: z.string().uuid(),
+  status: z.enum(['active', 'suspended', 'deleted']),
+});
+
+export const resolveReportSchema = z.object({
+  reportId: z.string().uuid(),
+  status: z.enum(['resolved', 'dismissed']),
+  resolution: z.string().min(1).max(2000),
 });

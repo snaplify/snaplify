@@ -1,0 +1,59 @@
+# Federation development setup — Two Snaplify instances
+# Usage: docker compose -f deploy/docker-compose.federation.yml up -d
+#
+# Instance A: http://localhost:3001 (a.localhost)
+# Instance B: http://localhost:3002 (b.localhost)
+# Shared Redis for queue coordination
+
+services:
+  postgres-a:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: snaplify
+      POSTGRES_PASSWORD: snaplify_dev
+      POSTGRES_DB: snaplify_a
+    volumes:
+      - postgres_a_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U snaplify']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-b:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_USER: snaplify
+      POSTGRES_PASSWORD: snaplify_dev
+      POSTGRES_DB: snaplify_b
+    volumes:
+      - postgres_b_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U snaplify']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis_fed_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_a_data:
+  postgres_b_data:
+  redis_fed_data:

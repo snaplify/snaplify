@@ -3,6 +3,10 @@ import type { RequestHandler } from './$types';
 import { listComments, createComment, deleteComment } from '$lib/server/social';
 
 export const GET: RequestHandler = async ({ url, locals }) => {
+  if (!locals.config.features.social) {
+    return json({ error: 'Social features are not enabled' }, { status: 404 });
+  }
+
   const targetType = url.searchParams.get('targetType');
   const targetId = url.searchParams.get('targetId');
 
@@ -15,11 +19,20 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 };
 
 export const POST: RequestHandler = async ({ request, locals }) => {
+  if (!locals.config.features.social) {
+    return json({ error: 'Social features are not enabled' }, { status: 404 });
+  }
+
   if (!locals.user) {
     return json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const { targetType, targetId, content, parentId } = await request.json();
+  let targetType: string, targetId: string, content: string, parentId: string | undefined;
+  try {
+    ({ targetType, targetId, content, parentId } = await request.json());
+  } catch {
+    return json({ error: 'Invalid JSON' }, { status: 400 });
+  }
 
   if (!targetType || !targetId || !content?.trim()) {
     return json({ error: 'targetType, targetId, and content are required' }, { status: 400 });
@@ -40,6 +53,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 };
 
 export const DELETE: RequestHandler = async ({ url, locals }) => {
+  if (!locals.config.features.social) {
+    return json({ error: 'Social features are not enabled' }, { status: 404 });
+  }
+
   if (!locals.user) {
     return json({ error: 'Not authenticated' }, { status: 401 });
   }

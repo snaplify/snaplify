@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { CommentItem } from '$lib/server/social';
+  import type { CommentItem } from '$lib/types';
 
   let {
     targetType,
