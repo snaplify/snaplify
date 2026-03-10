@@ -1,0 +1,48 @@
+name: snaplify
+region: nyc
+services:
+  - name: app
+    dockerfile_path: Dockerfile
+    source_dir: /
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    health_check:
+      http_path: /
+      initial_delay_seconds: 10
+      period_seconds: 30
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db.DATABASE_URL}
+      - key: REDIS_URL
+        scope: RUN_TIME
+        value: ${redis.DATABASE_URL}
+      - key: AUTH_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: ORIGIN
+        scope: RUN_TIME
+      - key: INSTANCE_DOMAIN
+        scope: RUN_TIME
+      - key: INSTANCE_NAME
+        scope: RUN_TIME
+      - key: INSTANCE_DESCRIPTION
+        scope: RUN_TIME
+      - key: FEATURE_ADMIN
+        scope: RUN_TIME
+        value: 'true'
+      - key: FEATURE_FEDERATION
+        scope: RUN_TIME
+        value: 'false'
+      - key: NODE_ENV
+        scope: RUN_TIME
+        value: production
+
+databases:
+  - engine: PG
+    name: db
+    version: '16'
+  - engine: REDIS
+    name: redis
+    version: '7'

@@ -125,7 +125,17 @@ snaplify/
 
 ### Phase 10: Theming Engine + Admin (Weeks 27-28)
 ### Phase 11: CLI + Deployment (Weeks 29-31)
-### Phase 12: Polish + Hardening (Weeks 32-34)
+### Phase 12: Polish + Hardening (Weeks 32-34) ✅
+**Goal**: Launch-ready v1 with Meilisearch search, static landing page, security hardening, and documentation.
+
+- Meilisearch `SearchAdapter` interface with Postgres FTS fallback
+- Static landing page (`apps/landing/`, adapter-static, 3 routes, 5 components)
+- Security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy)
+- Rate limiting (sliding window, tiered by route)
+- Matrix CI (Node 22/23, ubuntu/macos, Rust, E2E, dependency audit)
+- A11y E2E tests with `@axe-core/playwright`
+- Lighthouse CI performance budgets
+- README.md, CHANGELOG.md, launch checklist, ADR 023
 
 ---
 

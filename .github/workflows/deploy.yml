@@ -1,0 +1,32 @@
+name: Deploy
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to server via SSH
+        if: vars.DEPLOY_METHOD == 'ssh'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/snaplify
+            docker compose -f docker-compose.prod.yml pull app
+            docker compose -f docker-compose.prod.yml up -d app
+            docker image prune -f
+
+      - name: Deploy to DigitalOcean App Platform
+        if: vars.DEPLOY_METHOD == 'doctl'
+        uses: digitalocean/app_action@v2
+        with:
+          app_name: snaplify
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}

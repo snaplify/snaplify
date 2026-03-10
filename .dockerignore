@@ -1,0 +1,12 @@
+node_modules
+.git
+.svelte-kit
+dist
+*.test.ts
+docs/
+deploy/
+.env*
+!.env.example
+*.md
+!package.json
+.turbo

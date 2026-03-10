@@ -1,0 +1,111 @@
+# Changelog
+
+All notable changes to Snaplify are documented here.
+
+## v1.0.0 — Launch
+
+### Phase 12: Polish & Launch
+- Meilisearch-powered docs search with `SearchAdapter` interface and Postgres FTS fallback
+- Static landing page at `apps/landing/` with adapter-static (3 routes, 5 components)
+- Security headers: CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+- Rate limiting: sliding window per-IP, tiered by route (auth/API/general)
+- Matrix CI: Node 22/23, ubuntu/macos, Rust CI, E2E in pipeline, dependency audit
+- A11y E2E tests with `@axe-core/playwright` across 4 themes
+- Lighthouse CI performance budgets (perf 90, a11y 95, SEO 95)
+- README, CHANGELOG, launch checklist documentation
+
+### Phase 11: CLI & Deployment
+- `create-snaplify` Rust CLI with `new` and `init` subcommands
+- Multi-stage Dockerfile (node:22-alpine, non-root user)
+- Production docker-compose with health checks
+- DigitalOcean App Platform spec and droplet setup script
+- CI/CD: build, docker push to ghcr.io, deploy on release
+- E2E test scaffolds for auth, content, theme, admin flows
+- Deployment documentation
+
+### Phase 10: Theming Engine & Admin
+- `data-theme` attribute switching with 4 themes (base, deepwood, hackbuild, deveco)
+- Theme resolution cascade: user pref → instance default → 'base'
+- SSR flash prevention via cookie + `transformPageChunk`
+- Admin panel with user management, role assignments, content moderation
+- Audit logging with `verb.noun` action naming
+- Instance settings via key-value store
+- Feature flag: `FEATURE_ADMIN`
+
+### Phase 9: Docs Module
+- `@snaplify/docs` package with markdown rendering pipeline
+- CodeMirror 6 editor integration
+- Versioned documentation with copy-on-create snapshots
+- Hierarchical navigation (JSONB structure + fallback)
+- Postgres FTS search with headline extraction
+- 101 tests covering rendering, navigation, versioning, search
+
+### Phase 8: Federation
+- ActivityPub protocol integration via Fedify
+- 4 schema tables: remoteActors, activities, followRelationships, actorKeypairs
+- 9 activity types: Create, Update, Delete, Follow, Accept, Reject, Undo, Like, Announce
+- Content mapper, actor resolver, RSA 2048 keypairs
+- Inbox/outbox processing, 13 AP routes
+- OAuth2 SSO for cross-instance authentication
+- Federation dashboard, multi-instance dev setup
+- Feature flag: `FEATURE_FEDERATION`
+
+### Phase 7: Community System
+- Community CRUD with membership and role-based permissions
+- Weight-based hierarchy: owner (4) > admin (3) > mod (2) > member (1)
+- Posts, replies, pinned content, content sharing, likes
+- Join flows: open (instant), approval/invite (token-gated)
+- Ban management with temporary and permanent options
+- 12 components, 50+ new tests
+
+### Phase 6: Learning System
+- `@snaplify/learning` package with learning path engine
+- Normalized modules and lessons (not nested JSON)
+- Lesson content types: article, video, quiz, project, explainer
+- Enrollment, progress tracking, auto-certificate at 100%
+- Certificate verification with SNAP-{base36}-{hex8} codes
+- 75 tests, 7 route groups, 10 components
+
+### Phase 5: Explainer System
+- `@snaplify/explainer` package with three-layer architecture
+- Section types: text, code, quiz, comparison, timeline, checklist
+- Quiz engine with deterministic shuffle (mulberry32 seeded PRNG)
+- Progress tracker as pure state machine
+- Self-contained HTML export with inlined CSS + vanilla JS
+- 127 tests, 15 Svelte components, 10 routes
+
+### Phase 4: Reference App & Content System
+- SvelteKit reference app with content CRUD
+- Rich block editor with 6 block types
+- Social features: likes, comments, follows
+- SEO: JSON-LD structured data, OpenGraph meta, sitemap
+- Dashboard with content management
+- Slug generation with collision handling
+- 35 tests
+
+### Phase 3: Core UI Kit & Block Editor
+- `@snaplify/ui` — 15 headless Svelte 5 components
+- `@snaplify/editor` — TipTap extensions with BlockTuple serialization
+- 4 theme CSS files with CSS custom properties
+- axe-core a11y testing on all components
+- 116 UI tests, 69 editor tests
+
+### Phase 2: Auth & Protocol
+- `@snaplify/auth` — Better Auth wrapper with guards and hooks
+- `@snaplify/snaplify` — Fedify wrapper with AP types
+- `@snaplify/test-utils` — Shared test helpers
+- AP Actor SSO (Model B) design
+- 42 auth tests, 42 protocol tests, 14 test-utils tests
+
+### Phase 1: Schema & Config
+- `@snaplify/schema` — 43 tests, Drizzle tables + Zod validators
+- `@snaplify/config` — 17 tests, `defineSnaplifyConfig()` factory
+- CSS token surface — 4 themes (base, deepwood, hackbuild, deveco)
+- UUID PKs, timestamps with timezone, Drizzle relations
+
+### Phase 0: Foundation
+- Monorepo scaffold with Turborepo + pnpm
+- CI/CD pipeline with GitHub Actions
+- Docker dev environment (Postgres, Redis, Meilisearch)
+- 8 initial Architecture Decision Records
+- TypeScript strict mode, ESLint 9, Prettier

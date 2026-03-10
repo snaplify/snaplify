@@ -8,6 +8,8 @@ import { defineSnaplifyConfig } from '@snaplify/config';
 import { isValidThemeId } from '@snaplify/ui';
 import { env } from '$env/dynamic/private';
 import { resolveTheme } from '$lib/server/theme';
+import { createSecurityHook } from '$lib/server/security';
+import { createRateLimitHook } from '$lib/server/rateLimit';
 
 const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
@@ -74,4 +76,8 @@ const themeHook: Handle = async ({ event, resolve }) => {
   });
 };
 
-export const handle = sequence(dbHook, authHook as Handle, themeHook);
+const isDev = env.NODE_ENV !== 'production';
+const securityHook = createSecurityHook(isDev);
+const rateLimitHook = createRateLimitHook();
+
+export const handle = sequence(dbHook, authHook as Handle, themeHook, securityHook, rateLimitHook);

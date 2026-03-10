@@ -53,3 +53,16 @@ export {
   buildSearchDocument,
   buildSearchQuery,
 } from './search/indexer';
+
+// Search adapters
+export type {
+  SearchAdapter,
+  SearchResult,
+  SearchAdapterConfig,
+  MeiliSearchClient,
+  MeiliIndex,
+} from './search/types';
+export { PostgresSearchAdapter } from './search/postgresAdapter';
+export type { SqlTagFn } from './search/postgresAdapter';
+export { MeilisearchSearchAdapter } from './search/meilisearchAdapter';
+export { createSearchAdapter } from './search/factory';
