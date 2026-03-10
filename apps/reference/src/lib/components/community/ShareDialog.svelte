@@ -1,7 +1,11 @@
 <script lang="ts">
   import type { CommunityListItem } from '$lib/types';
 
-  let { communities, contentId, onclose }: {
+  let {
+    communities,
+    contentId,
+    onclose,
+  }: {
     communities: CommunityListItem[];
     contentId: string;
     onclose: () => void;
@@ -38,7 +42,13 @@
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<div class="dialog-overlay" role="dialog" aria-label="Share to community" aria-modal="true" onkeydown={(e) => e.key === 'Escape' && onclose()}>
+<div
+  class="dialog-overlay"
+  role="dialog"
+  aria-label="Share to community"
+  aria-modal="true"
+  onkeydown={(e) => e.key === 'Escape' && onclose()}
+>
   <div class="dialog-content">
     <div class="dialog-header">
       <h3>Share to Community</h3>

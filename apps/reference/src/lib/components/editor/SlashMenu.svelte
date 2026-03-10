@@ -23,11 +23,17 @@
 
     // Delete the slash character
     const { from } = editor.state.selection;
-    editor.chain().focus().deleteRange({ from: from - 1, to: from }).run();
+    editor
+      .chain()
+      .focus()
+      .deleteRange({ from: from - 1, to: from })
+      .run();
 
     switch (item.type) {
       case 'paragraph':
-        editor.chain().focus().setParagraph().run();
+        (editor.chain().focus() as unknown as { setParagraph: () => { run: () => void } })
+          .setParagraph()
+          .run();
         break;
       case 'heading2':
         editor.chain().focus().toggleHeading({ level: 2 }).run();

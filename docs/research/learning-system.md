@@ -3,6 +3,7 @@
 ## Platform Survey
 
 ### Udemy
+
 - **Structure**: Course → Section → Lecture (video/article/quiz)
 - **Progress**: Per-lecture completion, overall % displayed
 - **Enrollment**: One-click enroll, no prerequisites
@@ -10,6 +11,7 @@
 - **Takeaway**: Simple flat progress model works for self-paced
 
 ### Coursera
+
 - **Structure**: Course → Week/Module → Item (video/reading/quiz/assignment)
 - **Progress**: Per-item + per-module percentages, graded vs ungraded
 - **Enrollment**: Enroll → audit (free) or verified (paid)
@@ -17,6 +19,7 @@
 - **Takeaway**: Module-level grouping aids navigation; quiz gates enforce learning
 
 ### freeCodeCamp
+
 - **Structure**: Certification → Section → Challenge (code exercise)
 - **Progress**: Binary per challenge, section % derived
 - **Enrollment**: Implicit (start any challenge)
@@ -24,6 +27,7 @@
 - **Takeaway**: Verification URLs are powerful for portfolio/resume use
 
 ### Khan Academy
+
 - **Structure**: Course → Unit → Lesson → Exercise/Video
 - **Progress**: Mastery-based (not just completion)
 - **Takeaway**: Linear progression with mastery gates is engaging but complex

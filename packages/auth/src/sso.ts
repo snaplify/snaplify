@@ -65,10 +65,7 @@ export async function discoverOAuthEndpoint(
   }
 }
 
-export function isTrustedInstance(
-  config: SnaplifyConfig,
-  domain: string,
-): boolean {
+export function isTrustedInstance(config: SnaplifyConfig, domain: string): boolean {
   if (!config.features.federation) return false;
   if (!config.auth.trustedInstances) return false;
   return config.auth.trustedInstances.includes(domain);

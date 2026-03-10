@@ -13,16 +13,19 @@ Snaplify instances need to authenticate users across instances (Model B: AP Acto
 Use Better Auth's plugin ecosystem for both sides of the SSO flow:
 
 **Provider side** (Instance A serves as OAuth provider):
+
 - The auth handler at `/api/auth/oauth2/authorize` and `/api/auth/oauth2/token` serves OAuth2 flows
 - Registered OAuth clients stored in `oauthClients` table
 - WebFinger responses include `oauth_endpoint` link for discovery
 
 **Consumer side** (Instance B uses SSO from Instance A):
+
 - WebFinger discovery finds the OAuth endpoint on the remote instance
 - Standard OAuth2 authorization code flow
 - On successful auth, creates a `federatedAccounts` record linking local user to remote actor
 
 **Trust model**:
+
 - Both instances must list each other in `config.auth.trustedInstances`
 - Federation feature flag must be enabled (`config.features.federation = true`)
 - OAuth client registration is required before SSO works

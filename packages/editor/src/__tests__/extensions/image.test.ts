@@ -15,9 +15,7 @@ function createEditor(content?: string): Editor {
 
 describe('SnaplifyImage Extension', () => {
   it('parses image HTML', () => {
-    const editor = createEditor(
-      '<img src="https://example.com/img.png" alt="Test" />'
-    );
+    const editor = createEditor('<img src="https://example.com/img.png" alt="Test" />');
     const json = editor.getJSON();
     const imageNode = json.content?.find((n: any) => n.type === 'image');
     expect(imageNode).toBeDefined();
@@ -40,9 +38,7 @@ describe('SnaplifyImage Extension', () => {
   });
 
   it('renders img tag', () => {
-    const editor = createEditor(
-      '<img src="https://example.com/test.png" alt="Alt text" />'
-    );
+    const editor = createEditor('<img src="https://example.com/test.png" alt="Alt text" />');
     expect(editor.getHTML()).toContain('<img');
     expect(editor.getHTML()).toContain('src="https://example.com/test.png"');
     editor.destroy();

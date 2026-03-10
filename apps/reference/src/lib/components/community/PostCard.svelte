@@ -3,7 +3,11 @@
   import type { CommunityPostItem } from '$lib/types';
   import { hasPermission } from '$lib/utils/community-permissions';
 
-  let { post, slug, userRole = null }: {
+  let {
+    post,
+    slug,
+    userRole = null,
+  }: {
     post: CommunityPostItem;
     slug: string;
     userRole: string | null;
@@ -19,7 +23,9 @@
       {#if post.author.avatarUrl}
         <img src={post.author.avatarUrl} alt="" class="author-avatar" width="32" height="32" />
       {:else}
-        <span class="author-avatar-placeholder">{post.author.displayName?.[0] ?? post.author.username[0]}</span>
+        <span class="author-avatar-placeholder"
+          >{post.author.displayName?.[0] ?? post.author.username[0]}</span
+        >
       {/if}
       <div class="author-info">
         <span class="author-name">{post.author.displayName ?? post.author.username}</span>
@@ -66,19 +72,29 @@
     {#if canModerate}
       <form method="POST" action="/communities/{slug}?/pinPost" use:enhance class="inline-form">
         <input type="hidden" name="postId" value={post.id} />
-        <button type="submit" class="action-btn" aria-label={post.isPinned ? 'Unpin post' : 'Pin post'}>
+        <button
+          type="submit"
+          class="action-btn"
+          aria-label={post.isPinned ? 'Unpin post' : 'Pin post'}
+        >
           {post.isPinned ? 'Unpin' : 'Pin'}
         </button>
       </form>
       <form method="POST" action="/communities/{slug}?/lockPost" use:enhance class="inline-form">
         <input type="hidden" name="postId" value={post.id} />
-        <button type="submit" class="action-btn" aria-label={post.isLocked ? 'Unlock post' : 'Lock post'}>
+        <button
+          type="submit"
+          class="action-btn"
+          aria-label={post.isLocked ? 'Unlock post' : 'Lock post'}
+        >
           {post.isLocked ? 'Unlock' : 'Lock'}
         </button>
       </form>
       <form method="POST" action="/communities/{slug}?/deletePost" use:enhance class="inline-form">
         <input type="hidden" name="postId" value={post.id} />
-        <button type="submit" class="action-btn action-danger" aria-label="Delete post">Delete</button>
+        <button type="submit" class="action-btn action-danger" aria-label="Delete post"
+          >Delete</button
+        >
       </form>
     {/if}
   </div>

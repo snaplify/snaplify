@@ -1,5 +1,10 @@
 <script lang="ts">
-  import type { ExplainerSection, TextSection, QuizSection, CheckpointSection } from '@snaplify/explainer';
+  import type {
+    ExplainerSection,
+    TextSection,
+    QuizSection,
+    CheckpointSection,
+  } from '@snaplify/explainer';
   import SectionList from './SectionList.svelte';
   import SectionEditor from './SectionEditor.svelte';
 
@@ -15,13 +20,14 @@
   let activeSection = $derived(sections[activeIndex]);
 
   function generateAnchor(title: string): string {
-    return title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-      || `section-${Date.now()}`;
+    return (
+      title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') || `section-${Date.now()}`
+    );
   }
 
   function handleAdd(type: string) {

@@ -21,11 +21,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   const { html, toc, frontmatter } = await renderMarkdown(page.content);
 
   const breadcrumbs = buildBreadcrumbs(pages, page.id);
-  const prevNext = getPrevNextLinks(
-    parentData.nav as NavItem[],
-    page.id,
-    pages,
-  );
+  const prevNext = getPrevNextLinks(parentData.nav as NavItem[], page.id, pages);
 
   return {
     page: {

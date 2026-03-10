@@ -21,7 +21,7 @@
     name="content"
     class="composer-content"
     rows="3"
-    placeholder={postType === 'link' ? 'Paste a URL...' : 'What\'s on your mind?'}
+    placeholder={postType === 'link' ? 'Paste a URL...' : "What's on your mind?"}
     required
     maxlength="10000"
     aria-label={postType === 'link' ? 'Link URL' : 'Post content'}

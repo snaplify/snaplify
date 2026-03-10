@@ -37,7 +37,7 @@
     // Focus trap
     if (e.key === 'Tab' && dialogRef) {
       const focusable = dialogRef.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       );
       if (focusable.length === 0) return;
 
@@ -65,7 +65,7 @@
       previousFocus = document.activeElement as HTMLElement;
       requestAnimationFrame(() => {
         const focusable = dialogRef?.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
         );
         focusable?.[0]?.focus();
       });
@@ -75,11 +75,7 @@
 
 {#if open}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="snaplify-dialog-backdrop"
-    onclick={handleBackdropClick}
-    onkeydown={handleKeydown}
-  >
+  <div class="snaplify-dialog-backdrop" onclick={handleBackdropClick} onkeydown={handleKeydown}>
     <div
       bind:this={dialogRef}
       {id}

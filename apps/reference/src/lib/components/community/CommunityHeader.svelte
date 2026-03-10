@@ -23,20 +23,26 @@
       {#if community.iconUrl}
         <img src={community.iconUrl} alt="" class="header-icon" width="64" height="64" />
       {:else}
-        <div class="header-icon-placeholder" aria-hidden="true">{community.name[0]?.toUpperCase()}</div>
+        <div class="header-icon-placeholder" aria-hidden="true">
+          {community.name[0]?.toUpperCase()}
+        </div>
       {/if}
       <div class="header-info">
         <h1 class="header-name">{community.name}</h1>
         <div class="header-stats">
           <span>{community.memberCount} members</span>
           <span>{community.postCount} posts</span>
-          <span class="header-policy">{policyLabels[community.joinPolicy] ?? community.joinPolicy}</span>
+          <span class="header-policy"
+            >{policyLabels[community.joinPolicy] ?? community.joinPolicy}</span
+          >
         </div>
       </div>
 
       <div class="header-actions">
         {#if community.currentUserRole}
-          <span class="role-badge role-{community.currentUserRole}">{community.currentUserRole}</span>
+          <span class="role-badge role-{community.currentUserRole}"
+            >{community.currentUserRole}</span
+          >
           {#if community.currentUserRole !== 'owner'}
             <form method="POST" action="/communities/{community.slug}?/leave" use:enhance>
               <button type="submit" class="btn btn-secondary">Leave</button>

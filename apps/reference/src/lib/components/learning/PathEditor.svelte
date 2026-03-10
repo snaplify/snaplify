@@ -18,7 +18,8 @@
 
   <div class="form-field">
     <label for="path-desc">Description</label>
-    <textarea id="path-desc" name="description" bind:value={description} maxlength="2000" rows="3"></textarea>
+    <textarea id="path-desc" name="description" bind:value={description} maxlength="2000" rows="3"
+    ></textarea>
   </div>
 
   <div class="form-row">
@@ -34,7 +35,14 @@
 
     <div class="form-field">
       <label for="path-hours">Estimated Hours</label>
-      <input id="path-hours" name="estimatedHours" type="number" min="0.5" step="0.5" bind:value={estimatedHours} />
+      <input
+        id="path-hours"
+        name="estimatedHours"
+        type="number"
+        min="0.5"
+        step="0.5"
+        bind:value={estimatedHours}
+      />
     </div>
   </div>
 

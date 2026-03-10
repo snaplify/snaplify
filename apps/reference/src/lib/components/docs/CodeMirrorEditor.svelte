@@ -14,59 +14,67 @@
   let editorElement: HTMLDivElement;
   let view: import('@codemirror/view').EditorView | null = null;
 
-  onMount(async () => {
-    const { EditorState } = await import('@codemirror/state');
-    const { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection } = await import('@codemirror/view');
-    const { defaultKeymap, history, historyKeymap } = await import('@codemirror/commands');
-    const { markdown } = await import('@codemirror/lang-markdown');
-    const { syntaxHighlighting, defaultHighlightStyle, bracketMatching } = await import('@codemirror/language');
+  onMount(() => {
+    Promise.all([
+      import('@codemirror/state'),
+      import('@codemirror/view'),
+      import('@codemirror/commands'),
+      import('@codemirror/lang-markdown'),
+      import('@codemirror/language'),
+    ]).then(([stateModule, viewModule, commandsModule, markdownModule, languageModule]) => {
+      const { EditorState } = stateModule;
+      const { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection } = viewModule;
+      const { defaultKeymap, history, historyKeymap } = commandsModule;
+      const { markdown } = markdownModule;
+      const { syntaxHighlighting, defaultHighlightStyle, bracketMatching } = languageModule;
 
-    const updateListener = EditorView.updateListener.of((update) => {
-      if (update.docChanged) {
-        const value = update.state.doc.toString();
-        content = value;
-        onchange?.(value);
-      }
-    });
+      const updateListener = EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          const value = update.state.doc.toString();
+          content = value;
+          onchange?.(value);
+        }
+      });
 
-    const theme = EditorView.theme({
-      '&': {
-        height: '100%',
-        fontSize: 'var(--text-sm, 0.875rem)',
-        fontFamily: 'var(--font-mono, monospace)',
-      },
-      '.cm-content': {
-        padding: 'var(--space-3, 0.75rem)',
-      },
-      '.cm-gutters': {
-        background: 'var(--bg-muted, #f9fafb)',
-        borderRight: '1px solid var(--border-default, #e5e7eb)',
-        color: 'var(--text-muted, #9ca3af)',
-      },
-      '.cm-activeLineGutter': {
-        background: 'var(--bg-hover, #f3f4f6)',
-      },
-    });
+      const theme = EditorView.theme({
+        '&': {
+          height: '100%',
+          fontSize: 'var(--text-sm, 0.875rem)',
+          fontFamily: 'var(--font-mono, monospace)',
+        },
+        '.cm-content': {
+          padding: 'var(--space-3, 0.75rem)',
+        },
+        '.cm-gutters': {
+          background: 'var(--bg-muted, #f9fafb)',
+          borderRight: '1px solid var(--border-default, #e5e7eb)',
+          color: 'var(--text-muted, #9ca3af)',
+        },
+        '.cm-activeLineGutter': {
+          background: 'var(--bg-hover, #f3f4f6)',
+        },
+      });
 
-    const state = EditorState.create({
-      doc: content,
-      extensions: [
-        lineNumbers(),
-        highlightActiveLine(),
-        drawSelection(),
-        bracketMatching(),
-        history(),
-        syntaxHighlighting(defaultHighlightStyle),
-        markdown(),
-        keymap.of([...defaultKeymap, ...historyKeymap]),
-        theme,
-        updateListener,
-      ],
-    });
+      const state = EditorState.create({
+        doc: content,
+        extensions: [
+          lineNumbers(),
+          highlightActiveLine(),
+          drawSelection(),
+          bracketMatching(),
+          history(),
+          syntaxHighlighting(defaultHighlightStyle),
+          markdown(),
+          keymap.of([...defaultKeymap, ...historyKeymap]),
+          theme,
+          updateListener,
+        ],
+      });
 
-    view = new EditorView({
-      state,
-      parent: editorElement,
+      view = new EditorView({
+        state,
+        parent: editorElement,
+      });
     });
 
     return () => {

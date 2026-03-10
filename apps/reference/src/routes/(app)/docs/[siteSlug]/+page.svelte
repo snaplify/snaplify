@@ -8,7 +8,10 @@
 
 <svelte:head>
   <title>{data.site.name} — Snaplify Docs</title>
-  <meta name="description" content={data.site.description ?? `Documentation for ${data.site.name}`} />
+  <meta
+    name="description"
+    content={data.site.description ?? `Documentation for ${data.site.name}`}
+  />
 </svelte:head>
 
 <div class="docs-layout">
@@ -45,7 +48,9 @@
               {#if node.children.length > 0}
                 <ul>
                   {#each node.children as child}
-                    <li><a href="/docs/{data.site.slug}/{node.slug}/{child.slug}">{child.title}</a></li>
+                    <li>
+                      <a href="/docs/{data.site.slug}/{node.slug}/{child.slug}">{child.title}</a>
+                    </li>
                   {/each}
                 </ul>
               {/if}
@@ -53,7 +58,11 @@
           {/each}
         </ul>
       {:else}
-        <p class="docs-empty">No pages yet. {#if data.isOwner}<a href="/docs/{data.site.slug}/edit">Create your first page</a>.{/if}</p>
+        <p class="docs-empty">
+          No pages yet. {#if data.isOwner}<a href="/docs/{data.site.slug}/edit"
+              >Create your first page</a
+            >.{/if}
+        </p>
       {/if}
     </div>
   </main>

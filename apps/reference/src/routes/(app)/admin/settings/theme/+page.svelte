@@ -22,7 +22,9 @@
   <form method="post" action="?/setTheme">
     <ThemePicker
       selected={selectedTheme}
-      onSelect={(id) => { selectedTheme = id; }}
+      onSelect={(id) => {
+        selectedTheme = id;
+      }}
     />
     <input type="hidden" name="themeId" bind:value={selectedTheme} />
     <button type="submit" class="admin-btn admin-btn--mt">Apply Default Theme</button>
@@ -36,7 +38,9 @@
   <form method="post" action="?/setTokenOverrides">
     <TokenOverrideEditor
       overrides={currentOverrides}
-      onChange={(overrides) => { currentOverrides = overrides; }}
+      onChange={(overrides) => {
+        currentOverrides = overrides;
+      }}
     />
     <input type="hidden" name="overrides" value={JSON.stringify(currentOverrides)} />
     <button type="submit" class="admin-btn admin-btn--mt">Save Overrides</button>

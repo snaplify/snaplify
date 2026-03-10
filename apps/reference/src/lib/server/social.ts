@@ -22,7 +22,10 @@ export async function toggleLike(
     .where(
       and(
         eq(likes.userId, userId),
-        eq(likes.targetType, targetType as 'project' | 'article' | 'blog' | 'explainer' | 'comment' | 'post'),
+        eq(
+          likes.targetType,
+          targetType as 'project' | 'article' | 'blog' | 'explainer' | 'comment' | 'post',
+        ),
         eq(likes.targetId, targetId),
       ),
     )
@@ -76,7 +79,10 @@ export async function isLiked(
     .where(
       and(
         eq(likes.userId, userId),
-        eq(likes.targetType, targetType as 'project' | 'article' | 'blog' | 'explainer' | 'comment' | 'post'),
+        eq(
+          likes.targetType,
+          targetType as 'project' | 'article' | 'blog' | 'explainer' | 'comment' | 'post',
+        ),
         eq(likes.targetId, targetId),
       ),
     )
@@ -156,7 +162,13 @@ export async function createComment(
     .insert(comments)
     .values({
       authorId,
-      targetType: input.targetType as 'project' | 'article' | 'blog' | 'explainer' | 'post' | 'lesson',
+      targetType: input.targetType as
+        | 'project'
+        | 'article'
+        | 'blog'
+        | 'explainer'
+        | 'post'
+        | 'lesson',
       targetId: input.targetId,
       content: input.content,
       parentId: input.parentId ?? null,
@@ -191,11 +203,7 @@ export async function createComment(
   };
 }
 
-export async function deleteComment(
-  db: DB,
-  commentId: string,
-  authorId: string,
-): Promise<boolean> {
+export async function deleteComment(db: DB, commentId: string, authorId: string): Promise<boolean> {
   const existing = await db
     .select({ id: comments.id, targetId: comments.targetId })
     .from(comments)

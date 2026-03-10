@@ -21,11 +21,21 @@
   <form method="POST" action="?/update" class="site-form">
     <div class="form-field">
       <label for="name" class="form-label">Name</label>
-      <input id="name" name="name" type="text" value={data.site.name} required maxlength="128" class="form-input" />
+      <input
+        id="name"
+        name="name"
+        type="text"
+        value={data.site.name}
+        required
+        maxlength="128"
+        class="form-input"
+      />
     </div>
     <div class="form-field">
       <label for="description" class="form-label">Description</label>
-      <textarea id="description" name="description" maxlength="2000" class="form-textarea" rows="3">{data.site.description ?? ''}</textarea>
+      <textarea id="description" name="description" maxlength="2000" class="form-textarea" rows="3"
+        >{data.site.description ?? ''}</textarea
+      >
     </div>
     <button type="submit" class="form-submit">Save Changes</button>
   </form>
@@ -35,7 +45,14 @@
   <h2 class="section-title">Pages</h2>
 
   <form method="POST" action="?/createPage" class="inline-form">
-    <input name="title" type="text" placeholder="New page title..." required class="form-input" aria-label="New page title" />
+    <input
+      name="title"
+      type="text"
+      placeholder="New page title..."
+      required
+      class="form-input"
+      aria-label="New page title"
+    />
     <button type="submit" class="form-submit">Add Page</button>
   </form>
 
@@ -56,7 +73,13 @@
 
   <h2 class="section-title danger-title">Danger Zone</h2>
   <form method="POST" action="?/delete">
-    <button type="submit" class="form-submit danger" onclick={(e) => { if (!confirm('Delete this entire docs site? This cannot be undone.')) e.preventDefault(); }}>
+    <button
+      type="submit"
+      class="form-submit danger"
+      onclick={(e) => {
+        if (!confirm('Delete this entire docs site? This cannot be undone.')) e.preventDefault();
+      }}
+    >
       Delete Site
     </button>
   </form>
@@ -81,7 +104,9 @@
     color: var(--color-text, inherit);
   }
 
-  .danger-title { color: var(--color-danger, #ef4444); }
+  .danger-title {
+    color: var(--color-danger, #ef4444);
+  }
 
   .error-message {
     padding: var(--space-sm, 0.5rem);
@@ -101,7 +126,8 @@
     font-size: var(--font-size-sm, 0.875rem);
   }
 
-  .site-form, .inline-form {
+  .site-form,
+  .inline-form {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm, 0.5rem);
@@ -125,7 +151,8 @@
     color: var(--color-text, inherit);
   }
 
-  .form-input, .form-textarea {
+  .form-input,
+  .form-textarea {
     padding: var(--space-sm, 0.5rem);
     border: 1px solid var(--color-border, #e5e7eb);
     border-radius: var(--radius-sm, 0.25rem);

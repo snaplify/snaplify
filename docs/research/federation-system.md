@@ -3,6 +3,7 @@
 ## Prior Art
 
 ### Mastodon
+
 - Actor model: every user is an AP Person with inbox/outbox
 - HTTP Signatures (draft-cavage-http-signatures-12) for authentication
 - Shared inbox at `/inbox` for efficiency (single POST per instance)
@@ -13,6 +14,7 @@
 - Collections: OrderedCollection for outbox/followers/following with pagination
 
 ### Lemmy
+
 - Community = AP Group actor (receives posts via inbox)
 - Announce pattern: community re-broadcasts Create activities to all followers
 - Custom extensions in `lemmy` namespace for community-specific fields
@@ -20,6 +22,7 @@
 - Content mapping: Post → AP Page (not Article), Comment → AP Note with inReplyTo
 
 ### Misskey/Firefish
+
 - Uses LD Signatures (deprecated) alongside HTTP Signatures
 - Emoji reactions as custom Like activities with `_misskey_reaction` extension
 - Drive system: media proxy for all remote content
@@ -28,15 +31,17 @@
 ## Fedify API Patterns
 
 ### Federation Setup
+
 ```typescript
 import { createFederation, MemoryKvStore } from '@fedify/fedify';
 
 const federation = createFederation<AppContext>({
-  kv: new MemoryKvStore(),  // or DenoKvStore, RedisKvStore
+  kv: new MemoryKvStore(), // or DenoKvStore, RedisKvStore
 });
 ```
 
 ### Actor Dispatcher
+
 ```typescript
 federation.setActorDispatcher('/users/{identifier}', async (ctx, identifier) => {
   const user = await db.getUser(identifier);
@@ -55,25 +60,29 @@ federation.setActorDispatcher('/users/{identifier}', async (ctx, identifier) => 
 ```
 
 ### Inbox Listener
+
 ```typescript
-federation.setInboxListener('/users/{identifier}/inbox', async (ctx, identifier) => {
-  // Route by activity type
-})
-.on(Follow, async (ctx, follow) => {
-  // Process follow request
-  await ctx.sendActivity({ identifier }, follow.actorId, new Accept({ object: follow }));
-})
-.on(Create, async (ctx, create) => {
-  // Process new content
-});
+federation
+  .setInboxListener('/users/{identifier}/inbox', async (ctx, identifier) => {
+    // Route by activity type
+  })
+  .on(Follow, async (ctx, follow) => {
+    // Process follow request
+    await ctx.sendActivity({ identifier }, follow.actorId, new Accept({ object: follow }));
+  })
+  .on(Create, async (ctx, create) => {
+    // Process new content
+  });
 ```
 
 ### Key Pair Management
+
 Fedify handles keypair generation and storage via `setKeyPairsDispatcher`:
+
 ```typescript
 federation.setKeyPairsDispatcher(async (ctx, identifier) => {
   const keys = await db.getKeypairs(identifier);
-  return keys.map(k => ({
+  return keys.map((k) => ({
     privateKey: await importKey(k.privateKeyPem),
     publicKey: await importKey(k.publicKeyPem),
   }));
@@ -81,6 +90,7 @@ federation.setKeyPairsDispatcher(async (ctx, identifier) => {
 ```
 
 ### Message Queue
+
 ```typescript
 import { InProcessMessageQueue } from '@fedify/fedify';
 // Or for production:
@@ -103,6 +113,7 @@ const federation = createFederation<AppContext>({
 ## ActivityPub Content Mapping for Snaplify
 
 ### Article (project, article, blog, guide)
+
 ```json
 {
   "@context": "https://www.w3.org/ns/activitystreams",
@@ -122,6 +133,7 @@ const federation = createFederation<AppContext>({
 ```
 
 ### Note (comment)
+
 ```json
 {
   "type": "Note",
@@ -132,6 +144,7 @@ const federation = createFederation<AppContext>({
 ```
 
 ### Tombstone (deleted content)
+
 ```json
 {
   "type": "Tombstone",
@@ -151,6 +164,7 @@ const federation = createFederation<AppContext>({
 ## Key Decision: Fedify Built-in vs Custom Worker
 
 **Recommendation**: Use Fedify's queue integration directly rather than a separate BullMQ worker.
+
 - Fedify already handles HTTP Signature signing, retry, and delivery
 - Adding BullMQ creates redundant queue infrastructure
 - The `tools/worker` package can wrap Fedify's queue for monitoring/admin

@@ -48,13 +48,21 @@ describe('admin relations', () => {
 
 describe('updateInstanceSettingSchema', () => {
   it('should accept valid setting', () => {
-    expect(updateInstanceSettingSchema.safeParse({ key: 'theme.default', value: 'deepwood' }).success).toBe(true);
+    expect(
+      updateInstanceSettingSchema.safeParse({ key: 'theme.default', value: 'deepwood' }).success,
+    ).toBe(true);
   });
 
   it('should accept any value type', () => {
-    expect(updateInstanceSettingSchema.safeParse({ key: 'some.bool', value: true }).success).toBe(true);
-    expect(updateInstanceSettingSchema.safeParse({ key: 'some.num', value: 42 }).success).toBe(true);
-    expect(updateInstanceSettingSchema.safeParse({ key: 'some.obj', value: { nested: true } }).success).toBe(true);
+    expect(updateInstanceSettingSchema.safeParse({ key: 'some.bool', value: true }).success).toBe(
+      true,
+    );
+    expect(updateInstanceSettingSchema.safeParse({ key: 'some.num', value: 42 }).success).toBe(
+      true,
+    );
+    expect(
+      updateInstanceSettingSchema.safeParse({ key: 'some.obj', value: { nested: true } }).success,
+    ).toBe(true);
   });
 
   it('should reject empty key', () => {
@@ -62,7 +70,9 @@ describe('updateInstanceSettingSchema', () => {
   });
 
   it('should reject key over 128 chars', () => {
-    expect(updateInstanceSettingSchema.safeParse({ key: 'a'.repeat(129), value: 'x' }).success).toBe(false);
+    expect(
+      updateInstanceSettingSchema.safeParse({ key: 'a'.repeat(129), value: 'x' }).success,
+    ).toBe(false);
   });
 });
 
@@ -84,7 +94,9 @@ describe('updateUserRoleSchema', () => {
   });
 
   it('should reject invalid UUID', () => {
-    expect(updateUserRoleSchema.safeParse({ userId: 'not-a-uuid', role: 'admin' }).success).toBe(false);
+    expect(updateUserRoleSchema.safeParse({ userId: 'not-a-uuid', role: 'admin' }).success).toBe(
+      false,
+    );
   });
 });
 

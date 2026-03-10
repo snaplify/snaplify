@@ -63,13 +63,15 @@ export async function processInboxActivity(
     }
     case 'Create': {
       const obj = activity.object;
-      if (!obj || typeof obj !== 'object') return { success: false, error: 'Create missing object' };
+      if (!obj || typeof obj !== 'object')
+        return { success: false, error: 'Create missing object' };
       await callbacks.onCreate(actor, obj as Record<string, unknown>);
       return { success: true };
     }
     case 'Update': {
       const obj = activity.object;
-      if (!obj || typeof obj !== 'object') return { success: false, error: 'Update missing object' };
+      if (!obj || typeof obj !== 'object')
+        return { success: false, error: 'Update missing object' };
       await callbacks.onUpdate(actor, obj as Record<string, unknown>);
       return { success: true };
     }
@@ -99,7 +101,7 @@ export async function processInboxActivity(
 function extractObjectId(object: unknown): string | null {
   if (typeof object === 'string') return object;
   if (object && typeof object === 'object') {
-    return (object as Record<string, unknown>).id as string ?? null;
+    return ((object as Record<string, unknown>).id as string) ?? null;
   }
   return null;
 }

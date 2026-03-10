@@ -21,7 +21,13 @@
         href="/learn{d === 'all' ? '' : `?difficulty=${d}`}"
         class="filter-link"
         class:filter-active={d === 'all' ? !data.difficulty : data.difficulty === d}
-        aria-current={d === 'all' ? (!data.difficulty ? 'page' : undefined) : (data.difficulty === d ? 'page' : undefined)}
+        aria-current={d === 'all'
+          ? !data.difficulty
+            ? 'page'
+            : undefined
+          : data.difficulty === d
+            ? 'page'
+            : undefined}
       >
         {d.charAt(0).toUpperCase() + d.slice(1)}
       </a>

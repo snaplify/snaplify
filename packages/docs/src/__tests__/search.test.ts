@@ -56,7 +56,8 @@ describe('buildSearchDocument', () => {
     versionId: 'v1',
     title: 'Getting Started',
     slug: 'getting-started',
-    content: '## Introduction\n\nWelcome to **Snaplify**.\n\n## Setup\n\nInstall with `npm install`.',
+    content:
+      '## Introduction\n\nWelcome to **Snaplify**.\n\n## Setup\n\nInstall with `npm install`.',
     sortOrder: 0,
     parentId: null,
     createdAt: now,

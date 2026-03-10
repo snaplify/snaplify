@@ -1,17 +1,28 @@
-import { fail } from '@sveltejs/kit';
-import { createDocsVersion, setDefaultVersion, deleteDocsVersion } from '$lib/server/docs';
+import { error, fail } from '@sveltejs/kit';
+import {
+  getDocsSiteBySlug,
+  createDocsVersion,
+  setDefaultVersion,
+  deleteDocsVersion,
+} from '$lib/server/docs';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {
   const parentData = await parent();
-  return { versions: parentData.versions, site: parentData.site, activeVersion: parentData.activeVersion };
+  return {
+    versions: parentData.versions,
+    site: parentData.site,
+    activeVersion: parentData.activeVersion,
+  };
 };
 
 export const actions: Actions = {
-  create: async ({ request, locals, parent }) => {
+  create: async ({ request, locals, params }) => {
     if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
-    const parentData = await parent();
+    const result = await getDocsSiteBySlug(locals.db, params.siteSlug);
+    if (!result) error(404, 'Documentation site not found');
+
     const data = await request.formData();
     const version = data.get('version') as string;
     const sourceVersionId = data.get('sourceVersionId') as string | null;
@@ -19,7 +30,7 @@ export const actions: Actions = {
 
     if (!version?.trim()) return fail(400, { error: 'Version name is required' });
 
-    await createDocsVersion(locals.db, parentData.site.id, locals.user.id, {
+    await createDocsVersion(locals.db, result.site.id, locals.user.id, {
       version: version.trim(),
       sourceVersionId: sourceVersionId || undefined,
       isDefault,

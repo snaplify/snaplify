@@ -29,12 +29,7 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
     const countResult = await locals.db
       .select({ count: activities.id })
       .from(activities)
-      .where(
-        and(
-          eq(activities.actorUri, actorUri),
-          eq(activities.direction, 'outbound'),
-        ),
-      );
+      .where(and(eq(activities.actorUri, actorUri), eq(activities.direction, 'outbound')));
     const totalItems = countResult.length;
     const collection = generateOutboxCollection(totalItems, domain, params.username);
     return json(collection, {
@@ -49,12 +44,7 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
   const rows2 = await locals.db
     .select()
     .from(activities)
-    .where(
-      and(
-        eq(activities.actorUri, actorUri),
-        eq(activities.direction, 'outbound'),
-      ),
-    )
+    .where(and(eq(activities.actorUri, actorUri), eq(activities.direction, 'outbound')))
     .orderBy(desc(activities.createdAt))
     .limit(pageSize)
     .offset(offset);

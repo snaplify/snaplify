@@ -96,9 +96,18 @@
     text-transform: capitalize;
   }
 
-  .difficulty-beginner { color: var(--color-success, #22c55e); background: var(--color-success-bg, #f0fdf4); }
-  .difficulty-intermediate { color: var(--color-warning, #f59e0b); background: var(--color-warning-bg, #fffbeb); }
-  .difficulty-advanced { color: var(--color-error, #dc2626); background: var(--color-error-bg, #fef2f2); }
+  .difficulty-beginner {
+    color: var(--color-success, #22c55e);
+    background: var(--color-success-bg, #f0fdf4);
+  }
+  .difficulty-intermediate {
+    color: var(--color-warning, #f59e0b);
+    background: var(--color-warning-bg, #fffbeb);
+  }
+  .difficulty-advanced {
+    color: var(--color-error, #dc2626);
+    background: var(--color-error-bg, #fef2f2);
+  }
 
   .meta-text {
     color: var(--color-text-secondary, #666);

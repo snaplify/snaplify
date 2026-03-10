@@ -1,7 +1,11 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getContentBySlug } from '$lib/server/content';
-import { generateExplainerHtml, type ExplainerSection, type ExportOptions } from '@snaplify/explainer';
+import {
+  generateExplainerHtml,
+  type ExplainerSection,
+  type ExportOptions,
+} from '@snaplify/explainer';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
   if (!locals.config.features.explainers) {

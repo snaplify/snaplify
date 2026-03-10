@@ -108,8 +108,14 @@ describe('Community Service', () => {
         innerJoin: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         orderBy: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockImplementation((l: number) => { capturedLimit = l; return mainChain; }),
-        offset: vi.fn().mockImplementation((o: number) => { capturedOffset = o; return mainChain; }),
+        limit: vi.fn().mockImplementation((l: number) => {
+          capturedLimit = l;
+          return mainChain;
+        }),
+        offset: vi.fn().mockImplementation((o: number) => {
+          capturedOffset = o;
+          return mainChain;
+        }),
         then: vi.fn().mockImplementation((resolve) => resolve([])),
       };
       const countChain = {
@@ -135,7 +141,10 @@ describe('Community Service', () => {
       const mainChain = {
         from: vi.fn().mockReturnThis(),
         innerJoin: vi.fn().mockReturnThis(),
-        where: vi.fn().mockImplementation((w) => { capturedWhere = w; return mainChain; }),
+        where: vi.fn().mockImplementation((w) => {
+          capturedWhere = w;
+          return mainChain;
+        }),
         orderBy: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
         offset: vi.fn().mockReturnThis(),
@@ -176,10 +185,20 @@ describe('Community Service', () => {
     it('should return community with currentUserRole when requester is member', async () => {
       const db = createMockDb();
       const mockCommunity = {
-        id: 'comm-1', name: 'Test', slug: 'test', description: null,
-        iconUrl: null, bannerUrl: null, joinPolicy: 'open', isOfficial: false,
-        memberCount: 1, postCount: 0, createdAt: new Date(), updatedAt: new Date(),
-        createdById: 'user-1', rules: null,
+        id: 'comm-1',
+        name: 'Test',
+        slug: 'test',
+        description: null,
+        iconUrl: null,
+        bannerUrl: null,
+        joinPolicy: 'open',
+        isOfficial: false,
+        memberCount: 1,
+        postCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdById: 'user-1',
+        rules: null,
       };
 
       // First call: community lookup
@@ -188,10 +207,14 @@ describe('Community Service', () => {
         innerJoin: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          community: mockCommunity,
-          createdBy: { id: 'user-1', username: 'creator', displayName: null, avatarUrl: null },
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              community: mockCommunity,
+              createdBy: { id: 'user-1', username: 'creator', displayName: null, avatarUrl: null },
+            },
+          ]),
+        ),
       };
       // Member check
       const memberChain = {
@@ -227,11 +250,20 @@ describe('Community Service', () => {
     it('should create community and add creator as owner', async () => {
       const db = createMockDb();
       const createdCommunity = {
-        id: 'comm-1', name: 'Test Community', slug: 'test-community',
-        description: null, rules: null, joinPolicy: 'open',
-        createdById: 'user-1', isOfficial: false, memberCount: 1, postCount: 0,
-        iconUrl: null, bannerUrl: null,
-        createdAt: new Date(), updatedAt: new Date(),
+        id: 'comm-1',
+        name: 'Test Community',
+        slug: 'test-community',
+        description: null,
+        rules: null,
+        joinPolicy: 'open',
+        createdById: 'user-1',
+        isOfficial: false,
+        memberCount: 1,
+        postCount: 0,
+        iconUrl: null,
+        bannerUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       // ensureUniqueCommunitySlug
@@ -248,10 +280,14 @@ describe('Community Service', () => {
         innerJoin: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          community: createdCommunity,
-          createdBy: { id: 'user-1', username: 'creator', displayName: null, avatarUrl: null },
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              community: createdCommunity,
+              createdBy: { id: 'user-1', username: 'creator', displayName: null, avatarUrl: null },
+            },
+          ]),
+        ),
       };
 
       // Member check
@@ -375,9 +411,15 @@ describe('Community Service', () => {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          id: 'ban-1', reason: 'spam', expiresAt: null,
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              id: 'ban-1',
+              reason: 'spam',
+              expiresAt: null,
+            },
+          ]),
+        ),
       };
       db.select = vi.fn().mockReturnValue(banChain);
 
@@ -478,7 +520,11 @@ describe('Community Service', () => {
       });
 
       const result = await changeRole(
-        db as unknown as AnyDB, 'admin-1', 'comm-1', 'user-1', 'moderator',
+        db as unknown as AnyDB,
+        'admin-1',
+        'comm-1',
+        'user-1',
+        'moderator',
       );
       expect(result.changed).toBe(true);
     });
@@ -505,7 +551,11 @@ describe('Community Service', () => {
       });
 
       const result = await changeRole(
-        db as unknown as AnyDB, 'user-1', 'comm-1', 'user-2', 'admin',
+        db as unknown as AnyDB,
+        'user-1',
+        'comm-1',
+        'user-2',
+        'admin',
       );
       expect(result.changed).toBe(false);
     });
@@ -532,7 +582,11 @@ describe('Community Service', () => {
       });
 
       const result = await changeRole(
-        db as unknown as AnyDB, 'owner-1', 'comm-1', 'admin-1', 'owner',
+        db as unknown as AnyDB,
+        'owner-1',
+        'comm-1',
+        'admin-1',
+        'owner',
       );
       expect(result.changed).toBe(false);
       expect(result.error).toContain('owner');
@@ -604,7 +658,8 @@ describe('Community Service', () => {
 
       await expect(
         createPost(db as unknown as AnyDB, 'user-1', {
-          communityId: 'comm-1', content: 'Hello',
+          communityId: 'comm-1',
+          content: 'Hello',
         }),
       ).rejects.toThrow('Must be a member');
     });
@@ -612,9 +667,17 @@ describe('Community Service', () => {
     it('should create post and increment count', async () => {
       const db = createMockDb();
       const mockPost = {
-        id: 'post-1', communityId: 'comm-1', authorId: 'user-1',
-        type: 'text', content: 'Hello', isPinned: false, isLocked: false,
-        likeCount: 0, replyCount: 0, createdAt: new Date(), updatedAt: new Date(),
+        id: 'post-1',
+        communityId: 'comm-1',
+        authorId: 'user-1',
+        type: 'text',
+        content: 'Hello',
+        isPinned: false,
+        isLocked: false,
+        likeCount: 0,
+        replyCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       const memberChain = {
@@ -627,9 +690,16 @@ describe('Community Service', () => {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          id: 'user-1', username: 'user1', displayName: null, avatarUrl: null,
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              id: 'user-1',
+              username: 'user1',
+              displayName: null,
+              avatarUrl: null,
+            },
+          ]),
+        ),
       };
 
       let selectCount = 0;
@@ -644,7 +714,8 @@ describe('Community Service', () => {
       });
 
       const result = await createPost(db as unknown as AnyDB, 'user-1', {
-        communityId: 'comm-1', content: 'Hello',
+        communityId: 'comm-1',
+        content: 'Hello',
       });
 
       expect(result.id).toBe('post-1');
@@ -702,15 +773,21 @@ describe('Community Service', () => {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          communityId: 'comm-1', isLocked: true,
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              communityId: 'comm-1',
+              isLocked: true,
+            },
+          ]),
+        ),
       };
       db.select = vi.fn().mockReturnValue(postChain);
 
       await expect(
         createReply(db as unknown as AnyDB, 'user-1', {
-          postId: 'post-1', content: 'Reply',
+          postId: 'post-1',
+          content: 'Reply',
         }),
       ).rejects.toThrow('locked');
     });
@@ -738,9 +815,7 @@ describe('Community Service', () => {
         return callCount === 1 ? actorChain : targetChain;
       });
 
-      const result = await banUser(
-        db as unknown as AnyDB, 'admin-1', 'comm-1', 'user-1', 'spam',
-      );
+      const result = await banUser(db as unknown as AnyDB, 'admin-1', 'comm-1', 'user-1', 'spam');
       expect(result.banned).toBe(true);
     });
 
@@ -779,9 +854,15 @@ describe('Community Service', () => {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          id: 'ban-1', reason: 'spam', expiresAt: expired,
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              id: 'ban-1',
+              reason: 'spam',
+              expiresAt: expired,
+            },
+          ]),
+        ),
       };
       db.select = vi.fn().mockReturnValue(banChain);
 
@@ -795,9 +876,15 @@ describe('Community Service', () => {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          id: 'ban-1', reason: 'spam', expiresAt: null,
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              id: 'ban-1',
+              reason: 'spam',
+              expiresAt: null,
+            },
+          ]),
+        ),
       };
       db.select = vi.fn().mockReturnValue(banChain);
 
@@ -815,11 +902,20 @@ describe('Community Service', () => {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          id: 'inv-1', communityId: 'comm-1', token: 'abc',
-          maxUses: null, useCount: 0, expiresAt: expired, createdAt: new Date(),
-          createdById: 'user-1',
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              id: 'inv-1',
+              communityId: 'comm-1',
+              token: 'abc',
+              maxUses: null,
+              useCount: 0,
+              expiresAt: expired,
+              createdAt: new Date(),
+              createdById: 'user-1',
+            },
+          ]),
+        ),
       };
       db.select = vi.fn().mockReturnValue(chain);
 
@@ -833,11 +929,20 @@ describe('Community Service', () => {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          id: 'inv-1', communityId: 'comm-1', token: 'abc',
-          maxUses: 5, useCount: 5, expiresAt: null, createdAt: new Date(),
-          createdById: 'user-1',
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              id: 'inv-1',
+              communityId: 'comm-1',
+              token: 'abc',
+              maxUses: 5,
+              useCount: 5,
+              expiresAt: null,
+              createdAt: new Date(),
+              createdById: 'user-1',
+            },
+          ]),
+        ),
       };
       db.select = vi.fn().mockReturnValue(chain);
 
@@ -851,11 +956,20 @@ describe('Community Service', () => {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => resolve([{
-          id: 'inv-1', communityId: 'comm-1', token: 'abc',
-          maxUses: 10, useCount: 3, expiresAt: null, createdAt: new Date(),
-          createdById: 'user-1',
-        }])),
+        then: vi.fn().mockImplementation((resolve) =>
+          resolve([
+            {
+              id: 'inv-1',
+              communityId: 'comm-1',
+              token: 'abc',
+              maxUses: 10,
+              useCount: 3,
+              expiresAt: null,
+              createdAt: new Date(),
+              createdById: 'user-1',
+            },
+          ]),
+        ),
       };
       db.select = vi.fn().mockReturnValue(chain);
 

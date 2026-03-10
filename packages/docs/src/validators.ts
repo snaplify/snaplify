@@ -4,7 +4,11 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const createDocsSiteSchema = z.object({
   name: z.string().min(1).max(128),
-  slug: z.string().min(1).max(128).regex(slugPattern, 'Slug must be lowercase alphanumeric with hyphens'),
+  slug: z
+    .string()
+    .min(1)
+    .max(128)
+    .regex(slugPattern, 'Slug must be lowercase alphanumeric with hyphens'),
   description: z.string().max(2000).optional(),
 });
 
@@ -19,15 +23,17 @@ export const createDocsVersionSchema = z.object({
 export const createDocsPageSchema = z.object({
   versionId: z.string().uuid(),
   title: z.string().min(1).max(255),
-  slug: z.string().min(1).max(255).regex(slugPattern, 'Slug must be lowercase alphanumeric with hyphens'),
+  slug: z
+    .string()
+    .min(1)
+    .max(255)
+    .regex(slugPattern, 'Slug must be lowercase alphanumeric with hyphens'),
   content: z.string(),
   sortOrder: z.number().int().min(0).optional(),
   parentId: z.string().uuid().optional(),
 });
 
-export const updateDocsPageSchema = createDocsPageSchema
-  .omit({ versionId: true })
-  .partial();
+export const updateDocsPageSchema = createDocsPageSchema.omit({ versionId: true }).partial();
 
 const navItemSchema: z.ZodType<{
   id: string;

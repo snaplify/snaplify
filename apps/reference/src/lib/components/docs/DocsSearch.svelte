@@ -55,8 +55,14 @@
     value={query}
     oninput={handleInput}
     onkeydown={handleKeydown}
-    onfocus={() => { if (results.length) isOpen = true; }}
-    onblur={() => { setTimeout(() => { isOpen = false; }, 200); }}
+    onfocus={() => {
+      if (results.length) isOpen = true;
+    }}
+    onblur={() => {
+      setTimeout(() => {
+        isOpen = false;
+      }, 200);
+    }}
     class="docs-search-input"
   />
 

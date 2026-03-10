@@ -14,11 +14,18 @@ import type { OAuthClient } from '@snaplify/snaplify';
 const instanceAConfig = {
   instance: { domain: 'instance-a.example.com', name: 'Instance A', description: 'Test A' },
   features: {
-    communities: true, docs: true, video: true, contests: false,
-    learning: true, explainers: true, federation: true,
+    communities: true,
+    docs: true,
+    video: true,
+    contests: false,
+    learning: true,
+    explainers: true,
+    federation: true,
   },
   auth: {
-    emailPassword: true, magicLink: false, passkeys: false,
+    emailPassword: true,
+    magicLink: false,
+    passkeys: false,
     trustedInstances: ['instance-b.example.com'],
   },
 } as any;
@@ -26,11 +33,18 @@ const instanceAConfig = {
 const instanceBConfig = {
   instance: { domain: 'instance-b.example.com', name: 'Instance B', description: 'Test B' },
   features: {
-    communities: true, docs: true, video: true, contests: false,
-    learning: true, explainers: true, federation: true,
+    communities: true,
+    docs: true,
+    video: true,
+    contests: false,
+    learning: true,
+    explainers: true,
+    federation: true,
   },
   auth: {
-    emailPassword: true, magicLink: false, passkeys: false,
+    emailPassword: true,
+    magicLink: false,
+    passkeys: false,
     trustedInstances: ['instance-a.example.com'],
   },
 } as any;
@@ -76,19 +90,13 @@ describe('AP Actor SSO Flow (Model B)', () => {
       json: async () => webfingerResponse,
     });
 
-    const discovery = await discoverOAuthEndpoint(
-      'instance-a.example.com',
-      'alice',
-      mockFetch,
-    );
+    const discovery = await discoverOAuthEndpoint('instance-a.example.com', 'alice', mockFetch);
 
     expect(discovery).not.toBeNull();
     expect(discovery!.authorizationEndpoint).toBe(
       'https://instance-a.example.com/api/auth/oauth2/authorize',
     );
-    expect(discovery!.tokenEndpoint).toBe(
-      'https://instance-a.example.com/api/auth/oauth2/token',
-    );
+    expect(discovery!.tokenEndpoint).toBe('https://instance-a.example.com/api/auth/oauth2/token');
     expect(discovery!.domain).toBe('instance-a.example.com');
   });
 
@@ -166,11 +174,7 @@ describe('AP Actor SSO Flow (Model B)', () => {
       json: async () => webfingerResponse,
     });
 
-    const discovery = await discoverOAuthEndpoint(
-      'instance-a.example.com',
-      'alice',
-      mockFetch,
-    );
+    const discovery = await discoverOAuthEndpoint('instance-a.example.com', 'alice', mockFetch);
     expect(discovery).not.toBeNull();
 
     // 2. Instance A validates authorize request

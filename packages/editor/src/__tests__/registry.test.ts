@@ -30,7 +30,7 @@ describe('Block Registry', () => {
   it('throws on duplicate registration', () => {
     registerBlock({ type: 'text', schema: textContentSchema, label: 'Text' });
     expect(() =>
-      registerBlock({ type: 'text', schema: textContentSchema, label: 'Text 2' })
+      registerBlock({ type: 'text', schema: textContentSchema, label: 'Text 2' }),
     ).toThrow('Block type "text" is already registered');
   });
 

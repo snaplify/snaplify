@@ -2,7 +2,10 @@
   import { enhance } from '$app/forms';
   import type { CommunityInviteItem } from '$lib/types';
 
-  let { slug, invites }: {
+  let {
+    slug,
+    invites,
+  }: {
     slug: string;
     invites: CommunityInviteItem[];
   } = $props();
@@ -19,7 +22,12 @@
 </script>
 
 <div class="invite-section">
-  <form method="POST" action="/communities/{slug}/settings?/createInvite" use:enhance class="invite-form">
+  <form
+    method="POST"
+    action="/communities/{slug}/settings?/createInvite"
+    use:enhance
+    class="invite-form"
+  >
     <div class="form-row">
       <div class="form-field">
         <label for="invite-max-uses">Max uses (optional)</label>
@@ -39,9 +47,13 @@
         <div class="invite-row">
           <div class="invite-info">
             <code class="invite-token">{invite.token.slice(0, 8)}...</code>
-            <span class="invite-uses">{invite.useCount}{invite.maxUses ? `/${invite.maxUses}` : ''} uses</span>
+            <span class="invite-uses"
+              >{invite.useCount}{invite.maxUses ? `/${invite.maxUses}` : ''} uses</span
+            >
             {#if invite.expiresAt}
-              <span class="invite-expiry">Expires: {new Date(invite.expiresAt).toLocaleDateString()}</span>
+              <span class="invite-expiry"
+                >Expires: {new Date(invite.expiresAt).toLocaleDateString()}</span
+              >
             {/if}
           </div>
           <div class="invite-actions">
@@ -52,9 +64,18 @@
             >
               {copiedToken === invite.token ? 'Copied!' : 'Copy Link'}
             </button>
-            <form method="POST" action="/communities/{slug}/settings?/revokeInvite" use:enhance class="inline-form">
+            <form
+              method="POST"
+              action="/communities/{slug}/settings?/revokeInvite"
+              use:enhance
+              class="inline-form"
+            >
               <input type="hidden" name="inviteId" value={invite.id} />
-              <button type="submit" class="btn btn-small btn-danger-outline" aria-label="Revoke invite">
+              <button
+                type="submit"
+                class="btn btn-small btn-danger-outline"
+                aria-label="Revoke invite"
+              >
                 Revoke
               </button>
             </form>
@@ -135,7 +156,8 @@
     border-radius: var(--radius-sm, 4px);
   }
 
-  .invite-uses, .invite-expiry {
+  .invite-uses,
+  .invite-expiry {
     font-size: var(--font-size-xs, 0.75rem);
     color: var(--color-text-secondary, #666);
   }

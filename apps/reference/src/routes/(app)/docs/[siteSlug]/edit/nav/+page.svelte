@@ -11,7 +11,10 @@
 
 <section class="nav-editor-page">
   <h1 class="page-title">Navigation Editor</h1>
-  <p class="page-desc">Edit the sidebar navigation structure as JSON. Each item needs <code>id</code>, <code>title</code>, and optionally <code>pageId</code> and <code>children</code>.</p>
+  <p class="page-desc">
+    Edit the sidebar navigation structure as JSON. Each item needs <code>id</code>,
+    <code>title</code>, and optionally <code>pageId</code> and <code>children</code>.
+  </p>
 
   {#if form?.error}
     <div class="error-message" role="alert">{form.error}</div>
@@ -23,7 +26,13 @@
   <form method="POST" class="nav-form">
     <div class="form-field">
       <label for="structure" class="form-label">Navigation Structure (JSON)</label>
-      <textarea id="structure" name="structure" rows="20" class="form-textarea code" bind:value={structureText}></textarea>
+      <textarea
+        id="structure"
+        name="structure"
+        rows="20"
+        class="form-textarea code"
+        bind:value={structureText}
+      ></textarea>
     </div>
 
     <div class="page-reference">
@@ -58,7 +67,8 @@
     margin-bottom: var(--space-lg, 2rem);
   }
 
-  .error-message, .success-message {
+  .error-message,
+  .success-message {
     padding: var(--space-sm, 0.5rem);
     margin-bottom: var(--space-md, 1rem);
     border-radius: var(--radius-sm, 0.25rem);

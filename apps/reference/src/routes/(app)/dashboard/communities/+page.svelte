@@ -26,13 +26,23 @@
         <a href="/communities/{membership.community.slug}" class="membership-card">
           <div class="membership-info">
             {#if membership.community.iconUrl}
-              <img src={membership.community.iconUrl} alt="" class="community-icon" width="40" height="40" />
+              <img
+                src={membership.community.iconUrl}
+                alt=""
+                class="community-icon"
+                width="40"
+                height="40"
+              />
             {:else}
-              <span class="community-icon-placeholder">{membership.community.name[0]?.toUpperCase()}</span>
+              <span class="community-icon-placeholder"
+                >{membership.community.name[0]?.toUpperCase()}</span
+              >
             {/if}
             <div class="community-details">
               <span class="community-name">{membership.community.name}</span>
-              <span class="community-stats">{membership.community.memberCount} members · {membership.community.postCount} posts</span>
+              <span class="community-stats"
+                >{membership.community.memberCount} members · {membership.community.postCount} posts</span
+              >
             </div>
           </div>
           <div class="membership-meta">

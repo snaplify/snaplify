@@ -38,7 +38,11 @@ export const instanceConfigSchema = z.object({
   name: z.string().min(1).max(128),
   description: z.string().min(1).max(500),
   contactEmail: z.string().email().optional(),
-  maxUploadSize: z.number().int().positive().default(10 * 1024 * 1024),
+  maxUploadSize: z
+    .number()
+    .int()
+    .positive()
+    .default(10 * 1024 * 1024),
   contentTypes: z
     .array(z.enum(['project', 'article', 'guide', 'blog', 'explainer']))
     .default(['project', 'article', 'guide', 'blog']),

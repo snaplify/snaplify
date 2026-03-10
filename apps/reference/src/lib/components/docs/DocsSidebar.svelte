@@ -45,7 +45,11 @@
   <nav aria-label="Documentation pages">
     <ul class="docs-sidebar-list" role="tree">
       {#each nav as item}
-        <li class="docs-sidebar-item" role="treeitem" aria-expanded={item.children && item.children.length > 0 ? true : undefined}>
+        <li
+          class="docs-sidebar-item"
+          role="treeitem"
+          aria-expanded={item.children && item.children.length > 0 ? true : undefined}
+        >
           {#if item.pageId}
             <a
               href="/docs/{siteSlug}/{item.pageId}"

@@ -32,7 +32,9 @@
       <li>
         <a
           href={item.href}
-          class={['admin-nav__link', isActive(item.href) ? 'admin-nav__link--active' : ''].filter(Boolean).join(' ')}
+          class={['admin-nav__link', isActive(item.href) ? 'admin-nav__link--active' : '']
+            .filter(Boolean)
+            .join(' ')}
           aria-current={isActive(item.href) ? 'page' : undefined}
         >
           {item.label}

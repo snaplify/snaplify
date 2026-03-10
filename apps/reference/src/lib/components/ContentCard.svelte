@@ -5,9 +5,7 @@
   let { item }: { item: ContentListItem } = $props();
 
   const href = `/${typeToUrlSegment(item.type)}/${item.slug}`;
-  const timeAgo = item.publishedAt
-    ? new Date(item.publishedAt).toLocaleDateString()
-    : 'Draft';
+  const timeAgo = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : 'Draft';
 </script>
 
 <article class="content-card">

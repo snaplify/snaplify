@@ -1,8 +1,5 @@
-import { json, redirect } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { discoverOAuthEndpoint } from '@snaplify/auth';
-import { eq } from 'drizzle-orm';
-import { federatedAccounts, oauthClients } from '@snaplify/schema';
 
 /** OAuth2 Callback — Consumer side
  * Handles the redirect from a remote instance after authorization.

@@ -35,9 +35,18 @@
         {#if editingModuleId === mod.id}
           <form method="POST" action="?/updateModule" use:enhance class="inline-edit">
             <input type="hidden" name="moduleId" value={mod.id} />
-            <input name="title" type="text" value={mod.title} required maxlength="255" class="inline-input" />
+            <input
+              name="title"
+              type="text"
+              value={mod.title}
+              required
+              maxlength="255"
+              class="inline-input"
+            />
             <button type="submit" class="btn btn-small">Save</button>
-            <button type="button" class="btn btn-small" onclick={() => (editingModuleId = null)}>Cancel</button>
+            <button type="button" class="btn btn-small" onclick={() => (editingModuleId = null)}
+              >Cancel</button
+            >
           </form>
         {:else}
           <h3 class="module-title">{mod.title}</h3>
@@ -47,10 +56,15 @@
               <form method="POST" action="?/deleteModule" use:enhance class="inline-form">
                 <input type="hidden" name="moduleId" value={mod.id} />
                 <button type="submit" class="btn btn-small btn-danger">Confirm</button>
-                <button type="button" class="btn btn-small" onclick={() => (deleteConfirmId = null)}>Cancel</button>
+                <button type="button" class="btn btn-small" onclick={() => (deleteConfirmId = null)}
+                  >Cancel</button
+                >
               </form>
             {:else}
-              <button class="btn btn-small btn-danger-outline" onclick={() => (deleteConfirmId = mod.id)}>Delete</button>
+              <button
+                class="btn btn-small btn-danger-outline"
+                onclick={() => (deleteConfirmId = mod.id)}>Delete</button
+              >
             {/if}
           </div>
         {/if}

@@ -16,7 +16,9 @@
   <section class="section">
     <h2>Enrollments ({data.enrollments.length})</h2>
     {#if data.enrollments.length === 0}
-      <p class="empty">You haven't enrolled in any learning paths yet. <a href="/learn">Browse paths</a></p>
+      <p class="empty">
+        You haven't enrolled in any learning paths yet. <a href="/learn">Browse paths</a>
+      </p>
     {:else}
       <div class="enrollment-list">
         {#each data.enrollments as enrollment (enrollment.id)}
@@ -25,13 +27,17 @@
               {enrollment.path.title}
             </a>
             {#if enrollment.path.difficulty}
-              <span class="difficulty difficulty-{enrollment.path.difficulty}">{enrollment.path.difficulty}</span>
+              <span class="difficulty difficulty-{enrollment.path.difficulty}"
+                >{enrollment.path.difficulty}</span
+              >
             {/if}
             <ProgressBar value={Number(enrollment.progress)} label="Progress" />
             <div class="enrollment-meta">
               <span>Started {new Date(enrollment.startedAt).toLocaleDateString()}</span>
               {#if enrollment.completedAt}
-                <span class="completed-text">Completed {new Date(enrollment.completedAt).toLocaleDateString()}</span>
+                <span class="completed-text"
+                  >Completed {new Date(enrollment.completedAt).toLocaleDateString()}</span
+                >
               {/if}
             </div>
           </div>
@@ -126,9 +132,18 @@
     margin-bottom: var(--space-sm, 0.5rem);
   }
 
-  .difficulty-beginner { color: var(--color-success, #22c55e); background: var(--color-success-bg, #f0fdf4); }
-  .difficulty-intermediate { color: var(--color-warning, #f59e0b); background: var(--color-warning-bg, #fffbeb); }
-  .difficulty-advanced { color: var(--color-error, #dc2626); background: var(--color-error-bg, #fef2f2); }
+  .difficulty-beginner {
+    color: var(--color-success, #22c55e);
+    background: var(--color-success-bg, #f0fdf4);
+  }
+  .difficulty-intermediate {
+    color: var(--color-warning, #f59e0b);
+    background: var(--color-warning-bg, #fffbeb);
+  }
+  .difficulty-advanced {
+    color: var(--color-error, #dc2626);
+    background: var(--color-error-bg, #fef2f2);
+  }
 
   .enrollment-meta {
     display: flex;

@@ -6,12 +6,7 @@
     label: string;
   }
 
-  let {
-    disabled = false,
-    class: className = '',
-    onclick,
-    label,
-  }: Props = $props();
+  let { disabled = false, class: className = '', onclick, label }: Props = $props();
 
   function handleClick(): void {
     if (!disabled) onclick?.();

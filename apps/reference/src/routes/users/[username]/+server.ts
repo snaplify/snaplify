@@ -2,14 +2,13 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { eq } from 'drizzle-orm';
 import { users } from '@snaplify/schema';
-import { buildKeyId, type SnaplifyActor, AP_CONTEXT } from '@snaplify/snaplify';
+import { buildKeyId, type SnaplifyActor } from '@snaplify/snaplify';
 import { getOrCreateActorKeypair } from '$lib/server/federation';
 
 export const GET: RequestHandler = async ({ params, request, locals }) => {
   const accept = request.headers.get('accept') ?? '';
   const wantsAP =
-    accept.includes('application/activity+json') ||
-    accept.includes('application/ld+json');
+    accept.includes('application/activity+json') || accept.includes('application/ld+json');
 
   if (!wantsAP) {
     // Redirect to HTML profile page
@@ -40,10 +39,7 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
   const keypair = await getOrCreateActorKeypair(locals.db, user.id);
 
   const actor: SnaplifyActor = {
-    '@context': [
-      'https://www.w3.org/ns/activitystreams',
-      'https://w3id.org/security/v1',
-    ],
+    '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
     type: 'Person',
     id: actorUri,
     preferredUsername: user.username,

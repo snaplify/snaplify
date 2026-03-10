@@ -15,7 +15,11 @@
 <nav class="prev-next-nav {className}" aria-label="Previous and next pages">
   <div class="prev-next-nav-inner">
     {#if prev}
-      <a href="/docs/{siteSlug}/{prev.path}" class="prev-next-link prev-next-prev" aria-label="Previous page: {prev.title}">
+      <a
+        href="/docs/{siteSlug}/{prev.path}"
+        class="prev-next-link prev-next-prev"
+        aria-label="Previous page: {prev.title}"
+      >
         <span class="prev-next-label">Previous</span>
         <span class="prev-next-title">{prev.title}</span>
       </a>
@@ -24,7 +28,11 @@
     {/if}
 
     {#if next}
-      <a href="/docs/{siteSlug}/{next.path}" class="prev-next-link prev-next-next" aria-label="Next page: {next.title}">
+      <a
+        href="/docs/{siteSlug}/{next.path}"
+        class="prev-next-link prev-next-next"
+        aria-label="Next page: {next.title}"
+      >
         <span class="prev-next-label">Next</span>
         <span class="prev-next-title">{next.title}</span>
       </a>

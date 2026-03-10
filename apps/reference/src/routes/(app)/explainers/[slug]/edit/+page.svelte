@@ -10,9 +10,7 @@
   let description = $state(data.item.description ?? '');
   let seoDescription = $state(data.item.seoDescription ?? '');
   let tags = $state(data.item.tags.map((t) => t.name).join(', '));
-  let sections = $state<ExplainerSection[]>(
-    (data.item.sections ?? []) as ExplainerSection[],
-  );
+  let sections = $state<ExplainerSection[]>((data.item.sections ?? []) as ExplainerSection[]);
 
   function handleSectionsChange(updated: ExplainerSection[]) {
     sections = updated;
@@ -33,14 +31,7 @@
   <form method="POST" use:enhance>
     <div class="form-field">
       <label for="title">Title</label>
-      <input
-        id="title"
-        name="title"
-        type="text"
-        bind:value={title}
-        required
-        maxlength="255"
-      />
+      <input id="title" name="title" type="text" bind:value={title} required maxlength="255" />
     </div>
 
     <div class="form-field">
@@ -77,17 +68,13 @@
     </div>
 
     <div class="form-actions">
-      <button type="submit" name="action" value="save" class="btn btn-secondary">
-        Save
-      </button>
+      <button type="submit" name="action" value="save" class="btn btn-secondary"> Save </button>
       {#if data.item.status !== 'published'}
         <button type="submit" name="action" value="publish" class="btn btn-primary">
           Publish
         </button>
       {:else}
-        <button type="submit" name="action" value="save" class="btn btn-primary">
-          Update
-        </button>
+        <button type="submit" name="action" value="save" class="btn btn-primary"> Update </button>
       {/if}
     </div>
   </form>

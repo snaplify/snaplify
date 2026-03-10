@@ -77,18 +77,12 @@ describe('countLessons', () => {
 
 describe('calculateEstimatedDuration', () => {
   it('should sum durations', () => {
-    const lessons = [
-      makeLesson('l1', 'm1', 0, 15),
-      makeLesson('l2', 'm1', 1, 30),
-    ];
+    const lessons = [makeLesson('l1', 'm1', 0, 15), makeLesson('l2', 'm1', 1, 30)];
     expect(calculateEstimatedDuration(lessons)).toBe(45);
   });
 
   it('should treat null durations as 0', () => {
-    const lessons = [
-      makeLesson('l1', 'm1', 0, null),
-      makeLesson('l2', 'm1', 1, 20),
-    ];
+    const lessons = [makeLesson('l1', 'm1', 0, null), makeLesson('l2', 'm1', 1, 20)];
     expect(calculateEstimatedDuration(lessons)).toBe(20);
   });
 
@@ -125,11 +119,7 @@ describe('formatDuration', () => {
 
 describe('buildCurriculumTree', () => {
   const modules = [makeModule('m1', 0), makeModule('m2', 1)];
-  const lessons = [
-    makeLesson('l1', 'm1', 0),
-    makeLesson('l2', 'm1', 1),
-    makeLesson('l3', 'm2', 0),
-  ];
+  const lessons = [makeLesson('l1', 'm1', 0), makeLesson('l2', 'm1', 1), makeLesson('l3', 'm2', 0)];
 
   it('should build tree with correct structure', () => {
     const tree = buildCurriculumTree(modules, lessons);

@@ -100,9 +100,7 @@ export const actions: Actions = {
     const targetUserId = data.get('userId') as string;
     const newRole = data.get('role') as string;
 
-    const result = await changeRole(
-      locals.db, locals.user.id, community.id, targetUserId, newRole,
-    );
+    const result = await changeRole(locals.db, locals.user.id, community.id, targetUserId, newRole);
     if (!result.changed) {
       return fail(400, { error: result.error ?? 'Could not change role' });
     }
@@ -140,7 +138,12 @@ export const actions: Actions = {
     const expiresAt = expiresStr ? new Date(expiresStr) : undefined;
 
     const result = await banUser(
-      locals.db, locals.user.id, community.id, targetUserId, reason, expiresAt,
+      locals.db,
+      locals.user.id,
+      community.id,
+      targetUserId,
+      reason,
+      expiresAt,
     );
     if (!result.banned) {
       return fail(400, { error: result.error ?? 'Could not ban user' });
@@ -178,9 +181,7 @@ export const actions: Actions = {
     const expiresStr = data.get('expiresAt') as string;
     const expiresAt = expiresStr ? new Date(expiresStr) : undefined;
 
-    const invite = await createInvite(
-      locals.db, locals.user.id, community.id, maxUses, expiresAt,
-    );
+    const invite = await createInvite(locals.db, locals.user.id, community.id, maxUses, expiresAt);
     if (!invite) {
       return fail(403, { error: 'Not authorized to create invites' });
     }

@@ -51,7 +51,9 @@
         aria-controls="module-{mod.id}"
         onclick={() => toggleModule(mod.id)}
       >
-        <span class="module-toggle" aria-hidden="true">{expandedModules.has(mod.id) ? '-' : '+'}</span>
+        <span class="module-toggle" aria-hidden="true"
+          >{expandedModules.has(mod.id) ? '-' : '+'}</span
+        >
         <span class="module-title">{mod.title}</span>
         <span class="module-count">{mod.lessons.length} lessons</span>
       </button>
@@ -61,7 +63,9 @@
           {#each mod.lessons as lesson (lesson.id)}
             <li class="lesson-item">
               <a href="/learn/{pathSlug}/{lesson.slug}" class="lesson-link">
-                <span class="lesson-type-icon" title={lesson.type}>{typeIcons[lesson.type] ?? '?'}</span>
+                <span class="lesson-type-icon" title={lesson.type}
+                  >{typeIcons[lesson.type] ?? '?'}</span
+                >
                 <span class="lesson-title">{lesson.title}</span>
                 {#if lesson.duration}
                   <span class="lesson-duration">{lesson.duration}m</span>

@@ -10,7 +10,9 @@ import type { DocsPage, NavItem } from '../types';
 
 const now = new Date();
 
-function makePage(overrides: Partial<DocsPage> & { id: string; title: string; slug: string }): DocsPage {
+function makePage(
+  overrides: Partial<DocsPage> & { id: string; title: string; slug: string },
+): DocsPage {
   return {
     versionId: 'v1',
     content: '',
@@ -25,7 +27,13 @@ function makePage(overrides: Partial<DocsPage> & { id: string; title: string; sl
 const pages: DocsPage[] = [
   makePage({ id: 'p1', title: 'Getting Started', slug: 'getting-started', sortOrder: 0 }),
   makePage({ id: 'p2', title: 'Installation', slug: 'installation', sortOrder: 0, parentId: 'p1' }),
-  makePage({ id: 'p3', title: 'Configuration', slug: 'configuration', sortOrder: 1, parentId: 'p1' }),
+  makePage({
+    id: 'p3',
+    title: 'Configuration',
+    slug: 'configuration',
+    sortOrder: 1,
+    parentId: 'p1',
+  }),
   makePage({ id: 'p4', title: 'API Reference', slug: 'api-reference', sortOrder: 1 }),
   makePage({ id: 'p5', title: 'Endpoints', slug: 'endpoints', sortOrder: 0, parentId: 'p4' }),
 ];

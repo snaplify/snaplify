@@ -12,7 +12,9 @@ export interface FederationHandlers {
 export interface CreateFederationOptions {
   config: SnaplifyConfig;
   version: string;
-  lookupUser: (username: string) => Promise<{ id: string; username: string; actorUri: string } | null>;
+  lookupUser: (
+    username: string,
+  ) => Promise<{ id: string; username: string; actorUri: string } | null>;
   getStats: () => Promise<{ userCount: number; activeMonthCount: number; localPostCount: number }>;
 }
 

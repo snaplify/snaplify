@@ -11,7 +11,10 @@
 
 <svelte:head>
   <title>{data.page.title} — {data.site.name} Docs</title>
-  <meta name="description" content={data.frontmatter.description ?? `${data.page.title} documentation`} />
+  <meta
+    name="description"
+    content={data.frontmatter.description ?? `${data.page.title} documentation`}
+  />
 </svelte:head>
 
 <div class="docs-layout">
@@ -34,11 +37,7 @@
       themeTokens={data.site.themeTokens}
     />
 
-    <PrevNextNav
-      prev={data.prevNext.prev}
-      next={data.prevNext.next}
-      siteSlug={data.site.slug}
-    />
+    <PrevNextNav prev={data.prevNext.prev} next={data.prevNext.next} siteSlug={data.site.slug} />
   </main>
 </div>
 

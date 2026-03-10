@@ -3,9 +3,7 @@ import { MeilisearchSearchAdapter } from '../search/meilisearchAdapter';
 import type { MeiliSearchClient, MeiliIndex } from '../search/types';
 import type { SearchDocument } from '../types';
 
-function createMockIndex(
-  hits: Array<Record<string, unknown>> = [],
-): MeiliIndex {
+function createMockIndex(hits: Array<Record<string, unknown>> = []): MeiliIndex {
   return {
     addDocuments: vi.fn().mockResolvedValue({ taskUid: 1 }),
     search: vi.fn().mockResolvedValue({ hits }),
@@ -15,9 +13,7 @@ function createMockIndex(
   };
 }
 
-function createMockClient(
-  mockIndex?: MeiliIndex,
-): MeiliSearchClient {
+function createMockClient(mockIndex?: MeiliIndex): MeiliSearchClient {
   const idx = mockIndex ?? createMockIndex();
   return {
     index: vi.fn().mockReturnValue(idx),
@@ -135,10 +131,7 @@ describe('MeilisearchSearchAdapter', () => {
 
     await adapter.index([makeDoc()]);
 
-    expect(mockIdx.updateFilterableAttributes).toHaveBeenCalledWith([
-      'versionId',
-      'siteId',
-    ]);
+    expect(mockIdx.updateFilterableAttributes).toHaveBeenCalledWith(['versionId', 'siteId']);
     expect(mockIdx.updateSearchableAttributes).toHaveBeenCalledWith([
       'title',
       'headings',

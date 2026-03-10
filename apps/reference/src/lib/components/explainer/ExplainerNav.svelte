@@ -21,12 +21,7 @@
   >
     &larr; Previous
   </button>
-  <button
-    class="nav-btn"
-    disabled={!hasNext}
-    onclick={onnext}
-    aria-label="Next section"
-  >
+  <button class="nav-btn" disabled={!hasNext} onclick={onnext} aria-label="Next section">
     Next &rarr;
   </button>
 </nav>

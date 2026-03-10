@@ -1,5 +1,4 @@
-import { error, fail, redirect } from '@sveltejs/kit';
-import { authGuard } from '@snaplify/auth';
+import { error, fail } from '@sveltejs/kit';
 import {
   getCommunityBySlug,
   joinCommunity,
@@ -27,14 +26,10 @@ export const load: PageServerLoad = async (event) => {
     error(404, 'Community not found');
   }
 
-  const { items: posts, total: postTotal } = await listPosts(
-    event.locals.db,
-    community.id,
-    {
-      limit: 20,
-      offset: parseInt(event.url.searchParams.get('offset') ?? '0', 10),
-    },
-  );
+  const { items: posts, total: postTotal } = await listPosts(event.locals.db, community.id, {
+    limit: 20,
+    offset: parseInt(event.url.searchParams.get('offset') ?? '0', 10),
+  });
 
   return { community, posts, postTotal };
 };

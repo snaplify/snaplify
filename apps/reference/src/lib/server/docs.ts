@@ -12,7 +12,14 @@ type DB = NodePgDatabase<Record<string, unknown>>;
 export async function listDocsSites(
   db: DB,
   filters: { ownerId?: string; limit?: number; offset?: number } = {},
-): Promise<{ items: Array<typeof docsSites.$inferSelect & { owner: { id: string; username: string; displayName: string | null } }>; total: number }> {
+): Promise<{
+  items: Array<
+    typeof docsSites.$inferSelect & {
+      owner: { id: string; username: string; displayName: string | null };
+    }
+  >;
+  total: number;
+}> {
   const conditions = [];
   if (filters.ownerId) {
     conditions.push(eq(docsSites.ownerId, filters.ownerId));
@@ -56,7 +63,9 @@ export async function getDocsSiteBySlug(
   db: DB,
   slug: string,
 ): Promise<{
-  site: typeof docsSites.$inferSelect & { owner: { id: string; username: string; displayName: string | null } };
+  site: typeof docsSites.$inferSelect & {
+    owner: { id: string; username: string; displayName: string | null };
+  };
   versions: Array<typeof docsVersions.$inferSelect>;
 } | null> {
   const rows = await db
@@ -93,10 +102,7 @@ export async function createDocsSite(
   ownerId: string,
   input: { name: string; slug?: string; description?: string },
 ): Promise<typeof docsSites.$inferSelect> {
-  const slug = await ensureUniqueDocsSiteSlug(
-    db,
-    input.slug || generateSlug(input.name),
-  );
+  const slug = await ensureUniqueDocsSiteSlug(db, input.slug || generateSlug(input.name));
 
   const [site] = await db
     .insert(docsSites)
@@ -109,13 +115,11 @@ export async function createDocsSite(
     .returning();
 
   // Create initial "v1" version
-  await db
-    .insert(docsVersions)
-    .values({
-      siteId: site!.id,
-      version: 'v1',
-      isDefault: 1,
-    });
+  await db.insert(docsVersions).values({
+    siteId: site!.id,
+    version: 'v1',
+    isDefault: 1,
+  });
 
   return site!;
 }
@@ -152,11 +156,7 @@ export async function updateDocsSite(
   return updated!;
 }
 
-export async function deleteDocsSite(
-  db: DB,
-  siteId: string,
-  ownerId: string,
-): Promise<boolean> {
+export async function deleteDocsSite(db: DB, siteId: string, ownerId: string): Promise<boolean> {
   const existing = await db
     .select()
     .from(docsSites)
@@ -260,16 +260,10 @@ export async function setDefaultVersion(
   const siteId = version[0]!.site.id;
 
   // Unset all others
-  await db
-    .update(docsVersions)
-    .set({ isDefault: 0 })
-    .where(eq(docsVersions.siteId, siteId));
+  await db.update(docsVersions).set({ isDefault: 0 }).where(eq(docsVersions.siteId, siteId));
 
   // Set this one
-  await db
-    .update(docsVersions)
-    .set({ isDefault: 1 })
-    .where(eq(docsVersions.id, versionId));
+  await db.update(docsVersions).set({ isDefault: 1 }).where(eq(docsVersions.id, versionId));
 
   return true;
 }
@@ -393,7 +387,13 @@ export async function updateDocsPage(
   db: DB,
   pageId: string,
   ownerId: string,
-  input: { title?: string; slug?: string; content?: string; sortOrder?: number; parentId?: string | null },
+  input: {
+    title?: string;
+    slug?: string;
+    content?: string;
+    sortOrder?: number;
+    parentId?: string | null;
+  },
 ): Promise<typeof docsPages.$inferSelect | null> {
   // Verify ownership via page → version → site
   const page = await db
@@ -422,11 +422,7 @@ export async function updateDocsPage(
   return updated!;
 }
 
-export async function deleteDocsPage(
-  db: DB,
-  pageId: string,
-  ownerId: string,
-): Promise<boolean> {
+export async function deleteDocsPage(db: DB, pageId: string, ownerId: string): Promise<boolean> {
   const page = await db
     .select({ page: docsPages, version: docsVersions, site: docsSites })
     .from(docsPages)
@@ -473,11 +469,7 @@ export async function getDocsNav(
   db: DB,
   versionId: string,
 ): Promise<typeof docsNav.$inferSelect | null> {
-  const rows = await db
-    .select()
-    .from(docsNav)
-    .where(eq(docsNav.versionId, versionId))
-    .limit(1);
+  const rows = await db.select().from(docsNav).where(eq(docsNav.versionId, versionId)).limit(1);
 
   return rows[0] ?? null;
 }
@@ -499,11 +491,7 @@ export async function updateDocsNav(
   if (version.length === 0) throw new Error('Not authorized');
 
   // Upsert
-  const existing = await db
-    .select()
-    .from(docsNav)
-    .where(eq(docsNav.versionId, versionId))
-    .limit(1);
+  const existing = await db.select().from(docsNav).where(eq(docsNav.versionId, versionId)).limit(1);
 
   if (existing.length > 0) {
     const [updated] = await db
@@ -569,11 +557,7 @@ export async function searchDocsPages(
 
 // --- Helpers ---
 
-async function ensureUniqueDocsSiteSlug(
-  db: DB,
-  slug: string,
-  excludeId?: string,
-): Promise<string> {
+async function ensureUniqueDocsSiteSlug(db: DB, slug: string, excludeId?: string): Promise<string> {
   if (!slug) slug = `docs-${Date.now()}`;
 
   const conditions = [eq(docsSites.slug, slug)];

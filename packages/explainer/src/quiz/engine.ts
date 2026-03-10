@@ -10,10 +10,7 @@ export function checkAnswer(question: QuizQuestion, selectedOptionId: string): A
 }
 
 /** Score a complete quiz given questions and a map of answers */
-export function scoreQuiz(
-  questions: QuizQuestion[],
-  answers: Record<string, string>,
-): QuizResult {
+export function scoreQuiz(questions: QuizQuestion[], answers: Record<string, string>): QuizResult {
   let correct = 0;
   for (const question of questions) {
     const selected = answers[question.id];

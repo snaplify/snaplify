@@ -9,12 +9,10 @@ function createMockDb(rows: Array<Record<string, unknown>> = []) {
 }
 
 function createMockSqlTag() {
-  return vi.fn(
-    (strings: TemplateStringsArray, ...values: unknown[]) => ({
-      strings,
-      values,
-    }),
-  );
+  return vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
+    strings,
+    values,
+  }));
 }
 
 describe('PostgresSearchAdapter', () => {

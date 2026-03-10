@@ -24,7 +24,12 @@
   );
 </script>
 
-<div class="docs-viewer {className}" style={styleVars} role="article" aria-label={frontmatter.title ?? 'Documentation'}>
+<div
+  class="docs-viewer {className}"
+  style={styleVars}
+  role="article"
+  aria-label={frontmatter.title ?? 'Documentation'}
+>
   {#if frontmatter.title}
     <h1 class="docs-viewer-title">{frontmatter.title}</h1>
   {/if}

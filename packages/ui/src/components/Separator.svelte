@@ -4,10 +4,7 @@
     class?: string;
   }
 
-  let {
-    orientation = 'horizontal',
-    class: className = '',
-  }: Props = $props();
+  let { orientation = 'horizontal', class: className = '' }: Props = $props();
 </script>
 
 <div

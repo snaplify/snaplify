@@ -25,9 +25,7 @@ describe('SnaplifyCallout Extension', () => {
 
   it('supports all variants', () => {
     for (const variant of ['info', 'tip', 'warning', 'danger']) {
-      const editor = createEditor(
-        `<div class="callout callout-${variant}"><p>Test</p></div>`
-      );
+      const editor = createEditor(`<div class="callout callout-${variant}"><p>Test</p></div>`);
       const json = editor.getJSON();
       const calloutNode = json.content?.find((n: any) => n.type === 'callout');
       expect(calloutNode?.attrs?.variant).toBe(variant);
@@ -36,9 +34,7 @@ describe('SnaplifyCallout Extension', () => {
   });
 
   it('renders with variant class', () => {
-    const editor = createEditor(
-      '<div class="callout callout-warning"><p>Warning text</p></div>'
-    );
+    const editor = createEditor('<div class="callout callout-warning"><p>Warning text</p></div>');
     expect(editor.getHTML()).toContain('callout-warning');
     editor.destroy();
   });

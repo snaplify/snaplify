@@ -31,10 +31,7 @@ export type {
 } from './oauth';
 
 // Activity Types
-export {
-  AP_CONTEXT,
-  AP_PUBLIC,
-} from './activityTypes';
+export { AP_CONTEXT, AP_PUBLIC } from './activityTypes';
 export type {
   APArticle,
   APNote,
@@ -70,17 +67,8 @@ export {
 } from './activities';
 
 // Content Mapper
-export {
-  contentToArticle,
-  contentToNote,
-  articleToContent,
-  noteToComment,
-} from './contentMapper';
-export type {
-  ContentItemInput,
-  AuthorInput,
-  CommentInput,
-} from './contentMapper';
+export { contentToArticle, contentToNote, articleToContent, noteToComment } from './contentMapper';
+export type { ContentItemInput, AuthorInput, CommentInput } from './contentMapper';
 
 // Actor Resolution
 export {
@@ -93,22 +81,12 @@ export {
 export type { ResolvedActor, FetchFn } from './actorResolver';
 
 // Keypair Management
-export {
-  generateKeypair,
-  exportPublicKeyPem,
-  exportPrivateKeyPem,
-  buildKeyId,
-} from './keypairs';
+export { generateKeypair, exportPublicKeyPem, exportPrivateKeyPem, buildKeyId } from './keypairs';
 export type { ActorKeypair } from './keypairs';
 
 // Inbox Processing
-export {
-  processInboxActivity,
-} from './inbox';
+export { processInboxActivity } from './inbox';
 export type { InboxCallbacks, InboxResult } from './inbox';
 
 // Outbox Generation
-export {
-  generateOutboxCollection,
-  generateOutboxPage,
-} from './outbox';
+export { generateOutboxCollection, generateOutboxPage } from './outbox';

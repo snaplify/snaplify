@@ -14,10 +14,7 @@ interface DrizzleDB {
  * Tagged template for building SQL — mirrors drizzle-orm's `sql` tagged template.
  * The adapter accepts a pre-bound `sqlTag` function so it doesn't depend on drizzle-orm.
  */
-export type SqlTagFn = (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-) => unknown;
+export type SqlTagFn = (strings: TemplateStringsArray, ...values: unknown[]) => unknown;
 
 /**
  * Postgres FTS search adapter.
@@ -39,11 +36,7 @@ export class PostgresSearchAdapter implements SearchAdapter {
     // Intentional no-op
   }
 
-  async search(
-    query: string,
-    siteId: string,
-    versionId: string,
-  ): Promise<SearchResult[]> {
+  async search(query: string, siteId: string, versionId: string): Promise<SearchResult[]> {
     if (!query.trim()) return [];
 
     const tsQuery = buildSearchQuery(query);

@@ -3,6 +3,7 @@
 ## Prior Art
 
 ### Docusaurus (Meta)
+
 - File-system routing with MDX
 - Versioning by copying entire docs directory (snapshot model)
 - Sidebar config as separate `sidebars.js` (nav as separate structure)
@@ -11,6 +12,7 @@
 - Plugin architecture for custom content types
 
 ### VitePress (Vue)
+
 - File-system routing with Markdown + Vue SFC
 - Sidebar defined in `config.ts` (not derived from files)
 - Built-in local search via MiniSearch (heading + content extraction)
@@ -18,6 +20,7 @@
 - Versioning via branches or subdirectories (manual)
 
 ### Mintlify
+
 - MDX-based, hosted SaaS
 - Navigation defined in `mint.json` (centralized nav config)
 - Built-in search with heading extraction
@@ -25,6 +28,7 @@
 - Versioning via tabs/groups
 
 ### Nextra (Vercel)
+
 - File-system routing with MDX
 - `_meta.json` files for nav ordering (co-located with pages)
 - Built-in Flexsearch for full-text search
@@ -32,6 +36,7 @@
 - No built-in versioning
 
 ### GitBook
+
 - Web-based editor (WYSIWYG + Markdown)
 - Database-backed content (not files)
 - Versioning via "change requests" (branch model)

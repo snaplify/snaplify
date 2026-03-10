@@ -81,10 +81,7 @@
         oncomplete={handleQuizComplete}
       />
     {:else if section.type === 'checkpoint'}
-      <ExplainerCheckpoint
-        locked={false}
-        oncomplete={handleCheckpointComplete}
-      />
+      <ExplainerCheckpoint locked={false} oncomplete={handleCheckpointComplete} />
     {/if}
   {/if}
 </section>

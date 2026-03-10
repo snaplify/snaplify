@@ -15,7 +15,7 @@ const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
 });
 
-const db = drizzle(pool, { schema });
+const db = drizzle(pool, { schema }) as unknown as App.Locals['db'];
 
 const { config } = defineSnaplifyConfig({
   instance: {
@@ -38,7 +38,7 @@ const { config } = defineSnaplifyConfig({
 
 const auth = createAuth({
   config,
-  db,
+  db: db as never,
   secret: env.AUTH_SECRET ?? 'dev-secret-change-in-production',
   baseURL: env.AUTH_BASE_URL ?? `http://localhost:5173`,
 });
@@ -80,4 +80,10 @@ const isDev = env.NODE_ENV !== 'production';
 const securityHook = createSecurityHook(isDev);
 const rateLimitHook = createRateLimitHook();
 
-export const handle = sequence(dbHook, authHook as Handle, themeHook, securityHook, rateLimitHook);
+export const handle = sequence(
+  dbHook,
+  authHook as unknown as Handle,
+  themeHook,
+  securityHook,
+  rateLimitHook,
+);

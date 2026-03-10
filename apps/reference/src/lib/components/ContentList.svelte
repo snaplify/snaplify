@@ -2,7 +2,10 @@
   import ContentCard from './ContentCard.svelte';
   import type { ContentListItem } from '$lib/types';
 
-  let { items = [], emptyMessage = 'No content yet.' }: {
+  let {
+    items = [],
+    emptyMessage = 'No content yet.',
+  }: {
     items: ContentListItem[];
     emptyMessage?: string;
   } = $props();

@@ -57,6 +57,7 @@ Best for: managed deployment with zero server maintenance.
 5. Deploy
 
 Or via CLI:
+
 ```bash
 doctl apps create --spec deploy/app-spec.yaml
 ```
@@ -79,50 +80,50 @@ docker run -d \
 
 ### Required
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
-| `REDIS_URL` | Redis connection string | `redis://host:6379` |
-| `AUTH_SECRET` | Session signing secret (min 32 chars) | `openssl rand -base64 32` |
-| `ORIGIN` | Public URL of the instance | `https://your-domain.com` |
+| Variable       | Description                           | Example                               |
+| -------------- | ------------------------------------- | ------------------------------------- |
+| `DATABASE_URL` | PostgreSQL connection string          | `postgresql://user:pass@host:5432/db` |
+| `REDIS_URL`    | Redis connection string               | `redis://host:6379`                   |
+| `AUTH_SECRET`  | Session signing secret (min 32 chars) | `openssl rand -base64 32`             |
+| `ORIGIN`       | Public URL of the instance            | `https://your-domain.com`             |
 
 ### Instance Identity
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `INSTANCE_DOMAIN` | Domain for federation/WebFinger | — |
-| `INSTANCE_NAME` | Display name | — |
-| `INSTANCE_DESCRIPTION` | Short description | — |
+| Variable               | Description                     | Default |
+| ---------------------- | ------------------------------- | ------- |
+| `INSTANCE_DOMAIN`      | Domain for federation/WebFinger | —       |
+| `INSTANCE_NAME`        | Display name                    | —       |
+| `INSTANCE_DESCRIPTION` | Short description               | —       |
 
 ### Feature Flags
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FEATURE_COMMUNITIES` | Enable community features | `true` |
-| `FEATURE_DOCS` | Enable docs module | `true` |
-| `FEATURE_LEARNING` | Enable learning paths | `true` |
-| `FEATURE_EXPLAINERS` | Enable interactive explainers | `true` |
-| `FEATURE_ADMIN` | Enable admin panel | `false` |
-| `FEATURE_FEDERATION` | Enable ActivityPub federation | `false` |
+| Variable              | Description                   | Default |
+| --------------------- | ----------------------------- | ------- |
+| `FEATURE_COMMUNITIES` | Enable community features     | `true`  |
+| `FEATURE_DOCS`        | Enable docs module            | `true`  |
+| `FEATURE_LEARNING`    | Enable learning paths         | `true`  |
+| `FEATURE_EXPLAINERS`  | Enable interactive explainers | `true`  |
+| `FEATURE_ADMIN`       | Enable admin panel            | `false` |
+| `FEATURE_FEDERATION`  | Enable ActivityPub federation | `false` |
 
 ### Optional Services
 
-| Variable | Description |
-|----------|-------------|
-| `MEILI_URL` | Meilisearch URL |
-| `MEILI_MASTER_KEY` | Meilisearch API key |
-| `GITHUB_CLIENT_ID` | GitHub OAuth app ID |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth secret |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth secret |
-| `RESEND_API_KEY` | Resend email API key |
-| `S3_ENDPOINT` | S3-compatible storage endpoint |
-| `S3_REGION` | S3 region |
-| `S3_BUCKET` | S3 bucket name |
-| `S3_ACCESS_KEY` | S3 access key |
-| `S3_SECRET_KEY` | S3 secret key |
-| `PLAUSIBLE_URL` | Plausible analytics URL |
-| `PLAUSIBLE_DOMAIN` | Plausible domain |
+| Variable               | Description                    |
+| ---------------------- | ------------------------------ |
+| `MEILI_URL`            | Meilisearch URL                |
+| `MEILI_MASTER_KEY`     | Meilisearch API key            |
+| `GITHUB_CLIENT_ID`     | GitHub OAuth app ID            |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth secret            |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID         |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth secret            |
+| `RESEND_API_KEY`       | Resend email API key           |
+| `S3_ENDPOINT`          | S3-compatible storage endpoint |
+| `S3_REGION`            | S3 region                      |
+| `S3_BUCKET`            | S3 bucket name                 |
+| `S3_ACCESS_KEY`        | S3 access key                  |
+| `S3_SECRET_KEY`        | S3 secret key                  |
+| `PLAUSIBLE_URL`        | Plausible analytics URL        |
+| `PLAUSIBLE_DOMAIN`     | Plausible domain               |
 
 ## SSL/TLS Setup
 
@@ -133,6 +134,7 @@ sudo certbot --nginx -d your-domain.com
 ```
 
 Certbot auto-renews via systemd timer. Verify:
+
 ```bash
 sudo certbot renew --dry-run
 ```
@@ -163,6 +165,7 @@ docker exec -i snaplify-postgres-1 psql -U snaplify snaplify < backup-20240101.s
 ### Volumes
 
 Back up Docker volumes for Redis and Meilisearch data:
+
 ```bash
 docker run --rm -v snaplify_postgres_data:/data -v /backups:/backups alpine tar czf /backups/postgres-data.tar.gz /data
 docker run --rm -v snaplify_redis_data:/data -v /backups:/backups alpine tar czf /backups/redis-data.tar.gz /data

@@ -1,5 +1,5 @@
-import { fail } from '@sveltejs/kit';
-import { updateDocsNav } from '$lib/server/docs';
+import { error, fail } from '@sveltejs/kit';
+import { getDocsSiteBySlug, updateDocsNav } from '$lib/server/docs';
 import { docsNavStructureSchema } from '@snaplify/docs';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -9,10 +9,14 @@ export const load: PageServerLoad = async ({ parent }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, locals, parent }) => {
+  default: async ({ request, locals, params }) => {
     if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
-    const parentData = await parent();
+    const result = await getDocsSiteBySlug(locals.db, params.siteSlug);
+    if (!result) error(404, 'Documentation site not found');
+    const activeVersion = result.versions.find((v) => v.isDefault === 1) ?? result.versions[0];
+    if (!activeVersion) return fail(500, { error: 'No versions available' });
+
     const data = await request.formData();
     const structureJson = data.get('structure') as string;
 
@@ -28,7 +32,7 @@ export const actions: Actions = {
       return fail(400, { error: 'Invalid navigation structure' });
     }
 
-    await updateDocsNav(locals.db, parentData.activeVersion.id, locals.user.id, parsed.data);
+    await updateDocsNav(locals.db, activeVersion.id, locals.user.id, parsed.data);
     return { success: true };
   },
 };

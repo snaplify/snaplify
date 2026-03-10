@@ -93,10 +93,7 @@ describe('Select', () => {
     await userEvent.keyboard('{ArrowDown}');
     await userEvent.keyboard('{Home}');
 
-    expect(screen.getByRole('combobox')).toHaveAttribute(
-      'aria-activedescendant',
-      'color-option-0'
-    );
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-activedescendant', 'color-option-0');
   });
 
   it('navigates to last with End', async () => {
@@ -106,10 +103,7 @@ describe('Select', () => {
     await userEvent.keyboard('{ArrowDown}');
     await userEvent.keyboard('{End}');
 
-    expect(screen.getByRole('combobox')).toHaveAttribute(
-      'aria-activedescendant',
-      'color-option-2'
-    );
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-activedescendant', 'color-option-2');
   });
 
   it('displays error state', () => {

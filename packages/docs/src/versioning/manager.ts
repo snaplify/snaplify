@@ -36,11 +36,7 @@ export function compareVersions(a: string, b: string): number {
 function parseVersion(version: string): [number, number, number] | null {
   const match = version.match(SEMVER_REGEX);
   if (!match) return null;
-  return [
-    parseInt(match[1]!, 10),
-    parseInt(match[2] ?? '0', 10),
-    parseInt(match[3] ?? '0', 10),
-  ];
+  return [parseInt(match[1]!, 10), parseInt(match[2] ?? '0', 10), parseInt(match[3] ?? '0', 10)];
 }
 
 /**

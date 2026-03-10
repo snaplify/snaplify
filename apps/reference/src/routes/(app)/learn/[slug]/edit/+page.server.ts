@@ -4,7 +4,6 @@ import {
   getPathBySlug,
   updatePath,
   publishPath,
-  deletePath,
   createModule,
   updateModule,
   deleteModule,
@@ -52,9 +51,7 @@ export const actions: Actions = {
       title: (data.get('title') as string)?.trim() || undefined,
       description: (data.get('description') as string)?.trim() || undefined,
       difficulty: (data.get('difficulty') as string) || undefined,
-      estimatedHours: data.get('estimatedHours')
-        ? Number(data.get('estimatedHours'))
-        : undefined,
+      estimatedHours: data.get('estimatedHours') ? Number(data.get('estimatedHours')) : undefined,
     });
 
     if (!updated) return fail(500, { error: 'Failed to update' });

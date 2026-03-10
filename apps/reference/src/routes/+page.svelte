@@ -7,12 +7,18 @@
 
 <svelte:head>
   <title>Snaplify</title>
-  <meta name="description" content="Discover projects, articles, and guides from the maker community." />
+  <meta
+    name="description"
+    content="Discover projects, articles, and guides from the maker community."
+  />
 </svelte:head>
 
 <section>
   <h1 class="page-title">Latest Content</h1>
-  <ContentList items={data.items} emptyMessage="No published content yet. Be the first to create something!" />
+  <ContentList
+    items={data.items}
+    emptyMessage="No published content yet. Be the first to create something!"
+  />
 </section>
 
 <style>

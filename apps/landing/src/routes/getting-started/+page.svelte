@@ -4,7 +4,10 @@
 
 <svelte:head>
   <title>Getting Started — Snaplify</title>
-  <meta name="description" content="Get started with Snaplify. Install the CLI, create your instance, and deploy." />
+  <meta
+    name="description"
+    content="Get started with Snaplify. Install the CLI, create your instance, and deploy."
+  />
   <meta property="og:title" content="Getting Started — Snaplify" />
   <meta property="og:description" content="Install the CLI, create your instance, and deploy." />
 </svelte:head>
@@ -24,7 +27,11 @@
       <h2>2. Create a New Instance</h2>
       <p>Scaffold a new Snaplify project with all configuration files:</p>
       <CodeBlock code={`create-snaplify new my-community\ncd my-community`} lang="bash" />
-      <p>This generates your project structure with <code>.env</code>, <code>snaplify.config.ts</code>, <code>package.json</code>, and <code>docker-compose.yml</code>.</p>
+      <p>
+        This generates your project structure with <code>.env</code>,
+        <code>snaplify.config.ts</code>, <code>package.json</code>, and
+        <code>docker-compose.yml</code>.
+      </p>
     </div>
 
     <div class="step">
@@ -43,8 +50,14 @@
     <div class="step">
       <h2>5. Deploy</h2>
       <p>Build and deploy with Docker:</p>
-      <CodeBlock code={`docker build -t my-community .\ndocker compose -f docker-compose.prod.yml up -d`} lang="bash" />
-      <p>See the <a href="https://github.com/snaplify/snaplify">deployment documentation</a> for DigitalOcean App Platform, VPS, and other deployment options.</p>
+      <CodeBlock
+        code={`docker build -t my-community .\ndocker compose -f docker-compose.prod.yml up -d`}
+        lang="bash"
+      />
+      <p>
+        See the <a href="https://github.com/snaplify/snaplify">deployment documentation</a> for DigitalOcean
+        App Platform, VPS, and other deployment options.
+      </p>
     </div>
   </div>
 </section>

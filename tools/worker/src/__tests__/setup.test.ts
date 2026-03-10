@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  calculateDeliveryStats,
-  shouldRetry,
-  getRetryDelay,
-  formatActivityLog,
-} from '../index';
+import { calculateDeliveryStats, shouldRetry, getRetryDelay, formatActivityLog } from '../index';
 
 describe('calculateDeliveryStats', () => {
   it('should count activities by status', () => {

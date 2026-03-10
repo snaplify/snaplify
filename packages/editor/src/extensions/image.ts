@@ -47,7 +47,10 @@ export const SnaplifyImage = Node.create<ImageOptions>({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['img', mergeAttributes(HTMLAttributes, { src: HTMLAttributes.src, alt: HTMLAttributes.alt })];
+    return [
+      'img',
+      mergeAttributes(HTMLAttributes, { src: HTMLAttributes.src, alt: HTMLAttributes.alt }),
+    ];
   },
 
   addCommands() {

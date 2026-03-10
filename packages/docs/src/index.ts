@@ -48,11 +48,7 @@ export {
 } from './versioning/manager';
 
 // Search
-export {
-  stripMarkdown,
-  buildSearchDocument,
-  buildSearchQuery,
-} from './search/indexer';
+export { stripMarkdown, buildSearchDocument, buildSearchQuery } from './search/indexer';
 
 // Search adapters
 export type {

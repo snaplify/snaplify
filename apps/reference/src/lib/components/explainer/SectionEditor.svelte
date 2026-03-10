@@ -66,10 +66,7 @@
 
   <div class="section-editor__field">
     <label for="section-content">Content</label>
-    <ContentEditor
-      content={section.content}
-      onupdate={handleContentUpdate}
-    />
+    <ContentEditor content={section.content} onupdate={handleContentUpdate} />
   </div>
 
   {#if section.type === 'quiz'}
@@ -130,7 +127,7 @@
     color: var(--color-text, #1a1a1a);
   }
 
-  .section-editor__field input[type="text"] {
+  .section-editor__field input[type='text'] {
     width: 100%;
     padding: var(--space-sm, 0.5rem);
     border: 1px solid var(--color-border, #e5e5e5);

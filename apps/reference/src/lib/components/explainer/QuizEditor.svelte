@@ -48,7 +48,9 @@
     const q = questions[questionIndex]!;
     const optionId = `${q.id}-${String.fromCharCode(97 + q.options.length)}`;
     const updatedOptions = [...q.options, { id: optionId, text: '' }];
-    const updated = questions.map((qq, i) => (i === questionIndex ? { ...qq, options: updatedOptions } : qq));
+    const updated = questions.map((qq, i) =>
+      i === questionIndex ? { ...qq, options: updatedOptions } : qq,
+    );
     onquestionschange?.(updated);
   }
 
@@ -57,7 +59,8 @@
     if (q.options.length <= 2) return; // Minimum 2 options
     const removedOption = q.options[optionIndex]!;
     const updatedOptions = q.options.filter((_, i) => i !== optionIndex);
-    const correctId = q.correctOptionId === removedOption.id ? updatedOptions[0]!.id : q.correctOptionId;
+    const correctId =
+      q.correctOptionId === removedOption.id ? updatedOptions[0]!.id : q.correctOptionId;
     const updated = questions.map((qq, i) =>
       i === questionIndex ? { ...qq, options: updatedOptions, correctOptionId: correctId } : qq,
     );
@@ -67,7 +70,9 @@
   function updateOptionText(questionIndex: number, optionIndex: number, text: string) {
     const q = questions[questionIndex]!;
     const updatedOptions = q.options.map((o, i) => (i === optionIndex ? { ...o, text } : o));
-    const updated = questions.map((qq, i) => (i === questionIndex ? { ...qq, options: updatedOptions } : qq));
+    const updated = questions.map((qq, i) =>
+      i === questionIndex ? { ...qq, options: updatedOptions } : qq,
+    );
     onquestionschange?.(updated);
   }
 
@@ -150,8 +155,8 @@
               class="quiz-editor__remove-option"
               onclick={() => removeOption(qi, oi)}
               disabled={question.options.length <= 2}
-              aria-label="Remove option"
-            >&times;</button>
+              aria-label="Remove option">&times;</button
+            >
           </div>
         {/each}
         <button type="button" class="quiz-editor__add-option" onclick={() => addOption(qi)}>
@@ -197,8 +202,8 @@
     margin-bottom: var(--space-xs, 0.25rem);
   }
 
-  .quiz-editor__field input[type="text"],
-  .quiz-editor__field input[type="number"] {
+  .quiz-editor__field input[type='text'],
+  .quiz-editor__field input[type='number'] {
     width: 100%;
     padding: var(--space-xs, 0.25rem) var(--space-sm, 0.5rem);
     border: 1px solid var(--color-border, #e5e5e5);
@@ -208,7 +213,7 @@
     color: var(--color-text, #1a1a1a);
   }
 
-  .quiz-editor__settings input[type="number"] {
+  .quiz-editor__settings input[type='number'] {
     width: 80px;
   }
 
@@ -242,7 +247,7 @@
     margin-bottom: var(--space-xs, 0.25rem);
   }
 
-  .quiz-editor__option input[type="text"] {
+  .quiz-editor__option input[type='text'] {
     flex: 1;
     padding: var(--space-xs, 0.25rem) var(--space-sm, 0.5rem);
     border: 1px solid var(--color-border, #e5e5e5);

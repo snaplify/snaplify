@@ -33,7 +33,10 @@ export const actions: Actions = {
 
     const parsed = createCommunitySchema.safeParse({
       name,
-      slug: name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+      slug: name
+        ?.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, ''),
       description,
       rules,
       joinPolicy,

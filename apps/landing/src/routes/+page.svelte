@@ -5,9 +5,15 @@
 
 <svelte:head>
   <title>Snaplify — Open Federation for Maker Communities</title>
-  <meta name="description" content="Self-hosted ActivityPub platform for maker communities. Content, learning, docs, and federation — all open source." />
+  <meta
+    name="description"
+    content="Self-hosted ActivityPub platform for maker communities. Content, learning, docs, and federation — all open source."
+  />
   <meta property="og:title" content="Snaplify — Open Federation for Maker Communities" />
-  <meta property="og:description" content="Self-hosted ActivityPub platform for maker communities." />
+  <meta
+    property="og:description"
+    content="Self-hosted ActivityPub platform for maker communities."
+  />
   <meta property="og:type" content="website" />
 </svelte:head>
 

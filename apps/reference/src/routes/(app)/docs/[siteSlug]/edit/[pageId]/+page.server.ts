@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-  save: async ({ request, locals, params, parent }) => {
+  save: async ({ request, locals, params }) => {
     if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
     const data = await request.formData();
@@ -37,13 +37,12 @@ export const actions: Actions = {
     return { success: true, page: updated };
   },
 
-  delete: async ({ locals, params, parent }) => {
+  delete: async ({ locals, params }) => {
     if (!locals.user) return fail(401, { error: 'Not authenticated' });
 
-    const parentData = await parent();
     const deleted = await deleteDocsPage(locals.db, params.pageId, locals.user.id);
     if (!deleted) return fail(403, { error: 'Not authorized' });
 
-    redirect(303, `/docs/${parentData.site.slug}/edit`);
+    redirect(303, `/docs/${params.siteSlug}/edit`);
   },
 };

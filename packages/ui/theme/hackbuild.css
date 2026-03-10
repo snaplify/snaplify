@@ -4,7 +4,7 @@
    Ported from hack-build/app/src/assets/styles/tokens.css
    =========================================== */
 
-[data-theme="hackbuild"] {
+[data-theme='hackbuild'] {
   /* Surface (Paper tones) */
   --color-surface: #f5f0e6;
   --color-surface-alt: #e8e0d0;

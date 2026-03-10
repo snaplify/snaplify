@@ -21,7 +21,7 @@ drizzleAdapter(db, {
     account: schema.accounts,
     verification: schema.verifications,
   },
-})
+});
 ```
 
 Field mapping via `user.fields`:

@@ -1,7 +1,11 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
 
-  let { slug, userId, oncancel }: {
+  let {
+    slug,
+    userId,
+    oncancel,
+  }: {
     slug: string;
     userId: string;
     oncancel: () => void;
@@ -24,11 +28,7 @@
 
   <div class="form-field">
     <label for="ban-expiry-{userId}">Expires (optional)</label>
-    <input
-      type="datetime-local"
-      id="ban-expiry-{userId}"
-      name="expiresAt"
-    />
+    <input type="datetime-local" id="ban-expiry-{userId}" name="expiresAt" />
   </div>
 
   <div class="form-actions">

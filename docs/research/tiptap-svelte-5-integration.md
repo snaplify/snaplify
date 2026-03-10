@@ -11,6 +11,7 @@ TipTap has no official Svelte adapter. How should @snaplify/editor integrate Tip
 ### TipTap Architecture
 
 TipTap is built in layers:
+
 1. **`@tiptap/pm`** — ProseMirror core (schema, state, view, transform)
 2. **`@tiptap/core`** — Extension system, Editor class, commands framework
 3. **`@tiptap/starter-kit`** — Bundle of common extensions (paragraph, bold, italic, etc.)
@@ -19,12 +20,14 @@ TipTap is built in layers:
 ### Key Insight: Core is Framework-Agnostic
 
 `@tiptap/core` exports a plain `Editor` class that:
+
 - Manages ProseMirror state
 - Provides command API
 - Emits events (`update`, `selectionUpdate`, `focus`, `blur`)
 - Can be mounted to any DOM element via `editor.mount(element)`
 
 The framework adapters (`@tiptap/react`, `@tiptap/vue-3`) are thin (~200 LOC) and mainly:
+
 - Create/destroy editor lifecycle tied to component mount/unmount
 - Provide reactive state bindings
 - Handle NodeView rendering in the framework's component model
@@ -32,12 +35,14 @@ The framework adapters (`@tiptap/react`, `@tiptap/vue-3`) are thin (~200 LOC) an
 ### Options for Svelte 5
 
 **Option A: Pure TS extensions in @snaplify/editor + vanilla mount in app**
+
 - @snaplify/editor exports: extensions, block schemas, serialization, `createSnaplifyEditor()` factory
 - Consumer (Phase 4 app) mounts editor to DOM element using `editor.mount()`
 - Svelte 5 `$effect` handles lifecycle
 - NodeViews use vanilla DOM (or Svelte component rendering in Phase 4)
 
 **Option B: Build a full Svelte adapter**
+
 - Create `<Editor>` component, `<NodeViewWrapper>`, etc.
 - Significant effort, mirrors what React/Vue adapters do
 - Not needed for MVP
@@ -45,6 +50,7 @@ The framework adapters (`@tiptap/react`, `@tiptap/vue-3`) are thin (~200 LOC) an
 ### Decision
 
 **Option A** — Keep @snaplify/editor as pure TypeScript:
+
 - Extensions are pure TS (no framework dependency)
 - Block schemas use Zod (framework-agnostic)
 - Serialization is pure TS (BlockTuple[] ↔ ProseMirror Doc)
@@ -69,6 +75,7 @@ const blocks: BlockTuple[] = [
 ```
 
 Conversion functions:
+
 - `blockTuplesToDoc(blocks)` → ProseMirror Node (for editor loading)
 - `docToBlockTuples(doc)` → BlockTuple[] (for storage)
 - `validateBlockTuples(raw)` → validated BlockTuple[] (Zod parsing)
@@ -76,6 +83,7 @@ Conversion functions:
 ### NodeView Strategy (Phase 4)
 
 For custom block rendering in Svelte:
+
 - TipTap's `NodeViewRenderer` accepts a constructor function
 - Can create a vanilla DOM container, mount Svelte component into it
 - Svelte 5's `mount()` API makes this straightforward

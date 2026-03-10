@@ -27,10 +27,7 @@
 
   <ol class="section-list__items">
     {#each sections as section, i}
-      <li
-        class="section-list__item"
-        class:section-list__item--active={i === activeIndex}
-      >
+      <li class="section-list__item" class:section-list__item--active={i === activeIndex}>
         <button
           class="section-list__select"
           onclick={() => onselect?.(i)}
@@ -45,19 +42,19 @@
             class="section-list__action"
             onclick={() => onmoveup?.(i)}
             disabled={i === 0}
-            aria-label="Move section up"
-          >&uarr;</button>
+            aria-label="Move section up">&uarr;</button
+          >
           <button
             class="section-list__action"
             onclick={() => onmovedown?.(i)}
             disabled={i === sections.length - 1}
-            aria-label="Move section down"
-          >&darr;</button>
+            aria-label="Move section down">&darr;</button
+          >
           <button
             class="section-list__action section-list__action--delete"
             onclick={() => onremove?.(i)}
-            aria-label="Remove section"
-          >&times;</button>
+            aria-label="Remove section">&times;</button
+          >
         </div>
       </li>
     {/each}
@@ -69,9 +66,7 @@
       <option value="quiz">Quiz</option>
       <option value="checkpoint">Checkpoint</option>
     </select>
-    <button class="section-list__add-btn" onclick={() => onadd?.(addType)}>
-      + Add Section
-    </button>
+    <button class="section-list__add-btn" onclick={() => onadd?.(addType)}> + Add Section </button>
   </div>
 </div>
 

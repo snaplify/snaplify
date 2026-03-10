@@ -6,15 +6,14 @@
     text: string;
   }
 
-  let {
-    variant = 'default',
-    size = 'md',
-    class: className = '',
-    text,
-  }: Props = $props();
+  let { variant = 'default', size = 'md', class: className = '', text }: Props = $props();
 </script>
 
-<span class={['snaplify-badge', `snaplify-badge--${variant}`, `snaplify-badge--${size}`, className].filter(Boolean).join(' ')}>
+<span
+  class={['snaplify-badge', `snaplify-badge--${variant}`, `snaplify-badge--${size}`, className]
+    .filter(Boolean)
+    .join(' ')}
+>
   {text}
 </span>
 

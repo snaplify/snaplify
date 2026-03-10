@@ -31,14 +31,23 @@
         {#if editingLessonId === lesson.id}
           <form method="POST" action="?/updateLesson" use:enhance class="lesson-edit-form">
             <input type="hidden" name="lessonId" value={lesson.id} />
-            <input name="title" type="text" value={lesson.title} required maxlength="255" class="lesson-input" />
+            <input
+              name="title"
+              type="text"
+              value={lesson.title}
+              required
+              maxlength="255"
+              class="lesson-input"
+            />
             <select name="type" value={lesson.type} class="lesson-select">
               {#each lessonTypes as t}
                 <option value={t} selected={lesson.type === t}>{t}</option>
               {/each}
             </select>
             <button type="submit" class="btn btn-small">Save</button>
-            <button type="button" class="btn btn-small" onclick={() => (editingLessonId = null)}>Cancel</button>
+            <button type="button" class="btn btn-small" onclick={() => (editingLessonId = null)}
+              >Cancel</button
+            >
           </form>
         {:else}
           <div class="lesson-row">
@@ -48,15 +57,24 @@
               <span class="lesson-duration">{lesson.duration}m</span>
             {/if}
             <div class="lesson-actions">
-              <button class="btn btn-small" onclick={() => (editingLessonId = lesson.id)}>Edit</button>
+              <button class="btn btn-small" onclick={() => (editingLessonId = lesson.id)}
+                >Edit</button
+              >
               {#if deleteConfirmId === lesson.id}
                 <form method="POST" action="?/deleteLesson" use:enhance class="inline-form">
                   <input type="hidden" name="lessonId" value={lesson.id} />
                   <button type="submit" class="btn btn-small btn-danger">Confirm</button>
-                  <button type="button" class="btn btn-small" onclick={() => (deleteConfirmId = null)}>Cancel</button>
+                  <button
+                    type="button"
+                    class="btn btn-small"
+                    onclick={() => (deleteConfirmId = null)}>Cancel</button
+                  >
                 </form>
               {:else}
-                <button class="btn btn-small btn-danger-outline" onclick={() => (deleteConfirmId = lesson.id)}>Delete</button>
+                <button
+                  class="btn btn-small btn-danger-outline"
+                  onclick={() => (deleteConfirmId = lesson.id)}>Delete</button
+                >
               {/if}
             </div>
           </div>

@@ -3,6 +3,7 @@
 ## Prior Art: CLI Scaffolding
 
 ### create-svelte
+
 - Prompts: template (skeleton/demo/library), TypeScript (yes/no), additions (ESLint, Prettier, Playwright, Vitest)
 - Uses `@clack/prompts` for styled terminal UI
 - Templates are directories copied verbatim, then conditionally patched
@@ -10,6 +11,7 @@
 - No config file generation — relies on framework defaults
 
 ### create-next-app
+
 - Prompts: name, TypeScript, ESLint, Tailwind, src/ directory, App Router, import alias
 - Uses `prompts` package for interactive selection
 - Templates fetched from GitHub (--example) or embedded locally
@@ -17,6 +19,7 @@
 - Supports `--use-pnpm`, `--use-yarn` flags
 
 ### create-t3-app
+
 - Prompts: name, packages (NextAuth, Prisma, tRPC, Tailwind), import alias, git init
 - Uses `@clack/prompts` (migrated from inquirer)
 - Template is a base scaffold + "installers" that patch in each optional package
@@ -24,6 +27,7 @@
 - Supports `--noInstall`, `--default` (skip prompts) flags
 
 ### Common Patterns
+
 - Interactive prompts with sensible defaults
 - `--yes` / `--default` flag to skip all prompts
 - Template directory copied then patched (not string interpolation)
@@ -31,6 +35,7 @@
 - Config generation based on selections
 
 ### Rust CLI Tooling (clap + dialoguer)
+
 - `clap` for arg parsing (derive macro for struct-based definitions)
 - `dialoguer` for interactive prompts (Select, Input, Confirm, MultiSelect)
 - `indicatif` for progress bars and spinners
@@ -41,6 +46,7 @@
 ## Prior Art: Docker Multi-Stage Node.js Builds
 
 ### Best Practice: Three-Stage Build
+
 ```dockerfile
 # Stage 1: Dependencies
 FROM node:22-alpine AS deps
@@ -69,6 +75,7 @@ CMD ["node", "build"]
 ```
 
 ### Key Practices
+
 - **Alpine base**: ~50MB vs ~350MB for debian-based, sufficient for Node apps
 - **Layer caching**: Copy `package.json` + lockfile first, install deps, then copy source — deps layer cached when only source changes
 - **Non-root user**: Create dedicated user in runtime stage, never run as root
@@ -77,6 +84,7 @@ CMD ["node", "build"]
 - **Monorepo consideration**: Use `pnpm deploy --filter` to extract a single app with its deps into a clean directory
 
 ### SvelteKit-Specific
+
 - `adapter-node` outputs to `build/` directory
 - Set `ORIGIN` env var for proper URL resolution behind reverse proxy
 - Set `PORT` env var (default 3000)
@@ -85,6 +93,7 @@ CMD ["node", "build"]
 ## Prior Art: DigitalOcean Deployment
 
 ### App Platform (Managed PaaS)
+
 - `app-spec.yaml` defines entire stack declaratively
 - Auto-deploy from GitHub on push to branch
 - Managed databases (Postgres, Redis) available as components
@@ -109,10 +118,11 @@ services:
 databases:
   - name: db
     engine: PG
-    version: "16"
+    version: '16'
 ```
 
 ### Droplet (Self-Managed VPS)
+
 - Full control: custom Nginx, cron jobs, persistent disk
 - Deploy via SSH + Docker Compose or systemd
 - Requires manual TLS (Certbot), firewall (ufw), updates
@@ -120,6 +130,7 @@ databases:
 - Better for: self-hosters who want full control, persistent storage
 
 ### Droplet Deploy Script Pattern
+
 ```bash
 #!/bin/bash
 set -euo pipefail
@@ -131,6 +142,7 @@ docker system prune -f
 ```
 
 ### Nginx Reverse Proxy
+
 - Proxy pass to `http://127.0.0.1:3000`
 - WebSocket upgrade headers for any real-time features
 - Certbot for auto-renewing Let's Encrypt TLS
@@ -139,6 +151,7 @@ docker system prune -f
 ## Prior Art: GitHub Actions CI/CD
 
 ### Docker Build + Push to GHCR
+
 ```yaml
 name: Deploy
 on:
@@ -167,12 +180,14 @@ jobs:
 ```
 
 ### Deploy-on-Tag Pattern
+
 - Tag `v1.0.0` triggers build → push → deploy
 - Semantic versioning for releases
 - GHA cache (`type=gha`) for Docker layer caching — avoids rebuilding unchanged layers
 - Deploy step: SSH to droplet and run deploy script, or trigger DO App Platform redeploy via API
 
 ### Existing CI Considerations
+
 - Snaplify already has Turborepo — `turbo run build test lint typecheck` in CI
 - Docker build should reuse Turborepo cache where possible
 - Matrix strategy unnecessary — single SvelteKit app target

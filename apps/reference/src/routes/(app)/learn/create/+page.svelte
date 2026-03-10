@@ -31,12 +31,9 @@
 
     <div class="form-field">
       <label for="description">Description <span class="optional">(optional)</span></label>
-      <textarea
-        id="description"
-        name="description"
-        maxlength="2000"
-        rows="3"
-      >{form?.description ?? ''}</textarea>
+      <textarea id="description" name="description" maxlength="2000" rows="3"
+        >{form?.description ?? ''}</textarea
+      >
     </div>
 
     <div class="form-row">
@@ -45,7 +42,9 @@
         <select id="difficulty" name="difficulty">
           <option value="">Select...</option>
           <option value="beginner" selected={form?.difficulty === 'beginner'}>Beginner</option>
-          <option value="intermediate" selected={form?.difficulty === 'intermediate'}>Intermediate</option>
+          <option value="intermediate" selected={form?.difficulty === 'intermediate'}
+            >Intermediate</option
+          >
           <option value="advanced" selected={form?.difficulty === 'advanced'}>Advanced</option>
         </select>
       </div>

@@ -10,12 +10,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { users } from './auth';
-import {
-  contentStatusEnum,
-  contentTypeEnum,
-  difficultyEnum,
-  contentVisibilityEnum,
-} from './enums';
+import { contentStatusEnum, contentTypeEnum, difficultyEnum, contentVisibilityEnum } from './enums';
 
 export const contentItems = pgTable('content_items', {
   id: uuid('id').defaultRandom().primaryKey(),

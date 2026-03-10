@@ -473,11 +473,7 @@ export async function updateLesson(
   return updated!;
 }
 
-export async function deleteLesson(
-  db: DB,
-  lessonId: string,
-  authorId: string,
-): Promise<boolean> {
+export async function deleteLesson(db: DB, lessonId: string, authorId: string): Promise<boolean> {
   const lesson = await db
     .select({ lesson: learningLessons, module: learningModules, path: learningPaths })
     .from(learningLessons)
@@ -542,10 +538,7 @@ export async function enroll(
 
   if (path.length === 0) throw new Error('Path not found or not published');
 
-  const [enrollment] = await db
-    .insert(enrollments)
-    .values({ userId, pathId })
-    .returning();
+  const [enrollment] = await db.insert(enrollments).values({ userId, pathId }).returning();
 
   // Increment enrollment count
   await db
@@ -633,9 +626,7 @@ export async function markLessonComplete(
         quizScore: quizScore?.toString() ?? existingProgress[0]!.quizScore,
         quizPassed: quizPassed ?? existingProgress[0]!.quizPassed,
       })
-      .where(
-        and(eq(lessonProgress.userId, userId), eq(lessonProgress.lessonId, lessonId)),
-      );
+      .where(and(eq(lessonProgress.userId, userId), eq(lessonProgress.lessonId, lessonId)));
   }
 
   // Recalculate progress
@@ -717,10 +708,7 @@ export async function getEnrollment(
   return rows[0] ?? null;
 }
 
-export async function getUserEnrollments(
-  db: DB,
-  userId: string,
-): Promise<EnrollmentItem[]> {
+export async function getUserEnrollments(db: DB, userId: string): Promise<EnrollmentItem[]> {
   const rows = await db
     .select({
       enrollment: enrollments,
@@ -746,10 +734,7 @@ export async function getUserEnrollments(
   }));
 }
 
-export async function getUserCertificates(
-  db: DB,
-  userId: string,
-): Promise<CertificateItem[]> {
+export async function getUserCertificates(db: DB, userId: string): Promise<CertificateItem[]> {
   const rows = await db
     .select({
       certificate: certificates,
@@ -822,9 +807,7 @@ export async function getLessonBySlug(
     .select({ lesson: learningLessons, module: learningModules })
     .from(learningLessons)
     .innerJoin(learningModules, eq(learningLessons.moduleId, learningModules.id))
-    .where(
-      and(eq(learningLessons.slug, lessonSlug), eq(learningModules.pathId, path[0]!.id)),
-    )
+    .where(and(eq(learningLessons.slug, lessonSlug), eq(learningModules.pathId, path[0]!.id)))
     .limit(1);
 
   if (rows.length === 0) return null;
@@ -859,11 +842,7 @@ export async function getCompletedLessonIds(
 
 // --- Helpers ---
 
-async function ensureUniquePathSlug(
-  db: DB,
-  slug: string,
-  excludeId?: string,
-): Promise<string> {
+async function ensureUniquePathSlug(db: DB, slug: string, excludeId?: string): Promise<string> {
   if (!slug) {
     slug = `untitled-${Date.now()}`;
   }

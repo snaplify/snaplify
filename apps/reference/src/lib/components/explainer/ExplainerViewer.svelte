@@ -174,7 +174,8 @@
 
     <ExplainerNav
       hasPrevious={activeSectionIndex > 0}
-      hasNext={activeSectionIndex < sections.length - 1 && canAccessSection(progress, sections, sections[activeSectionIndex + 1]?.id ?? '')}
+      hasNext={activeSectionIndex < sections.length - 1 &&
+        canAccessSection(progress, sections, sections[activeSectionIndex + 1]?.id ?? '')}
       onprevious={handlePrevious}
       onnext={handleNext}
     />

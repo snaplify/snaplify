@@ -1,10 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import {
-  listFederationActivity,
-  getFollowers,
-  getFollowing,
-} from '$lib/server/federation';
+import { listFederationActivity, getFollowers, getFollowing } from '$lib/server/federation';
 import { eq, and } from 'drizzle-orm';
 import { followRelationships } from '@snaplify/schema';
 

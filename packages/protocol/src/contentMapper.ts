@@ -1,10 +1,4 @@
-import {
-  AP_CONTEXT,
-  AP_PUBLIC,
-  type APArticle,
-  type APNote,
-  type APTag,
-} from './activityTypes';
+import { AP_CONTEXT, AP_PUBLIC, type APArticle, type APNote, type APTag } from './activityTypes';
 
 export interface ContentItemInput {
   id: string;
@@ -64,9 +58,7 @@ export function contentToArticle(
     article.updated = item.updatedAt.toISOString();
   }
   if (item.coverImageUrl) {
-    article.attachment = [
-      { type: 'Image', url: item.coverImageUrl, name: 'Cover image' },
-    ];
+    article.attachment = [{ type: 'Image', url: item.coverImageUrl, name: 'Cover image' }];
   }
   article.url = `https://${domain}/${item.type}/${item.slug}`;
   if (tags.length > 0) {

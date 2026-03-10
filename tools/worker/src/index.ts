@@ -55,11 +55,7 @@ export function calculateDeliveryStats(
 }
 
 /** Determine if an activity should be retried based on attempts and status */
-export function shouldRetry(
-  status: string,
-  attempts: number,
-  maxAttempts: number = 3,
-): boolean {
+export function shouldRetry(status: string, attempts: number, maxAttempts: number = 3): boolean {
   return status === 'failed' && attempts < maxAttempts;
 }
 
@@ -70,9 +66,7 @@ export function getRetryDelay(attempts: number): number {
 }
 
 /** Format an activity for logging */
-export function formatActivityLog(
-  entry: ActivityLogEntry,
-): string {
+export function formatActivityLog(entry: ActivityLogEntry): string {
   const direction = entry.direction === 'inbound' ? '←' : '→';
   const time = entry.createdAt.toISOString();
   return `[${time}] ${direction} ${entry.type} ${entry.actorUri} ${entry.objectUri ?? ''} (${entry.status})`;

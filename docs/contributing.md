@@ -52,6 +52,7 @@ chore(deps): update drizzle-orm to 0.39
 See [coding-standards.md](./coding-standards.md) for detailed guidelines.
 
 Key rules:
+
 - TypeScript strict mode, no `any`
 - Tests first, then implementation
 - WCAG 2.1 AA accessibility minimum
@@ -61,6 +62,7 @@ Key rules:
 ## Package Structure
 
 Each package follows:
+
 ```
 packages/name/
   src/

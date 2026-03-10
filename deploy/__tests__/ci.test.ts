@@ -14,7 +14,7 @@ describe('CI/CD workflows', () => {
   it('docker.yml exists with correct triggers', () => {
     const content = readFileSync(resolve(workflowsDir, 'docker.yml'), 'utf-8');
     expect(content).toContain('push:');
-    expect(content).toContain("branches: [main]");
+    expect(content).toContain('branches: [main]');
     expect(content).toContain("tags: ['v*']");
     expect(content).toContain('ghcr.io');
   });

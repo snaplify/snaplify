@@ -63,17 +63,17 @@ snaplify/
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | SvelteKit |
-| Auth | Better Auth |
-| Federation | Fedify |
-| Database | PostgreSQL 16 + Drizzle ORM |
-| Editor | TipTap (content), CodeMirror 6 (docs) |
-| Search | Meilisearch (primary), Postgres FTS (fallback) |
-| Queue | Redis/Valkey |
-| CLI | Rust (`create-snaplify`) |
-| Monorepo | Turborepo + pnpm |
+| Layer      | Technology                                     |
+| ---------- | ---------------------------------------------- |
+| Framework  | SvelteKit                                      |
+| Auth       | Better Auth                                    |
+| Federation | Fedify                                         |
+| Database   | PostgreSQL 16 + Drizzle ORM                    |
+| Editor     | TipTap (content), CodeMirror 6 (docs)          |
+| Search     | Meilisearch (primary), Postgres FTS (fallback) |
+| Queue      | Redis/Valkey                                   |
+| CLI        | Rust (`create-snaplify`)                       |
+| Monorepo   | Turborepo + pnpm                               |
 
 ## Development
 

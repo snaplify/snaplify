@@ -38,8 +38,18 @@
             class="admin-resolution"
           ></textarea>
           <div class="admin-resolve-actions">
-            <button type="submit" name="status" value="resolved" class="admin-btn admin-btn--resolve">Resolve</button>
-            <button type="submit" name="status" value="dismissed" class="admin-btn admin-btn--dismiss">Dismiss</button>
+            <button
+              type="submit"
+              name="status"
+              value="resolved"
+              class="admin-btn admin-btn--resolve">Resolve</button
+            >
+            <button
+              type="submit"
+              name="status"
+              value="dismissed"
+              class="admin-btn admin-btn--dismiss">Dismiss</button
+            >
           </div>
         </form>
       {/if}

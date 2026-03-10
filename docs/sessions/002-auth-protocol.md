@@ -3,15 +3,18 @@
 ## What Was Done
 
 ### Schema
+
 - Added `verifications` table to `@snaplify/schema` (required by Better Auth for email verification/magic link tokens)
 - Added auth schema tests (10 tests covering all table exports and relations)
 
 ### @snaplify/test-utils
+
 - Created `factories.ts` with `createTestUser()`, `createTestSession()`, `createTestFederatedAccount()`, `createTestOAuthClient()`, `resetFactoryCounter()`
 - Created `mockConfig.ts` with `createTestConfig(overrides?)` for generating valid SnaplifyConfig in tests
 - 14 tests passing
 
 ### @snaplify/auth
+
 - `createAuth()` — Better Auth factory with Drizzle adapter, schema mapping, social providers, username plugin
 - `createAuthHook()` — SvelteKit handle hook that delegates auth routes and resolves sessions
 - `authGuard()`, `adminGuard()`, `roleGuard(minRole)` — Route protection with role hierarchy (member < pro < verified < staff < admin)
@@ -22,6 +25,7 @@
 - 42 tests passing
 
 ### @snaplify/snaplify (protocol)
+
 - AP type interfaces: `SnaplifyActor`, `WebFingerResponse`, `NodeInfoResponse`, `ParsedResource`
 - `parseWebFingerResource()` / `buildWebFingerResponse()` — WebFinger JRD handling
 - `buildNodeInfoResponse()` / `buildNodeInfoWellKnown()` — NodeInfo 2.1 generation
@@ -30,6 +34,7 @@
 - 42 tests passing
 
 ### Documentation
+
 - Research: `docs/research/better-auth-sveltekit.md`, `docs/research/ap-actor-sso-flow.md`
 - ADR 009: Better Auth → custom Drizzle schema mapping
 - ADR 010: AP Actor SSO via Better Auth plugins
@@ -44,15 +49,15 @@
 
 ## Test Summary
 
-| Package | Tests | Status |
-|---------|-------|--------|
-| @snaplify/schema | 43 (34 + 9 new) | ✅ |
-| @snaplify/config | 17 | ✅ |
-| @snaplify/auth | 42 | ✅ |
-| @snaplify/snaplify | 42 | ✅ |
-| @snaplify/test-utils | 14 | ✅ |
-| Other packages | 7 (stubs) | ✅ |
-| **Total** | **165** | **✅** |
+| Package              | Tests           | Status |
+| -------------------- | --------------- | ------ |
+| @snaplify/schema     | 43 (34 + 9 new) | ✅     |
+| @snaplify/config     | 17              | ✅     |
+| @snaplify/auth       | 42              | ✅     |
+| @snaplify/snaplify   | 42              | ✅     |
+| @snaplify/test-utils | 14              | ✅     |
+| Other packages       | 7 (stubs)       | ✅     |
+| **Total**            | **165**         | **✅** |
 
 ## Open Questions
 

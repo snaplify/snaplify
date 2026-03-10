@@ -20,7 +20,12 @@
   let { report, class: className = '', onResolve, onDismiss }: Props = $props();
 </script>
 
-<article class={['admin-report-card', `admin-report-card--${report.status}`, className].filter(Boolean).join(' ')} aria-label={`Report: ${report.reason} on ${report.targetType}`}>
+<article
+  class={['admin-report-card', `admin-report-card--${report.status}`, className]
+    .filter(Boolean)
+    .join(' ')}
+  aria-label={`Report: ${report.reason} on ${report.targetType}`}
+>
   <div class="admin-report-card__header">
     <span class="admin-report-card__reason">{report.reason}</span>
     <span class="admin-report-card__status">{report.status}</span>

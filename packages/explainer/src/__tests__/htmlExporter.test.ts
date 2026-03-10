@@ -132,7 +132,10 @@ describe('generateExplainerHtml', () => {
   });
 
   it('omits description meta when not provided', () => {
-    const html = generateExplainerHtml([textSection], { ...defaultOptions, description: undefined });
+    const html = generateExplainerHtml([textSection], {
+      ...defaultOptions,
+      description: undefined,
+    });
     expect(html).not.toContain('meta name="description"');
   });
 
@@ -142,7 +145,10 @@ describe('generateExplainerHtml', () => {
   });
 
   it('escapes special characters in title', () => {
-    const html = generateExplainerHtml([textSection], { ...defaultOptions, title: 'Test <script>alert(1)</script>' });
+    const html = generateExplainerHtml([textSection], {
+      ...defaultOptions,
+      title: 'Test <script>alert(1)</script>',
+    });
     expect(html).not.toContain('<script>alert(1)</script>');
   });
 });

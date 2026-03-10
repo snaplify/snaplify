@@ -24,7 +24,9 @@
           {#if user.avatarUrl}
             <img src={user.avatarUrl} alt="" class="nav-avatar" width="32" height="32" />
           {:else}
-            <span class="nav-avatar-placeholder">{user.displayName?.[0] ?? user.username?.[0] ?? '?'}</span>
+            <span class="nav-avatar-placeholder"
+              >{user.displayName?.[0] ?? user.username?.[0] ?? '?'}</span
+            >
           {/if}
         </a>
       {:else}

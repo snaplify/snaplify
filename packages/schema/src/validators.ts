@@ -6,7 +6,10 @@ export const usernameSchema = z
   .string()
   .min(3)
   .max(64)
-  .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, hyphens, and underscores');
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Username can only contain letters, numbers, hyphens, and underscores',
+  );
 
 export const emailSchema = z.string().email().max(255);
 
@@ -73,14 +76,16 @@ export const updateContentSchema = createContentSchema.partial().omit({ type: tr
 
 // --- Social validators ---
 
-export const likeTargetTypeSchema = z.enum(['project', 'article', 'blog', 'comment', 'post', 'explainer', 'guide']);
-export const commentTargetTypeSchema = z.enum([
+export const likeTargetTypeSchema = z.enum([
   'project',
   'article',
   'blog',
+  'comment',
   'post',
-  'lesson',
+  'explainer',
+  'guide',
 ]);
+export const commentTargetTypeSchema = z.enum(['project', 'article', 'blog', 'post', 'lesson']);
 
 export const createCommentSchema = z.object({
   targetType: commentTargetTypeSchema,

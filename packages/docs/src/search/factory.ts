@@ -30,7 +30,5 @@ export function createSearchAdapter(
     );
   }
 
-  throw new Error(
-    'createSearchAdapter requires either meiliClient or db in config',
-  );
+  throw new Error('createSearchAdapter requires either meiliClient or db in config');
 }

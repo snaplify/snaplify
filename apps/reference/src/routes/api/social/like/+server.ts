@@ -24,7 +24,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
   const result = await toggleLike(locals.db, locals.user.id, targetType, targetId);
   if (result.liked) {
-    await onContentLiked(locals.db, targetId, locals.config);
+    await onContentLiked(locals.db, locals.user.id, targetId, locals.config);
   }
   return json(result);
 };

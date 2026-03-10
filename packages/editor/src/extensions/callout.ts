@@ -48,11 +48,7 @@ export const SnaplifyCallout = Node.create<CalloutOptions>({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    return [
-      'div',
-      { ...HTMLAttributes, class: `callout callout-${node.attrs.variant}` },
-      0,
-    ];
+    return ['div', { ...HTMLAttributes, class: `callout callout-${node.attrs.variant}` }, 0];
   },
 
   addCommands() {
@@ -76,7 +72,7 @@ export const SnaplifyCallout = Node.create<CalloutOptions>({
         find: new RegExp(`^:::${variant}\\s$`),
         type: this.type,
         getAttributes: () => ({ variant }),
-      })
+      }),
     );
   },
 });

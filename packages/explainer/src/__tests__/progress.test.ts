@@ -24,7 +24,15 @@ const quizGateSection = (id: string): ExplainerSection => ({
   type: 'quiz',
   content: [],
   questions: [
-    { id: 'q1', question: 'Q?', options: [{ id: 'a', text: 'A' }, { id: 'b', text: 'B' }], correctOptionId: 'a' },
+    {
+      id: 'q1',
+      question: 'Q?',
+      options: [
+        { id: 'a', text: 'A' },
+        { id: 'b', text: 'B' },
+      ],
+      correctOptionId: 'a',
+    },
   ],
   passingScore: 70,
   isGate: true,

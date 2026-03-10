@@ -26,9 +26,7 @@ export interface CreateSnaplifyEditorOptions {
   element?: HTMLElement;
 }
 
-export function createSnaplifyEditor(
-  options: CreateSnaplifyEditorOptions = {}
-): Editor {
+export function createSnaplifyEditor(options: CreateSnaplifyEditorOptions = {}): Editor {
   const {
     content,
     editable = true,

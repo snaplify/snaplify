@@ -1,9 +1,11 @@
 # ADR 017: Learning System Architecture
 
 ## Status
+
 Accepted
 
 ## Context
+
 Phase 6 introduces a learning path system. The DB schema (6 tables) is locked in `packages/schema/src/learning.ts`. We need to define the business logic architecture, content model, and integration patterns.
 
 ## Decisions
@@ -12,13 +14,13 @@ Phase 6 introduces a learning path system. The DB schema (6 tables) is locked in
 
 Lesson content is stored in a single `content` JSONB column with a `type` discriminator on the lesson row:
 
-| Type | Content Shape | Rendering |
-|------|--------------|-----------|
-| `article` | `{ type: 'article', blocks: BlockTuple[] }` | Reuse block renderer from editor |
-| `video` | `{ type: 'video', url: string, platform?: string }` | Iframe embed |
-| `quiz` | `{ type: 'quiz', questions: QuizQuestion[], passingScore: number }` | Reuse ExplainerQuiz component |
-| `project` | `{ type: 'project', slug: string }` | Link to existing project content |
-| `explainer` | `{ type: 'explainer', slug: string }` | Link to existing explainer content |
+| Type        | Content Shape                                                       | Rendering                          |
+| ----------- | ------------------------------------------------------------------- | ---------------------------------- |
+| `article`   | `{ type: 'article', blocks: BlockTuple[] }`                         | Reuse block renderer from editor   |
+| `video`     | `{ type: 'video', url: string, platform?: string }`                 | Iframe embed                       |
+| `quiz`      | `{ type: 'quiz', questions: QuizQuestion[], passingScore: number }` | Reuse ExplainerQuiz component      |
+| `project`   | `{ type: 'project', slug: string }`                                 | Link to existing project content   |
+| `explainer` | `{ type: 'explainer', slug: string }`                               | Link to existing explainer content |
 
 **Why**: Single table, single column, no joins. The `type` enum on the lesson row already discriminates — the content shape follows.
 
@@ -43,6 +45,7 @@ markLessonComplete() → recalculate progress → if 100% → generate certifica
 ### 4. Single-Page Path Editor (Accordion)
 
 The path editor is a single page at `/learn/[slug]/edit` with:
+
 - Path metadata form (title, description, difficulty, hours)
 - Accordion of modules, each expandable to show/edit lessons
 - Inline add/edit/delete for modules and lessons

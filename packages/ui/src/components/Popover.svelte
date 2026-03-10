@@ -37,7 +37,7 @@
     // Focus trap: Tab within popover
     if (e.key === 'Tab' && open && contentRef) {
       const focusable = contentRef.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       );
       if (focusable.length === 0) return;
 
@@ -74,10 +74,7 @@
   });
 </script>
 
-<div
-  class={['snaplify-popover', className].filter(Boolean).join(' ')}
-  onkeydown={handleKeydown}
->
+<div class={['snaplify-popover', className].filter(Boolean).join(' ')} onkeydown={handleKeydown}>
   <button
     bind:this={triggerRef}
     type="button"
@@ -90,12 +87,7 @@
   </button>
 
   {#if open}
-    <div
-      bind:this={contentRef}
-      {id}
-      class="snaplify-popover-content"
-      role="dialog"
-    >
+    <div bind:this={contentRef} {id} class="snaplify-popover-content" role="dialog">
       {@render children()}
     </div>
   {/if}

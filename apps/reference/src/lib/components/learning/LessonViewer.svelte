@@ -17,7 +17,8 @@
 
 <div class="lesson-viewer">
   {#if lesson.type === 'article' && content}
-    {@const blocks = (content as { blocks?: Array<[string, Record<string, unknown>]> }).blocks ?? []}
+    {@const blocks =
+      (content as { blocks?: Array<[string, Record<string, unknown>]> }).blocks ?? []}
     {#each blocks as [type, attrs]}
       {#if type === 'text'}
         {@html sanitizeHtml(String(attrs.html ?? ''))}

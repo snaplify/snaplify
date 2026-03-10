@@ -31,6 +31,7 @@ drizzleAdapter(db, {
 ## Field Mapping
 
 Better Auth expects specific field names on the `user` model:
+
 - `name` → maps to our `display_name` column
 - `image` → maps to our `avatar_url` column
 
@@ -48,6 +49,7 @@ user: {
 ## Missing Table: `verifications`
 
 Better Auth requires a `verification` table for:
+
 - Email verification tokens
 - Magic link tokens
 - Password reset tokens

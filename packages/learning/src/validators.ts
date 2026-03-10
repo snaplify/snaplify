@@ -3,11 +3,9 @@ import { createLearningPathSchema, createLessonSchema } from '@snaplify/schema';
 
 // --- Path validators ---
 
-export const updateLearningPathSchema = createLearningPathSchema
-  .partial()
-  .extend({
-    status: z.enum(['draft', 'published', 'archived']).optional(),
-  });
+export const updateLearningPathSchema = createLearningPathSchema.partial().extend({
+  status: z.enum(['draft', 'published', 'archived']).optional(),
+});
 
 // --- Module validators ---
 
@@ -18,15 +16,11 @@ export const createModuleSchema = z.object({
   sortOrder: z.number().int().nonnegative().optional(),
 });
 
-export const updateModuleSchema = createModuleSchema
-  .omit({ pathId: true })
-  .partial();
+export const updateModuleSchema = createModuleSchema.omit({ pathId: true }).partial();
 
 // --- Lesson validators ---
 
-export const updateLessonSchema = createLessonSchema
-  .omit({ moduleId: true })
-  .partial();
+export const updateLessonSchema = createLessonSchema.omit({ moduleId: true }).partial();
 
 // --- Lesson content discriminated union ---
 

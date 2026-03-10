@@ -5,7 +5,6 @@
 
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import type { Editor } from '@tiptap/core';
 
   let {
     content = null,
@@ -18,19 +17,20 @@
   } = $props();
 
   let element: HTMLDivElement | undefined = $state();
-  let editor: Editor | null = $state(null);
+  let editor: { state: { doc: unknown }; destroy: () => void } | null = $state(null);
   let docToBlockTuplesFn: ((doc: unknown) => BlockTuple[]) | null = null;
 
-  onMount(async () => {
-    const editorModule = await import('@snaplify/editor');
-    docToBlockTuplesFn = editorModule.docToBlockTuples;
+  onMount(() => {
+    import('@snaplify/editor').then((editorModule) => {
+      docToBlockTuplesFn = editorModule.docToBlockTuples as (doc: unknown) => BlockTuple[];
 
-    editor = editorModule.createSnaplifyEditor({
-      content: Array.isArray(content) ? (content as BlockTuple[]) : undefined,
-      editable,
-      placeholder: 'Start writing...',
-      onUpdate: onupdate ? (blocks) => onupdate(blocks) : undefined,
-      element,
+      editor = editorModule.createSnaplifyEditor({
+        content: Array.isArray(content) ? (content as BlockTuple[]) : undefined,
+        editable,
+        placeholder: 'Start writing...',
+        onUpdate: onupdate ? (blocks: BlockTuple[]) => onupdate(blocks) : undefined,
+        element,
+      });
     });
   });
 

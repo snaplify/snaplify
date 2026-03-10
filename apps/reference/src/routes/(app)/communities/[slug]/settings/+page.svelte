@@ -20,7 +20,11 @@
 
 <div class="settings-page">
   <CommunityHeader community={data.community} />
-  <CommunityNav slug={data.community.slug} active="settings" role={data.community.currentUserRole} />
+  <CommunityNav
+    slug={data.community.slug}
+    active="settings"
+    role={data.community.currentUserRole}
+  />
 
   {#if form?.error}
     <div class="error-banner" role="alert">{form.error}</div>
@@ -35,18 +39,26 @@
       </div>
       <div class="form-field">
         <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3" maxlength="2000">{data.community.description ?? ''}</textarea>
+        <textarea id="description" name="description" rows="3" maxlength="2000"
+          >{data.community.description ?? ''}</textarea
+        >
       </div>
       <div class="form-field">
         <label for="rules">Rules</label>
-        <textarea id="rules" name="rules" rows="5" maxlength="10000">{data.community.rules ?? ''}</textarea>
+        <textarea id="rules" name="rules" rows="5" maxlength="10000"
+          >{data.community.rules ?? ''}</textarea
+        >
       </div>
       <div class="form-field">
         <label for="joinPolicy">Join Policy</label>
         <select id="joinPolicy" name="joinPolicy">
           <option value="open" selected={data.community.joinPolicy === 'open'}>Open</option>
-          <option value="approval" selected={data.community.joinPolicy === 'approval'}>Approval</option>
-          <option value="invite" selected={data.community.joinPolicy === 'invite'}>Invite Only</option>
+          <option value="approval" selected={data.community.joinPolicy === 'approval'}
+            >Approval</option
+          >
+          <option value="invite" selected={data.community.joinPolicy === 'invite'}
+            >Invite Only</option
+          >
         </select>
       </div>
       <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -75,7 +87,11 @@
               {#if member.role !== 'owner'}
                 <form method="POST" action="?/kick" use:enhance class="inline-form">
                   <input type="hidden" name="userId" value={member.userId} />
-                  <button type="submit" class="btn btn-small btn-danger-outline" aria-label="Kick {member.user.username}">
+                  <button
+                    type="submit"
+                    class="btn btn-small btn-danger-outline"
+                    aria-label="Kick {member.user.username}"
+                  >
                     Kick
                   </button>
                 </form>
@@ -91,7 +107,11 @@
           {/if}
         </div>
         {#if banTargetId === member.userId}
-          <BanForm slug={data.community.slug} userId={member.userId} oncancel={() => (banTargetId = null)} />
+          <BanForm
+            slug={data.community.slug}
+            userId={member.userId}
+            oncancel={() => (banTargetId = null)}
+          />
         {/if}
       {/each}
     </div>
@@ -111,7 +131,9 @@
                 <span class="ban-reason">— {ban.reason}</span>
               {/if}
               {#if ban.expiresAt}
-                <span class="ban-expiry">Expires: {new Date(ban.expiresAt).toLocaleDateString()}</span>
+                <span class="ban-expiry"
+                  >Expires: {new Date(ban.expiresAt).toLocaleDateString()}</span
+                >
               {/if}
             </div>
             <form method="POST" action="?/unban" use:enhance class="inline-form">
@@ -132,7 +154,9 @@
           <p>This will permanently delete the community and all its data. This cannot be undone.</p>
           <div class="danger-actions">
             <button type="submit" class="btn btn-danger">Delete Community</button>
-            <button type="button" class="btn btn-secondary" onclick={() => (deleteConfirm = false)}>Cancel</button>
+            <button type="button" class="btn btn-secondary" onclick={() => (deleteConfirm = false)}
+              >Cancel</button
+            >
           </div>
         </form>
       {:else}
@@ -201,7 +225,8 @@
     margin-bottom: var(--space-md, 1rem);
   }
 
-  .members-list, .bans-list {
+  .members-list,
+  .bans-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm, 0.5rem);
@@ -236,7 +261,8 @@
     color: var(--color-text, #1a1a1a);
   }
 
-  .ban-reason, .ban-expiry {
+  .ban-reason,
+  .ban-expiry {
     color: var(--color-text-secondary, #666);
     font-size: var(--font-size-sm, 0.875rem);
   }

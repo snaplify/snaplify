@@ -108,11 +108,7 @@ export function getPrevNextLinks(
   const nextPage = nextId ? byId.get(nextId) : undefined;
 
   return {
-    prev: prevPage
-      ? { title: prevPage.title, path: buildPagePath(pages, prevPage.id) }
-      : null,
-    next: nextPage
-      ? { title: nextPage.title, path: buildPagePath(pages, nextPage.id) }
-      : null,
+    prev: prevPage ? { title: prevPage.title, path: buildPagePath(pages, prevPage.id) } : null,
+    next: nextPage ? { title: nextPage.title, path: buildPagePath(pages, nextPage.id) } : null,
   };
 }

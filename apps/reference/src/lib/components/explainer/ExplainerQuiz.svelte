@@ -70,8 +70,12 @@
           <label
             class="quiz__option"
             class:quiz__option--selected={answers[question.id] === option.id}
-            class:quiz__option--correct={submitted && feedback[question.id]?.correct && answers[question.id] === option.id}
-            class:quiz__option--incorrect={submitted && !feedback[question.id]?.correct && answers[question.id] === option.id}
+            class:quiz__option--correct={submitted &&
+              feedback[question.id]?.correct &&
+              answers[question.id] === option.id}
+            class:quiz__option--incorrect={submitted &&
+              !feedback[question.id]?.correct &&
+              answers[question.id] === option.id}
           >
             <input
               type="radio"
@@ -86,7 +90,12 @@
         {/each}
       </div>
       {#if submitted && feedback[question.id]}
-        <div class="quiz__feedback" class:quiz__feedback--correct={feedback[question.id]?.correct} class:quiz__feedback--incorrect={!feedback[question.id]?.correct} aria-live="polite">
+        <div
+          class="quiz__feedback"
+          class:quiz__feedback--correct={feedback[question.id]?.correct}
+          class:quiz__feedback--incorrect={!feedback[question.id]?.correct}
+          aria-live="polite"
+        >
           {feedback[question.id]?.correct ? 'Correct!' : 'Incorrect'}
           {#if feedback[question.id]?.explanation}
             <span class="quiz__explanation"> — {feedback[question.id]?.explanation}</span>
@@ -103,7 +112,12 @@
   {#if !submitted}
     <button type="submit" class="quiz__submit">Submit Answers</button>
   {:else}
-    <div class="quiz__result" class:quiz__result--passed={passed} class:quiz__result--failed={!passed} aria-live="polite">
+    <div
+      class="quiz__result"
+      class:quiz__result--passed={passed}
+      class:quiz__result--failed={!passed}
+      aria-live="polite"
+    >
       <p>Score: {score}% — {passed ? 'Passed!' : 'Not passed'}</p>
       {#if isGate && !passed}
         <p class="quiz__gate-message">You need {passingScore}% to continue.</p>
@@ -161,7 +175,7 @@
     background: var(--color-error-bg, #fef2f2);
   }
 
-  .quiz__option input[type="radio"] {
+  .quiz__option input[type='radio'] {
     accent-color: var(--color-primary, #2563eb);
   }
 
@@ -170,8 +184,12 @@
     font-size: var(--font-size-sm, 0.875rem);
   }
 
-  .quiz__feedback--correct { color: var(--color-success, #22c55e); }
-  .quiz__feedback--incorrect { color: var(--color-error, #dc2626); }
+  .quiz__feedback--correct {
+    color: var(--color-success, #22c55e);
+  }
+  .quiz__feedback--incorrect {
+    color: var(--color-error, #dc2626);
+  }
 
   .quiz__explanation {
     font-style: italic;
@@ -184,7 +202,8 @@
     font-size: var(--font-size-sm, 0.875rem);
   }
 
-  .quiz__submit, .quiz__retry {
+  .quiz__submit,
+  .quiz__retry {
     background: var(--color-primary, #2563eb);
     color: var(--color-on-primary, #ffffff);
     border: none;
@@ -194,9 +213,13 @@
     cursor: pointer;
   }
 
-  .quiz__submit:hover, .quiz__retry:hover { opacity: 0.9; }
+  .quiz__submit:hover,
+  .quiz__retry:hover {
+    opacity: 0.9;
+  }
 
-  .quiz__submit:focus-visible, .quiz__retry:focus-visible {
+  .quiz__submit:focus-visible,
+  .quiz__retry:focus-visible {
     outline: 2px solid var(--color-primary, #2563eb);
     outline-offset: 2px;
   }
@@ -207,8 +230,16 @@
     margin-bottom: var(--space-md, 1rem);
   }
 
-  .quiz__result--passed { background: var(--color-success-bg, #f0fdf4); color: var(--color-success, #22c55e); }
-  .quiz__result--failed { background: var(--color-error-bg, #fef2f2); color: var(--color-error, #dc2626); }
+  .quiz__result--passed {
+    background: var(--color-success-bg, #f0fdf4);
+    color: var(--color-success, #22c55e);
+  }
+  .quiz__result--failed {
+    background: var(--color-error-bg, #fef2f2);
+    color: var(--color-error, #dc2626);
+  }
 
-  .quiz__gate-message { font-weight: var(--font-weight-semibold, 600); }
+  .quiz__gate-message {
+    font-weight: var(--font-weight-semibold, 600);
+  }
 </style>

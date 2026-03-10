@@ -40,7 +40,12 @@ export const actions: Actions = {
       }
     }
 
-    const tags = tagsRaw ? tagsRaw.split(',').map((t) => t.trim()).filter(Boolean) : undefined;
+    const tags = tagsRaw
+      ? tagsRaw
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : undefined;
 
     const item = await createContent(locals.db, locals.user.id, {
       type: 'explainer',

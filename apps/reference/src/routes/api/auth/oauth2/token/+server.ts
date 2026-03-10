@@ -20,7 +20,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     // Try form-encoded
     const formData = await request.formData().catch(() => null);
     if (!formData) {
-      return json({ error: 'invalid_request', error_description: 'Invalid request body' }, { status: 400 });
+      return json(
+        { error: 'invalid_request', error_description: 'Invalid request body' },
+        { status: 400 },
+      );
     }
     body = Object.fromEntries(formData) as Record<string, string>;
   }

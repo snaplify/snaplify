@@ -39,7 +39,11 @@
 
 <div
   class={['snaplify-stack', className].filter(Boolean).join(' ')}
-  style="flex-direction: {direction === 'horizontal' ? 'row' : 'column'}; gap: {gap}; align-items: {alignMap[align]}; justify-content: {justifyMap[justify]}; flex-wrap: {wrap ? 'wrap' : 'nowrap'};"
+  style="flex-direction: {direction === 'horizontal'
+    ? 'row'
+    : 'column'}; gap: {gap}; align-items: {alignMap[align]}; justify-content: {justifyMap[
+    justify
+  ]}; flex-wrap: {wrap ? 'wrap' : 'nowrap'};"
 >
   {@render children()}
 </div>

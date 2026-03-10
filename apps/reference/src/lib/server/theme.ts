@@ -8,10 +8,7 @@ type DB = NodePgDatabase<Record<string, unknown>>;
 export async function resolveTheme(db: DB, userId?: string): Promise<string> {
   // 1. User preference
   if (userId) {
-    const [user] = await db
-      .select({ theme: users.theme })
-      .from(users)
-      .where(eq(users.id, userId));
+    const [user] = await db.select({ theme: users.theme }).from(users).where(eq(users.id, userId));
     if (user?.theme && isValidThemeId(user.theme)) {
       return user.theme;
     }
@@ -48,8 +45,5 @@ export async function setUserTheme(db: DB, userId: string, themeId: string): Pro
     throw new Error(`Invalid theme ID: ${themeId}`);
   }
 
-  await db
-    .update(users)
-    .set({ theme: themeId, updatedAt: new Date() })
-    .where(eq(users.id, userId));
+  await db.update(users).set({ theme: themeId, updatedAt: new Date() }).where(eq(users.id, userId));
 }

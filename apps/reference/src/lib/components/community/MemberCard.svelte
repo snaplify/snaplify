@@ -10,7 +10,9 @@
     {#if member.user.avatarUrl}
       <img src={member.user.avatarUrl} alt="" class="member-avatar" width="36" height="36" />
     {:else}
-      <span class="member-avatar-placeholder">{member.user.displayName?.[0] ?? member.user.username[0]}</span>
+      <span class="member-avatar-placeholder"
+        >{member.user.displayName?.[0] ?? member.user.username[0]}</span
+      >
     {/if}
     <div class="member-details">
       <span class="member-name">{member.user.displayName ?? member.user.username}</span>

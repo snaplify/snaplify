@@ -22,7 +22,11 @@
   }
 </script>
 
-<div class={['admin-audit-table-wrapper', className].filter(Boolean).join(' ')} role="region" aria-label="Audit log table">
+<div
+  class={['admin-audit-table-wrapper', className].filter(Boolean).join(' ')}
+  role="region"
+  aria-label="Audit log table"
+>
   <table class="admin-audit-table">
     <thead>
       <tr>

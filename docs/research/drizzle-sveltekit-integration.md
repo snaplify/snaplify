@@ -18,6 +18,7 @@ Attach to `event.locals.db` so all server load functions and actions share the p
 ## Query Patterns for SSR
 
 ### Reads in `+page.server.ts` load functions
+
 ```typescript
 export async function load({ locals }) {
   const items = await locals.db
@@ -31,6 +32,7 @@ export async function load({ locals }) {
 ```
 
 ### Mutations in form actions
+
 ```typescript
 export const actions = {
   create: async ({ request, locals }) => {
@@ -47,6 +49,7 @@ export const actions = {
 ## Transaction Handling
 
 Use `db.transaction()` for multi-table mutations:
+
 ```typescript
 await locals.db.transaction(async (tx) => {
   const [item] = await tx.insert(contentItems).values({ ... }).returning();

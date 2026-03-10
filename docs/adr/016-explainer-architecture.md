@@ -17,6 +17,7 @@ Three-layer architecture:
 Contains zero UI code. All functions are pure (state in → state out), serializable, and testable without a DOM.
 
 **Modules:**
+
 - `types.ts` — All TypeScript interfaces and type aliases
 - `schemas.ts` — Zod validators for all section types (discriminated union)
 - `sections/registry.ts` — Section type registry (mirrors `@snaplify/editor` block registry)
@@ -48,15 +49,18 @@ Located in `apps/reference/src/lib/components/explainer/`. These are Svelte 5 co
 ## Consequences
 
 ### Positive
+
 - Layer 1 is fully testable without DOM, browser, or Svelte
 - Layer 1 is reusable by other apps (not SvelteKit-specific)
 - HTML export works server-side (Node.js) with no browser dependency
 - Clear dependency direction: Layer 2 → Layer 1, Layer 3 → Layer 1
 
 ### Negative
+
 - Some logic duplication between Svelte quiz UI and exported HTML quiz JS
 - Section renderer must handle all block types without TipTap's rendering pipeline
 
 ### Neutral
+
 - GSAP is a runtime concern, not a package dependency
 - Progress state shape defined in Layer 1, stored in localStorage by Layer 2

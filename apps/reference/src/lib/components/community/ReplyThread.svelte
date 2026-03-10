@@ -1,7 +1,11 @@
 <script lang="ts">
   import type { CommunityReplyItem } from '$lib/types';
 
-  let { replies, slug, postId }: {
+  let {
+    replies,
+    slug,
+    postId,
+  }: {
     replies: CommunityReplyItem[];
     slug: string;
     postId: string;
@@ -15,7 +19,9 @@
         {#if reply.author.avatarUrl}
           <img src={reply.author.avatarUrl} alt="" class="reply-avatar" width="24" height="24" />
         {:else}
-          <span class="reply-avatar-placeholder">{reply.author.displayName?.[0] ?? reply.author.username[0]}</span>
+          <span class="reply-avatar-placeholder"
+            >{reply.author.displayName?.[0] ?? reply.author.username[0]}</span
+          >
         {/if}
         <span class="reply-author">{reply.author.displayName ?? reply.author.username}</span>
         <time class="reply-time" datetime={new Date(reply.createdAt).toISOString()}>

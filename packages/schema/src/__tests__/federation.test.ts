@@ -6,11 +6,7 @@ import {
   actorKeypairs,
   actorKeypairsRelations,
 } from '../federation';
-import {
-  activityDirectionEnum,
-  activityStatusEnum,
-  followRelationshipStatusEnum,
-} from '../enums';
+import { activityDirectionEnum, activityStatusEnum, followRelationshipStatusEnum } from '../enums';
 import {
   createRemoteActorSchema,
   createActivitySchema,

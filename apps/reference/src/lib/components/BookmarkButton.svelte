@@ -43,7 +43,15 @@
   aria-pressed={optimisticBookmarked}
   disabled={loading}
 >
-  <svg width="20" height="20" viewBox="0 0 24 24" fill={optimisticBookmarked ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill={optimisticBookmarked ? 'currentColor' : 'none'}
+    stroke="currentColor"
+    stroke-width="2"
+    aria-hidden="true"
+  >
     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
   </svg>
 </button>
@@ -58,7 +66,9 @@
     background: var(--color-surface, #ffffff);
     color: var(--color-text-secondary, #666);
     cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
   }
 
   .bookmark-button:hover {

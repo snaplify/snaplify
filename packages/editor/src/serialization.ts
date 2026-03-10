@@ -145,10 +145,7 @@ export function buildEditorSchema(): Schema {
 }
 
 /** Convert BlockTuple[] to a ProseMirror document Node */
-export function blockTuplesToDoc(
-  blocks: BlockTuple[],
-  schema?: Schema
-): ProseMirrorNode {
+export function blockTuplesToDoc(blocks: BlockTuple[], schema?: Schema): ProseMirrorNode {
   const s = schema ?? buildEditorSchema();
   const pmNodes: ProseMirrorNode[] = [];
 
@@ -169,10 +166,7 @@ export function blockTuplesToDoc(
         const c = content as { text: string; level: number };
         const textNode = c.text ? s.text(c.text) : undefined;
         pmNodes.push(
-          s.nodes.heading!.create(
-            { level: c.level },
-            textNode ? [textNode] : undefined
-          )
+          s.nodes.heading!.create({ level: c.level }, textNode ? [textNode] : undefined),
         );
         break;
       }
@@ -182,8 +176,8 @@ export function blockTuplesToDoc(
         pmNodes.push(
           s.nodes.code_block!.create(
             { language: c.language, filename: c.filename ?? null },
-            textNode ? [textNode] : undefined
-          )
+            textNode ? [textNode] : undefined,
+          ),
         );
         break;
       }
@@ -194,7 +188,7 @@ export function blockTuplesToDoc(
             src: c.src,
             alt: c.alt,
             caption: c.caption ?? null,
-          })
+          }),
         );
         break;
       }
@@ -206,12 +200,7 @@ export function blockTuplesToDoc(
         for (let i = 0; i < parsed.childCount; i++) {
           children.push(parsed.child(i));
         }
-        pmNodes.push(
-          s.nodes.blockquote!.create(
-            { attribution: c.attribution ?? null },
-            children
-          )
-        );
+        pmNodes.push(s.nodes.blockquote!.create({ attribution: c.attribution ?? null }, children));
         break;
       }
       case 'callout': {
@@ -222,9 +211,7 @@ export function blockTuplesToDoc(
         for (let i = 0; i < parsed.childCount; i++) {
           children.push(parsed.child(i));
         }
-        pmNodes.push(
-          s.nodes.callout!.create({ variant: c.variant }, children)
-        );
+        pmNodes.push(s.nodes.callout!.create({ variant: c.variant }, children));
         break;
       }
     }
@@ -247,10 +234,7 @@ export function docToBlockTuples(doc: ProseMirrorNode): BlockTuple[] {
         break;
       }
       case 'heading': {
-        blocks.push([
-          'heading',
-          { text: node.textContent, level: node.attrs.level },
-        ]);
+        blocks.push(['heading', { text: node.textContent, level: node.attrs.level }]);
         break;
       }
       case 'code_block': {

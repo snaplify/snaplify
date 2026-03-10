@@ -1,12 +1,6 @@
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
-import {
-  users,
-  contentItems,
-  communities,
-  reports,
-  instanceSettings,
-} from '@snaplify/schema';
+import { users, contentItems, communities, reports, instanceSettings } from '@snaplify/schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { createAuditEntry } from './audit';
 
@@ -140,12 +134,12 @@ export async function listUsers(
 
   if (filters.search) {
     const term = `%${filters.search}%`;
-    conditions.push(
-      sql`(${ilike(users.username, term)} OR ${ilike(users.email, term)})`,
-    );
+    conditions.push(sql`(${ilike(users.username, term)} OR ${ilike(users.email, term)})`);
   }
   if (filters.role) {
-    conditions.push(eq(users.role, filters.role as 'member' | 'pro' | 'verified' | 'staff' | 'admin'));
+    conditions.push(
+      eq(users.role, filters.role as 'member' | 'pro' | 'verified' | 'staff' | 'admin'),
+    );
   }
   if (filters.status) {
     conditions.push(eq(users.status, filters.status as 'active' | 'suspended' | 'deleted'));
@@ -196,7 +190,10 @@ export async function updateUserRole(
 
   await db
     .update(users)
-    .set({ role: newRole as 'member' | 'pro' | 'verified' | 'staff' | 'admin', updatedAt: new Date() })
+    .set({
+      role: newRole as 'member' | 'pro' | 'verified' | 'staff' | 'admin',
+      updatedAt: new Date(),
+    })
     .where(eq(users.id, userId));
 
   await createAuditEntry(db, {
@@ -290,9 +287,7 @@ export async function listReports(
     resolution: row.report.resolution,
     createdAt: row.report.createdAt,
     reporter: { id: row.reporter.id, username: row.reporter.username },
-    reviewer: row.reviewer.id
-      ? { id: row.reviewer.id, username: row.reviewer.username }
-      : null,
+    reviewer: row.reviewer?.id ? { id: row.reviewer.id, username: row.reviewer.username } : null,
   }));
 
   return { items, total: countResult[0]?.count ?? 0 };
@@ -341,10 +336,7 @@ export async function getInstanceSettings(db: DB): Promise<Map<string, unknown>>
 }
 
 export async function getInstanceSetting(db: DB, key: string): Promise<unknown | null> {
-  const [row] = await db
-    .select()
-    .from(instanceSettings)
-    .where(eq(instanceSettings.key, key));
+  const [row] = await db.select().from(instanceSettings).where(eq(instanceSettings.key, key));
   return row?.value ?? null;
 }
 
@@ -355,10 +347,7 @@ export async function setInstanceSetting(
   adminId: string,
   ip?: string,
 ): Promise<void> {
-  const existing = await db
-    .select()
-    .from(instanceSettings)
-    .where(eq(instanceSettings.key, key));
+  const existing = await db.select().from(instanceSettings).where(eq(instanceSettings.key, key));
 
   if (existing.length > 0) {
     await db
@@ -398,10 +387,7 @@ export async function removeContent(
     .where(eq(contentItems.id, contentId));
   if (!item) throw new Error('Content not found');
 
-  await db
-    .update(contentItems)
-    .set({ status: 'archived' })
-    .where(eq(contentItems.id, contentId));
+  await db.update(contentItems).set({ status: 'archived' }).where(eq(contentItems.id, contentId));
 
   await createAuditEntry(db, {
     userId: adminId,

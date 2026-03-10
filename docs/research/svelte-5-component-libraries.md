@@ -22,6 +22,7 @@ All major Svelte component libraries use `@sveltejs/package` (the `svelte-packag
 Two main approaches in the ecosystem:
 
 **1. Action-based (Melt UI pattern)**
+
 - Export builder functions that return Svelte actions + state
 - Consumer applies actions to their own HTML elements
 - Maximum flexibility, minimum opinion
@@ -33,6 +34,7 @@ const { trigger, content, open } = createPopover();
 ```
 
 **2. Component-based (Bits UI / Skeleton pattern)**
+
 - Export `.svelte` components with slots/snippets
 - Components handle ARIA, keyboard, focus management internally
 - Accept `class` prop for external styling
@@ -48,8 +50,9 @@ const { trigger, content, open } = createPopover();
 ### Decision for @snaplify/ui
 
 **Component-based approach** (Bits UI style) because:
+
 - Aligns with Standing Rule #12 (accessibility-first) — ARIA baked into components
-- `class` prop convention matches Standing Rule #3 (var(--*) styling)
+- `class` prop convention matches Standing Rule #3 (var(--\*) styling)
 - Simpler consumer API for Phase 4 reference app
 - Svelte 5 snippets replace slots cleanly
 

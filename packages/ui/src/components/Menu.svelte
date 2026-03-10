@@ -91,8 +91,8 @@
         // Type-ahead
         if (e.key.length === 1) {
           const char = e.key.toLowerCase();
-          const match = items.findIndex(
-            (el) => el.textContent?.trim().toLowerCase().startsWith(char)
+          const match = items.findIndex((el) =>
+            el.textContent?.trim().toLowerCase().startsWith(char),
           );
           if (match !== -1) {
             activeIndex = match;
@@ -127,10 +127,7 @@
   });
 </script>
 
-<div
-  class={['snaplify-menu', className].filter(Boolean).join(' ')}
-  onkeydown={handleKeydown}
->
+<div class={['snaplify-menu', className].filter(Boolean).join(' ')} onkeydown={handleKeydown}>
   <button
     bind:this={triggerRef}
     type="button"
@@ -144,13 +141,7 @@
   </button>
 
   {#if open}
-    <div
-      bind:this={menuRef}
-      {id}
-      class="snaplify-menu-content"
-      role="menu"
-      aria-label={label}
-    >
+    <div bind:this={menuRef} {id} class="snaplify-menu-content" role="menu" aria-label={label}>
       {@render children()}
     </div>
   {/if}

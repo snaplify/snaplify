@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  contentToArticle,
-  contentToNote,
-  articleToContent,
-  noteToComment,
-} from '../contentMapper';
+import { contentToArticle, contentToNote, articleToContent, noteToComment } from '../contentMapper';
 import { AP_CONTEXT, AP_PUBLIC } from '../activityTypes';
 
 const domain = 'test.example.com';

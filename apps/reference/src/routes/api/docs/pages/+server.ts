@@ -10,7 +10,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     return json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  let input: { versionId: string; title: string; slug?: string; content: string; sortOrder?: number; parentId?: string };
+  let input: {
+    versionId: string;
+    title: string;
+    slug?: string;
+    content: string;
+    sortOrder?: number;
+    parentId?: string;
+  };
   try {
     input = await request.json();
   } catch {
@@ -33,7 +40,14 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
     return json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  let input: { pageId: string; title?: string; slug?: string; content?: string; sortOrder?: number; parentId?: string | null };
+  let input: {
+    pageId: string;
+    title?: string;
+    slug?: string;
+    content?: string;
+    sortOrder?: number;
+    parentId?: string | null;
+  };
   try {
     input = await request.json();
   } catch {

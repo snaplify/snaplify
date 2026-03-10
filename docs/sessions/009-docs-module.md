@@ -5,6 +5,7 @@
 ## What Was Done
 
 ### Phase 8 Audit Fixes (0A)
+
 - Fixed `likeTargetTypeSchema` — added 'explainer' and 'guide' values
 - Fixed `follows` table — added UUID primary key `id` column
 - Wired federation hooks into 5 route handlers:
@@ -15,10 +16,12 @@
   - `api/social/like` — `onContentLiked` on like
 
 ### Pre-Implementation (0B, 0C)
+
 - Created `docs/research/docs-systems.md` — Prior art from Docusaurus, VitePress, Mintlify, Nextra, GitBook
 - Created `docs/adr/020-docs-architecture.md` — 10 architectural decisions
 
 ### @snaplify/docs Package (Steps 1-9)
+
 - **Types** (`types.ts`): 12 interfaces — NavItem, PageTreeNode, BreadcrumbItem, PrevNextLinks, TocEntry, RenderOptions, RenderResult, PageFrontmatter, SearchDocument, VersionInfo, DocsPage, DocsSite
 - **Validators** (`validators.ts`): 7 Zod schemas with recursive nav validation via `z.lazy()`
 - **Frontmatter** (`render/frontmatter.ts`): YAML parsing with graceful fallback
@@ -31,11 +34,13 @@
 - **Tests**: 101 tests across 8 test files
 
 ### Schema Package Updates
+
 - Added base `createDocsSiteSchema` and `createDocsPageSchema` to `packages/schema/src/validators.ts`
 
 ### Reference App Integration (Steps 10-13)
+
 - **Feature flag**: `docs: env.FEATURE_DOCS !== 'false'` in hooks.server.ts
-- **Dependencies**: Added @snaplify/docs, @codemirror/* packages
+- **Dependencies**: Added @snaplify/docs, @codemirror/\* packages
 - **Server functions** (`lib/server/docs.ts`): 17 CRUD functions for sites, versions, pages, nav, search
 - **Components** (7 Svelte 5 components):
   - DocsViewer, DocsSidebar, DocsSearch, CodeMirrorEditor, VersionSelector, PageBreadcrumb, PrevNextNav
@@ -46,6 +51,7 @@
   - API: pages CRUD, nav update, versions CRUD, search
 
 ## Decisions Made
+
 - Rendering pipeline uses dynamic `@shikijs/rehype` import (15s timeout for first shiki init in tests)
 - Nav editor uses JSON textarea (drag-and-drop deferred)
 - Search uses Postgres FTS directly (Meilisearch deferred to Phase 12)
@@ -53,17 +59,20 @@
 - No nested forms in Svelte (moved delete forms outside save forms)
 
 ## Test Counts
-| Package | Tests |
-|---------|-------|
-| @snaplify/docs | 101 |
-| Previous packages | 733 |
-| **Total** | **834** |
+
+| Package           | Tests   |
+| ----------------- | ------- |
+| @snaplify/docs    | 101     |
+| Previous packages | 733     |
+| **Total**         | **834** |
 
 ## Open Questions
+
 - Mermaid diagram rendering (deferred to Phase 9b)
 - Static HTML export for docs (deferred)
 - Real-time collaborative editing (deferred)
 
 ## Next Steps
+
 - Phase 9b: GSAP scroll animations for explainers, mermaid support
 - Phase 10+: Per master plan

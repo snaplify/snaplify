@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  generateKeypair,
-  exportPublicKeyPem,
-  exportPrivateKeyPem,
-  buildKeyId,
-} from '../keypairs';
+import { generateKeypair, exportPublicKeyPem, exportPrivateKeyPem, buildKeyId } from '../keypairs';
 
 describe('generateKeypair', () => {
   it('should generate an RSA 2048 keypair', async () => {

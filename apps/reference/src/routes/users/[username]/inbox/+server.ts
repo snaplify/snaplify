@@ -2,12 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { processInboxActivity } from '@snaplify/snaplify';
 import { eq, and } from 'drizzle-orm';
-import {
-  users,
-  activities,
-  followRelationships,
-  remoteActors,
-} from '@snaplify/schema';
+import { users, activities, followRelationships } from '@snaplify/schema';
 import { acceptFollow } from '$lib/server/federation';
 
 export const POST: RequestHandler = async ({ params, request, locals }) => {
@@ -40,14 +35,17 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
   await db.insert(activities).values({
     type: (body.type as string) ?? 'Unknown',
     actorUri: (body.actor as string) ?? '',
-    objectUri: typeof body.object === 'string' ? body.object : (body.object as Record<string, unknown>)?.id as string ?? null,
+    objectUri:
+      typeof body.object === 'string'
+        ? body.object
+        : (((body.object as Record<string, unknown>)?.id as string) ?? null),
     payload: body,
     direction: 'inbound',
     status: 'processed',
   });
 
   const result = await processInboxActivity(body, {
-    async onFollow(actorUri, targetActorUri, activityId) {
+    async onFollow(actorUri, targetActorUri, _activityId) {
       // Auto-accept follows for now (v1)
       const [rel] = await db
         .insert(followRelationships)
@@ -63,44 +61,51 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
         await acceptFollow(db, rel.id, domain);
       }
     },
-    async onAccept(actorUri, objectId) {
+    async onAccept(_actorUri, _objectId) {
       // Update our follow relationship to accepted
       await db
         .update(followRelationships)
         .set({ status: 'accepted', updatedAt: new Date() })
-        .where(eq(followRelationships.followerActorUri, `https://${domain}/users/${params.username}`));
+        .where(
+          eq(followRelationships.followerActorUri, `https://${domain}/users/${params.username}`),
+        );
     },
-    async onReject(actorUri, objectId) {
+    async onReject(_actorUri, _objectId) {
       await db
         .update(followRelationships)
         .set({ status: 'rejected', updatedAt: new Date() })
-        .where(eq(followRelationships.followerActorUri, `https://${domain}/users/${params.username}`));
+        .where(
+          eq(followRelationships.followerActorUri, `https://${domain}/users/${params.username}`),
+        );
     },
-    async onUndo(actorUri, objectType, objectId) {
+    async onUndo(actorUri, objectType, _objectId) {
       if (objectType === 'Follow') {
         await db
           .delete(followRelationships)
           .where(
             and(
               eq(followRelationships.followerActorUri, actorUri),
-              eq(followRelationships.followingActorUri, `https://${domain}/users/${params.username}`),
+              eq(
+                followRelationships.followingActorUri,
+                `https://${domain}/users/${params.username}`,
+              ),
             ),
           );
       }
     },
-    async onCreate(actorUri, object) {
+    async onCreate(_actorUri, _object) {
       // Store remote content reference — full implementation in Phase 9
     },
-    async onUpdate(actorUri, object) {
+    async onUpdate(_actorUri, _object) {
       // Update remote content reference — full implementation in Phase 9
     },
-    async onDelete(actorUri, objectId) {
+    async onDelete(_actorUri, _objectId) {
       // Remove remote content reference — full implementation in Phase 9
     },
-    async onLike(actorUri, objectUri) {
+    async onLike(_actorUri, _objectUri) {
       // Record remote like — full implementation in Phase 9
     },
-    async onAnnounce(actorUri, objectUri) {
+    async onAnnounce(_actorUri, _objectUri) {
       // Record remote boost — full implementation in Phase 9
     },
   });

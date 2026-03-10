@@ -53,13 +53,7 @@
     <form onsubmit={handleSignUp}>
       <div class="form-field">
         <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          bind:value={email}
-          required
-          autocomplete="email"
-        />
+        <input id="email" type="email" bind:value={email} required autocomplete="email" />
       </div>
 
       <div class="form-field">
@@ -78,12 +72,7 @@
 
       <div class="form-field">
         <label for="displayName">Display Name <span class="optional">(optional)</span></label>
-        <input
-          id="displayName"
-          type="text"
-          bind:value={displayName}
-          maxlength="128"
-        />
+        <input id="displayName" type="text" bind:value={displayName} maxlength="128" />
       </div>
 
       <div class="form-field">

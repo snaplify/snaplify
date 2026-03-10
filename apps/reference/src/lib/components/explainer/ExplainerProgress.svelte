@@ -2,7 +2,14 @@
   let { percentage = 0 }: { percentage: number } = $props();
 </script>
 
-<div class="progress-bar" role="progressbar" aria-label="Explainer progress" aria-valuenow={percentage} aria-valuemin={0} aria-valuemax={100}>
+<div
+  class="progress-bar"
+  role="progressbar"
+  aria-label="Explainer progress"
+  aria-valuenow={percentage}
+  aria-valuemin={0}
+  aria-valuemax={100}
+>
   <div class="progress-bar__fill" style:width="{percentage}%"></div>
 </div>
 

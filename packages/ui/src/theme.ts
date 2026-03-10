@@ -7,9 +7,24 @@ export interface ThemeDefinition {
 
 export const BUILT_IN_THEMES: ThemeDefinition[] = [
   { id: 'base', name: 'Base', description: 'Clean default theme with blue accents', isDark: false },
-  { id: 'deepwood', name: 'Deepwood', description: 'Forest greens, lime accent, nature-inspired', isDark: true },
-  { id: 'hackbuild', name: 'hack.build', description: 'Punk zine theme, paper textures, hard-edge shadows', isDark: false },
-  { id: 'deveco', name: 'deveco.io', description: 'Clean tech, teal/pink/yellow accents', isDark: false },
+  {
+    id: 'deepwood',
+    name: 'Deepwood',
+    description: 'Forest greens, lime accent, nature-inspired',
+    isDark: true,
+  },
+  {
+    id: 'hackbuild',
+    name: 'hack.build',
+    description: 'Punk zine theme, paper textures, hard-edge shadows',
+    isDark: false,
+  },
+  {
+    id: 'deveco',
+    name: 'deveco.io',
+    description: 'Clean tech, teal/pink/yellow accents',
+    isDark: false,
+  },
 ];
 
 const THEME_IDS = new Set(BUILT_IN_THEMES.map((t) => t.id));
@@ -128,9 +143,10 @@ export const TOKEN_NAMES: string[] = [
 
 const TOKEN_SET = new Set(TOKEN_NAMES);
 
-export function validateTokenOverrides(
-  overrides: Record<string, string>,
-): { valid: Record<string, string>; invalid: string[] } {
+export function validateTokenOverrides(overrides: Record<string, string>): {
+  valid: Record<string, string>;
+  invalid: string[];
+} {
   const valid: Record<string, string> = {};
   const invalid: string[] = [];
 
@@ -170,9 +186,10 @@ export function applyThemeToElement(
   }
 }
 
-export function getThemeFromElement(
-  el: HTMLElement,
-): { themeId: string; overrides: Record<string, string> } {
+export function getThemeFromElement(el: HTMLElement): {
+  themeId: string;
+  overrides: Record<string, string>;
+} {
   const themeId = el.getAttribute('data-theme') ?? 'base';
   const overrides: Record<string, string> = {};
 

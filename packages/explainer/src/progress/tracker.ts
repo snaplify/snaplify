@@ -1,8 +1,4 @@
-import type {
-  ExplainerSection,
-  ExplainerProgressState,
-  SectionProgress,
-} from '../types';
+import type { ExplainerSection, ExplainerProgressState, SectionProgress } from '../types';
 
 /** Create initial empty progress state for an explainer */
 export function createProgressState(sections: ExplainerSection[]): ExplainerProgressState {

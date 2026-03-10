@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, ilike, inArray } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { contentItems, tags, contentTags, users } from '@snaplify/schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { generateSlug, ensureUniqueSlug } from '../utils/slug';
@@ -53,10 +53,7 @@ export async function listContent(
   }
   if (filters.type) {
     conditions.push(
-      eq(
-        contentItems.type,
-        filters.type as 'project' | 'article' | 'guide' | 'blog' | 'explainer',
-      ),
+      eq(contentItems.type, filters.type as 'project' | 'article' | 'guide' | 'blog' | 'explainer'),
     );
   }
   if (filters.authorId) {
@@ -177,7 +174,7 @@ export async function createContent(
       coverImageUrl: input.coverImageUrl ?? null,
       category: input.category ?? null,
       difficulty: (input.difficulty as 'beginner' | 'intermediate' | 'advanced') ?? null,
-      sections: input.sections as typeof contentItems.$inferInsert.sections ?? null,
+      sections: (input.sections as typeof contentItems.$inferInsert.sections) ?? null,
       status: 'draft',
       previewToken,
     })
@@ -242,11 +239,7 @@ export async function updateContent(
   return (await getContentBySlug(db, slug, authorId))!;
 }
 
-export async function deleteContent(
-  db: DB,
-  contentId: string,
-  authorId: string,
-): Promise<boolean> {
+export async function deleteContent(db: DB, contentId: string, authorId: string): Promise<boolean> {
   const result = await db
     .update(contentItems)
     .set({ status: 'archived', updatedAt: new Date() })
@@ -287,19 +280,14 @@ async function syncTags(db: DB, contentId: string, tagNames: string[]): Promise<
     if (existing.length > 0) {
       tagRows.push(existing[0]!);
     } else {
-      const [newTag] = await db
-        .insert(tags)
-        .values({ name, slug })
-        .returning();
+      const [newTag] = await db.insert(tags).values({ name, slug }).returning();
       tagRows.push(newTag!);
     }
   }
 
   // Create content-tag associations
   if (tagRows.length > 0) {
-    await db
-      .insert(contentTags)
-      .values(tagRows.map((tag) => ({ contentId, tagId: tag.id })));
+    await db.insert(contentTags).values(tagRows.map((tag) => ({ contentId, tagId: tag.id })));
   }
 }
 

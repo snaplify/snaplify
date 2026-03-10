@@ -28,6 +28,7 @@ The full implementation plan is at `docs/plan.md`. Always consult it before star
 ## Code Conventions
 
 ### File Naming
+
 - Components: `PascalCase.svelte`
 - TypeScript modules: `camelCase.ts`
 - Schema files: `camelCase.ts`
@@ -36,6 +37,7 @@ The full implementation plan is at `docs/plan.md`. Always consult it before star
 - ADRs: `NNN-kebab.md`
 
 ### Code Style
+
 - TypeScript strict mode — no `any`
 - Svelte 5 runes syntax
 - Explicit return types on all exports
@@ -44,12 +46,14 @@ The full implementation plan is at `docs/plan.md`. Always consult it before star
 - Feature flags checked via `@snaplify/config` before enabling any feature
 
 ### Git Conventions
+
 - Conventional commits: `feat(schema):`, `fix(auth):`, `test(editor):`, `docs(adr):`, `chore(deps):`
 - Atomic commits — one logical change per commit
 - PRs with summary + test plan
 - Squash merge to main
 
 ### Component Standards
+
 - Headless: structure + behavior, no visual opinions beyond CSS custom properties
 - Always accept `class` prop for external styling
 - Keyboard navigable — all interactive elements
@@ -59,20 +63,22 @@ The full implementation plan is at `docs/plan.md`. Always consult it before star
 ## Architecture
 
 ### Packages (all under `packages/`)
-| Package | npm Name | Purpose |
-|---------|----------|---------|
-| `schema` | `@snaplify/schema` | Drizzle tables + Zod validators |
-| `protocol` | `@snaplify/snaplify` | Fedify wrapper + AP types |
-| `auth` | `@snaplify/auth` | Better Auth wrapper + AP SSO |
-| `ui` | `@snaplify/ui` | Headless Svelte 5 components + theme CSS |
-| `config` | `@snaplify/config` | `defineSnaplifyConfig()` factory |
-| `docs` | `@snaplify/docs` | Pluggable docs site module |
-| `editor` | `@snaplify/editor` | TipTap extensions + block types |
-| `explainer` | `@snaplify/explainer` | Interactive module runtime |
-| `learning` | `@snaplify/learning` | Learning path engine |
-| `test-utils` | `@snaplify/test-utils` | Shared test helpers |
+
+| Package      | npm Name               | Purpose                                  |
+| ------------ | ---------------------- | ---------------------------------------- |
+| `schema`     | `@snaplify/schema`     | Drizzle tables + Zod validators          |
+| `protocol`   | `@snaplify/snaplify`   | Fedify wrapper + AP types                |
+| `auth`       | `@snaplify/auth`       | Better Auth wrapper + AP SSO             |
+| `ui`         | `@snaplify/ui`         | Headless Svelte 5 components + theme CSS |
+| `config`     | `@snaplify/config`     | `defineSnaplifyConfig()` factory         |
+| `docs`       | `@snaplify/docs`       | Pluggable docs site module               |
+| `editor`     | `@snaplify/editor`     | TipTap extensions + block types          |
+| `explainer`  | `@snaplify/explainer`  | Interactive module runtime               |
+| `learning`   | `@snaplify/learning`   | Learning path engine                     |
+| `test-utils` | `@snaplify/test-utils` | Shared test helpers                      |
 
 ### Tech Stack (Locked)
+
 - Framework: SvelteKit
 - Auth: Better Auth
 - Federation: Fedify
@@ -107,12 +113,14 @@ docker compose -f deploy/docker-compose.yml up -d
 ## Reference Implementations
 
 Two existing apps serve as reference only (schemas, logic, UX — not framework code):
+
 - `hack-build/` — Vue 3 + Convex (25-table schema, block editor, learning system)
 - `deveco-io/` — Nuxt 3 + Drizzle + tRPC (Drizzle patterns, Better Auth config, monorepo structure)
 
 ## Session Logging
 
 After each work session, create/update `docs/sessions/NNN-description.md` with:
+
 - What was done
 - Decisions made
 - Open questions

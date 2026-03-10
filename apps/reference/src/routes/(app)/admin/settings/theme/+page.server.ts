@@ -8,10 +8,11 @@ export const load: PageServerLoad = async (event) => {
   const tokenOverrides = await getInstanceSetting(event.locals.db, 'theme.token_overrides');
 
   return {
-    defaultTheme: (typeof defaultTheme === 'string' ? defaultTheme : 'base'),
-    tokenOverrides: (typeof tokenOverrides === 'object' && tokenOverrides !== null
-      ? tokenOverrides as Record<string, string>
-      : {}),
+    defaultTheme: typeof defaultTheme === 'string' ? defaultTheme : 'base',
+    tokenOverrides:
+      typeof tokenOverrides === 'object' && tokenOverrides !== null
+        ? (tokenOverrides as Record<string, string>)
+        : {},
   };
 };
 

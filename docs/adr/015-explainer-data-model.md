@@ -51,6 +51,7 @@ Each section's rich text uses `BlockTuple[]` from `@snaplify/editor`, keeping co
 ## Consequences
 
 ### Positive
+
 - **Portable**: Sections are plain JSON, easy to export to HTML, PDF, or other formats
 - **Simple HTML export**: No TipTap runtime needed for rendering
 - **Decoupled**: Explainer runtime doesn't depend on TipTap
@@ -58,11 +59,13 @@ Each section's rich text uses `BlockTuple[]` from `@snaplify/editor`, keeping co
 - **Type-safe**: Zod validators enforce section structure at runtime
 
 ### Negative
+
 - No inline WYSIWYG editing of section structure (must use form UI)
 - Section reordering requires custom UI (drag-and-drop list), not TipTap's built-in node manipulation
 - Svelte NodeView (for embedding interactive widgets in TipTap) is deferred
 
 ### Neutral
+
 - `content` field on contentItems still stores the overall explainer description/intro as BlockTuple[]
 - `sections` field stores the structured section array
 - Both fields coexist on the same content_items row

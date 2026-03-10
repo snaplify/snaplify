@@ -34,13 +34,13 @@ const content: BlockTuple[] = [
 
 ### Core Block Types (Phase 3)
 
-| Block | Content Schema |
-|-------|---------------|
-| text | `{ html: string }` |
-| heading | `{ text: string, level: 1\|2\|3\|4 }` |
-| code | `{ code: string, language: string, filename?: string }` |
-| image | `{ src: string, alt: string, caption?: string }` |
-| quote | `{ html: string, attribution?: string }` |
+| Block   | Content Schema                                                  |
+| ------- | --------------------------------------------------------------- |
+| text    | `{ html: string }`                                              |
+| heading | `{ text: string, level: 1\|2\|3\|4 }`                           |
+| code    | `{ code: string, language: string, filename?: string }`         |
+| image   | `{ src: string, alt: string, caption?: string }`                |
+| quote   | `{ html: string, attribution?: string }`                        |
 | callout | `{ html: string, variant: 'info'\|'tip'\|'warning'\|'danger' }` |
 
 ### Separation of Concerns

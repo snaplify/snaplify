@@ -138,9 +138,7 @@ describe('Block Content Schemas', () => {
 
     it('accepts all variants', () => {
       for (const variant of ['info', 'tip', 'warning', 'danger']) {
-        expect(
-          calloutContentSchema.safeParse({ html: '<p>X</p>', variant }).success
-        ).toBe(true);
+        expect(calloutContentSchema.safeParse({ html: '<p>X</p>', variant }).success).toBe(true);
       }
     });
 

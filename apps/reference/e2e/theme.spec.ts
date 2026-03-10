@@ -14,7 +14,8 @@ test.describe('Theme System', () => {
     await signIn(page, testUsers.member);
     await page.goto('/settings');
 
-    const themeSelector = page.getByRole('combobox', { name: /theme/i })
+    const themeSelector = page
+      .getByRole('combobox', { name: /theme/i })
       .or(page.getByLabel(/theme/i));
 
     if (await themeSelector.isVisible()) {

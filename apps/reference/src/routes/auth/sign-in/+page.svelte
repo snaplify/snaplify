@@ -46,13 +46,7 @@
     <form onsubmit={handleSignIn}>
       <div class="form-field">
         <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          bind:value={email}
-          required
-          autocomplete="email"
-        />
+        <input id="email" type="email" bind:value={email} required autocomplete="email" />
       </div>
 
       <div class="form-field">

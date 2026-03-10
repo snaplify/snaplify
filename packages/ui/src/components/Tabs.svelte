@@ -59,11 +59,7 @@
 </script>
 
 <div class={['snaplify-tabs', className].filter(Boolean).join(' ')}>
-  <div
-    class="snaplify-tablist"
-    role="tablist"
-    onkeydown={handleKeydown}
-  >
+  <div class="snaplify-tablist" role="tablist" onkeydown={handleKeydown}>
     {#each tabs as tab}
       <button
         id={`tab-${tab.id}`}

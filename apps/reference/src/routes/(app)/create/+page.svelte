@@ -5,9 +5,12 @@
 
   let { form }: { form: ActionData } = $props();
 
-  let title = $state(form?.title ?? '');
-  let type = $state(form?.type ?? 'project');
-  let description = $state(form?.description ?? '');
+  type FormWithData = ActionData & { title?: string; type?: string; description?: string };
+  const formData = form as FormWithData | null;
+
+  let title = $state(formData?.title ?? '');
+  let type = $state(formData?.type ?? 'project');
+  let description = $state(formData?.description ?? '');
   let tags = $state('');
   let contentBlocks = $state<unknown[]>([]);
 
@@ -87,9 +90,7 @@
       <button type="submit" name="action" value="draft" class="btn btn-secondary">
         Save Draft
       </button>
-      <button type="submit" name="action" value="publish" class="btn btn-primary">
-        Publish
-      </button>
+      <button type="submit" name="action" value="publish" class="btn btn-primary"> Publish </button>
     </div>
   </form>
 </div>

@@ -2,7 +2,12 @@
   import { enhance } from '$app/forms';
   import { getRoleWeight } from '$lib/utils/community-permissions';
 
-  let { slug, userId, currentRole, actorRole }: {
+  let {
+    slug,
+    userId,
+    currentRole,
+    actorRole,
+  }: {
     slug: string;
     userId: string;
     currentRole: string;
@@ -10,13 +15,18 @@
   } = $props();
 
   const allRoles = ['member', 'moderator', 'admin'] as const;
-  const availableRoles = allRoles.filter((role) =>
-    getRoleWeight(actorRole) > getRoleWeight(role) && role !== currentRole
+  const availableRoles = allRoles.filter(
+    (role) => getRoleWeight(actorRole) > getRoleWeight(role) && role !== currentRole,
   );
 </script>
 
 {#if availableRoles.length > 0 && currentRole !== 'owner'}
-  <form method="POST" action="/communities/{slug}/settings?/changeRole" use:enhance class="role-selector">
+  <form
+    method="POST"
+    action="/communities/{slug}/settings?/changeRole"
+    use:enhance
+    class="role-selector"
+  >
     <input type="hidden" name="userId" value={userId} />
     <select name="role" class="role-select" aria-label="Change role">
       <option value="" disabled selected>Change role...</option>

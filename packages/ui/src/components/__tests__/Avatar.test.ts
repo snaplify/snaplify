@@ -33,9 +33,7 @@ describe('Avatar', () => {
     const { container } = render(Avatar, {
       props: { alt: 'Jane', name: 'Jane', size: 'lg' },
     });
-    expect(container.querySelector('.snaplify-avatar')?.className).toContain(
-      'snaplify-avatar--lg'
-    );
+    expect(container.querySelector('.snaplify-avatar')?.className).toContain('snaplify-avatar--lg');
   });
 
   it('accepts a class prop', () => {

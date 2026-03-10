@@ -5,6 +5,7 @@
 Phases 0–10 are complete (869 tests, all builds green). Phase 11 delivers the master plan goal: "CLI + Deployment (Weeks 29-31)."
 
 **What exists:**
+
 - `deploy/docker-compose.yml` — dev env (Postgres, Redis, Meilisearch)
 - `deploy/docker-compose.federation.yml` — multi-instance federation dev setup
 - `deploy/federation-seed.ts` — test data seed script
@@ -16,6 +17,7 @@ Phases 0–10 are complete (869 tests, all builds green). Phase 11 delivers the 
 - `.env.example` — env var template
 
 **What's missing:**
+
 - No `Dockerfile` — can't containerize the reference app
 - No `docker-compose.prod.yml` — no production orchestration
 - No `app-spec.yaml` — no DigitalOcean App Platform spec
@@ -52,13 +54,15 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 ### Step 1: Dockerfile + Production Docker Compose (~4 tests)
 
 **Create** `Dockerfile` (repo root):
+
 - Stage 1 `deps`: `node:22-alpine`, install pnpm, `pnpm install --frozen-lockfile`
 - Stage 2 `build`: copy deps, `pnpm build` (all packages + app)
 - Stage 3 `runtime`: `node:22-alpine`, copy built `apps/reference/build/`, `node_modules` (prod only), expose 3000
 - Env vars: `DATABASE_URL`, `REDIS_URL`, `AUTH_SECRET`, `ORIGIN`, `PORT=3000`
-- `.dockerignore`: node_modules, .git, .svelte-kit, dist, *.test.ts, docs/, deploy/
+- `.dockerignore`: node_modules, .git, .svelte-kit, dist, \*.test.ts, docs/, deploy/
 
 **Create** `deploy/docker-compose.prod.yml`:
+
 - `app` service: builds from `Dockerfile`, depends on postgres + redis
 - `postgres`: postgres:16-alpine with named volume, health check
 - `redis`: redis:7-alpine with named volume, health check
@@ -67,9 +71,11 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 - Optional `plausible` service (commented out)
 
 **Create** `deploy/.env.prod.example`:
+
 - All production env vars with secure defaults guidance
 
 **Tests** `deploy/__tests__/docker.test.ts`:
+
 - Dockerfile exists and has multi-stage structure (grep for `FROM.*AS`)
 - docker-compose.prod.yml parses as valid YAML
 - All required services present (app, postgres, redis)
@@ -78,6 +84,7 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 ### Step 2: DigitalOcean App Platform Spec
 
 **Create** `deploy/app-spec.yaml`:
+
 - App component: Dockerfile build, env vars from app-level env, HTTP port 3000
 - Database component: PostgreSQL 16 (managed, `db-s-1vcpu-1gb`)
 - Redis component: (managed, `db-s-1vcpu-1gb`)
@@ -88,6 +95,7 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 ### Step 3: Droplet Setup Script (~2 tests)
 
 **Create** `deploy/droplet-setup.sh`:
+
 - Install Docker + Docker Compose
 - Install Certbot for Let's Encrypt SSL
 - Create `snaplify` system user
@@ -97,12 +105,14 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 - UFW firewall rules (80, 443, 22)
 
 **Create** `deploy/nginx.conf`:
+
 - Reverse proxy to `localhost:3000`
 - SSL termination (Certbot certs)
 - WebSocket upgrade for SvelteKit HMR (dev) / federation (prod)
 - Security headers (HSTS, X-Frame-Options, CSP)
 
 **Tests** `deploy/__tests__/scripts.test.ts`:
+
 - droplet-setup.sh exists and is executable
 - nginx.conf has required proxy_pass directive
 - nginx.conf has SSL configuration blocks
@@ -110,21 +120,25 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 ### Step 4: CI/CD Enhancement (~3 tests)
 
 **Modify** `.github/workflows/ci.yml`:
+
 - Add `build` step after tests: `pnpm build`
 - Add build artifact caching
 
 **Create** `.github/workflows/docker.yml`:
+
 - Trigger: push to `main`, tags `v*`
 - Build Docker image
 - Push to GitHub Container Registry (`ghcr.io`)
 - Tag with git SHA + `latest` (main) or semver (tags)
 
 **Create** `.github/workflows/deploy.yml`:
+
 - Trigger: release published (tag `v*`)
 - Deploy to DO App Platform via `doctl` CLI
 - Or SSH deploy to droplet (configurable)
 
 **Tests** `deploy/__tests__/ci.test.ts`:
+
 - ci.yml has build step
 - docker.yml exists with correct triggers
 - deploy.yml exists with release trigger
@@ -132,14 +146,17 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 ### Step 5: `create-snaplify` Rust CLI (~18 tests)
 
 **Create** `tools/create-snaplify/Cargo.toml`:
+
 - Dependencies: `clap` (CLI args), `dialoguer` (interactive prompts), `console` (colors), `indicatif` (progress bars), `toml` (config gen), `include_dir` (template embedding)
 
 **Create** `tools/create-snaplify/src/main.rs`:
+
 - Subcommands: `new`, `init`
 - `new <name>`: Create new project directory with full scaffold
 - `init`: Initialize in current directory
 
 **Create** `tools/create-snaplify/src/scaffold.rs`:
+
 - Copy template files from embedded reference app
 - Generate `snaplify.config.ts` from user answers
 - Generate `.env` from user answers
@@ -147,6 +164,7 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 - Set up `package.json` with project name
 
 **Create** `tools/create-snaplify/src/prompts.rs`:
+
 - Instance name (required)
 - Instance domain (required)
 - Instance description (optional)
@@ -156,10 +174,12 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 - Theme: base, deepwood, hackbuild, deveco (select)
 
 **Create** `tools/create-snaplify/src/template.rs`:
+
 - Template file processing (variable substitution)
 - File tree generation from embedded assets
 
 **Create** `tools/create-snaplify/templates/`:
+
 - Stripped-down reference app template files
 - `snaplify.config.ts.tmpl` — config template with placeholders
 - `.env.tmpl` — env template with placeholders
@@ -167,6 +187,7 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 - `package.json.tmpl` — package.json with project name
 
 **Tests** `tools/create-snaplify/tests/`:
+
 - `scaffold.rs`: Template variable substitution works
 - `prompts.rs`: Default values are correct
 - `template.rs`: File tree generation produces expected structure
@@ -180,18 +201,20 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 
 **Create** `apps/reference/e2e/`:
 
-| Test File | Purpose |
-|-----------|---------|
-| `auth.spec.ts` | Sign up, sign in, sign out flow |
-| `content.spec.ts` | Create, view, edit, archive content |
-| `theme.spec.ts` | Theme picker preview, apply, persistence |
-| `admin.spec.ts` | Admin dashboard access (staff role), 403 for members |
+| Test File         | Purpose                                              |
+| ----------------- | ---------------------------------------------------- |
+| `auth.spec.ts`    | Sign up, sign in, sign out flow                      |
+| `content.spec.ts` | Create, view, edit, archive content                  |
+| `theme.spec.ts`   | Theme picker preview, apply, persistence             |
+| `admin.spec.ts`   | Admin dashboard access (staff role), 403 for members |
 
 **Prerequisites** (test fixtures):
+
 - `apps/reference/e2e/fixtures/setup.ts` — DB seed with test users (member, staff, admin)
 - `apps/reference/e2e/fixtures/cleanup.ts` — Teardown after tests
 
 **Playwright global setup**:
+
 - Start dev server
 - Run database migrations
 - Seed test data
@@ -199,6 +222,7 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 ### Step 7: Environment & Documentation Cleanup
 
 **Modify** `.env.example`:
+
 - Add `FEATURE_ADMIN=false` (missing from Phase 10)
 - Add `FEATURE_FEDERATION=false`
 - Add `FEATURE_EXPLAINERS=true`
@@ -206,6 +230,7 @@ Create `docs/adr/022-cli-deployment-architecture.md` covering:
 - Reorganize with section comments
 
 **Create** `docs/deployment.md`:
+
 - Quick start (Docker Compose)
 - Production (Docker Compose prod)
 - DigitalOcean App Platform
@@ -236,44 +261,44 @@ Steps 1-6 can all parallelize. Step 7 is final cleanup.
 
 ## Critical Files
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `Dockerfile` | Create | Multi-stage Node.js build |
-| `.dockerignore` | Create | Exclude non-build files |
-| `deploy/docker-compose.prod.yml` | Create | Production orchestration |
-| `deploy/.env.prod.example` | Create | Production env template |
-| `deploy/app-spec.yaml` | Create | DO App Platform spec |
-| `deploy/droplet-setup.sh` | Create | VPS provisioning |
-| `deploy/nginx.conf` | Create | Reverse proxy + SSL |
-| `.github/workflows/ci.yml` | Modify | Add build step |
-| `.github/workflows/docker.yml` | Create | Docker image build + push |
-| `.github/workflows/deploy.yml` | Create | Release deployment |
-| `tools/create-snaplify/Cargo.toml` | Create | Rust CLI project |
-| `tools/create-snaplify/src/main.rs` | Create | CLI entry point |
-| `tools/create-snaplify/src/scaffold.rs` | Create | Project scaffolding |
-| `tools/create-snaplify/src/prompts.rs` | Create | Interactive prompts |
-| `tools/create-snaplify/src/template.rs` | Create | Template processing |
-| `tools/create-snaplify/templates/` | Create | Scaffold templates |
-| `apps/reference/e2e/*.spec.ts` | Create | E2E test suites |
-| `.env.example` | Modify | Add missing feature flags |
-| `docs/deployment.md` | Create | Deployment guide |
+| File                                    | Action | Purpose                   |
+| --------------------------------------- | ------ | ------------------------- |
+| `Dockerfile`                            | Create | Multi-stage Node.js build |
+| `.dockerignore`                         | Create | Exclude non-build files   |
+| `deploy/docker-compose.prod.yml`        | Create | Production orchestration  |
+| `deploy/.env.prod.example`              | Create | Production env template   |
+| `deploy/app-spec.yaml`                  | Create | DO App Platform spec      |
+| `deploy/droplet-setup.sh`               | Create | VPS provisioning          |
+| `deploy/nginx.conf`                     | Create | Reverse proxy + SSL       |
+| `.github/workflows/ci.yml`              | Modify | Add build step            |
+| `.github/workflows/docker.yml`          | Create | Docker image build + push |
+| `.github/workflows/deploy.yml`          | Create | Release deployment        |
+| `tools/create-snaplify/Cargo.toml`      | Create | Rust CLI project          |
+| `tools/create-snaplify/src/main.rs`     | Create | CLI entry point           |
+| `tools/create-snaplify/src/scaffold.rs` | Create | Project scaffolding       |
+| `tools/create-snaplify/src/prompts.rs`  | Create | Interactive prompts       |
+| `tools/create-snaplify/src/template.rs` | Create | Template processing       |
+| `tools/create-snaplify/templates/`      | Create | Scaffold templates        |
+| `apps/reference/e2e/*.spec.ts`          | Create | E2E test suites           |
+| `.env.example`                          | Modify | Add missing feature flags |
+| `docs/deployment.md`                    | Create | Deployment guide          |
 
 ---
 
 ## Test Counts
 
-| Step | Area | Tests |
-|------|------|-------|
-| 1 | Docker validation | 4 |
-| 2 | DO spec | 0 (YAML only) |
-| 3 | Scripts validation | 2 |
-| 4 | CI validation | 3 |
-| 5 | Rust CLI | 18 |
-| 6 | E2E (Playwright) | 12 |
-| 7 | Env/docs cleanup | 0 |
-| **Phase 11 new** | | **~39** |
-| **Running total (unit)** | | **~908** |
-| **E2E total** | | **~12** |
+| Step                     | Area               | Tests         |
+| ------------------------ | ------------------ | ------------- |
+| 1                        | Docker validation  | 4             |
+| 2                        | DO spec            | 0 (YAML only) |
+| 3                        | Scripts validation | 2             |
+| 4                        | CI validation      | 3             |
+| 5                        | Rust CLI           | 18            |
+| 6                        | E2E (Playwright)   | 12            |
+| 7                        | Env/docs cleanup   | 0             |
+| **Phase 11 new**         |                    | **~39**       |
+| **Running total (unit)** |                    | **~908**      |
+| **E2E total**            |                    | **~12**       |
 
 Note: Rust tests run via `cargo test`, separate from `pnpm test`. E2E tests run via `pnpm test:e2e`, also separate.
 
@@ -281,14 +306,14 @@ Note: Rust tests run via `cargo test`, separate from `pnpm test`. E2E tests run 
 
 ## What's Deferred
 
-| Feature | Defer To | Reason |
-|---------|----------|--------|
-| Helm charts for Kubernetes | Post v1 | Docker Compose sufficient for v1 |
-| CLI `upgrade` command | Post v1 | Manual upgrades for now |
-| CLI plugin system | Post v1 | Core scaffold sufficient |
-| Automated database migrations in CLI | Phase 12 | Manual Drizzle push for now |
-| Multi-arch Docker builds (ARM) | Post v1 | x86_64 sufficient for v1 |
-| GitHub Actions matrix testing | Phase 12 | Single-platform CI sufficient |
+| Feature                              | Defer To | Reason                           |
+| ------------------------------------ | -------- | -------------------------------- |
+| Helm charts for Kubernetes           | Post v1  | Docker Compose sufficient for v1 |
+| CLI `upgrade` command                | Post v1  | Manual upgrades for now          |
+| CLI plugin system                    | Post v1  | Core scaffold sufficient         |
+| Automated database migrations in CLI | Phase 12 | Manual Drizzle push for now      |
+| Multi-arch Docker builds (ARM)       | Post v1  | x86_64 sufficient for v1         |
+| GitHub Actions matrix testing        | Phase 12 | Single-platform CI sufficient    |
 
 ---
 

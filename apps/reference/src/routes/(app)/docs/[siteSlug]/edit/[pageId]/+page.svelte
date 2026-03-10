@@ -28,12 +28,27 @@
   <form method="POST" action="?/save" class="edit-form">
     <div class="form-field">
       <label for="title" class="form-label">Title</label>
-      <input id="title" name="title" type="text" bind:value={title} required maxlength="255" class="form-input" />
+      <input
+        id="title"
+        name="title"
+        type="text"
+        bind:value={title}
+        required
+        maxlength="255"
+        class="form-input"
+      />
     </div>
 
     <div class="form-field">
       <label for="slug" class="form-label">Slug</label>
-      <input id="slug" name="slug" type="text" value={data.page.slug} maxlength="255" class="form-input" />
+      <input
+        id="slug"
+        name="slug"
+        type="text"
+        value={data.page.slug}
+        maxlength="255"
+        class="form-input"
+      />
     </div>
 
     <div class="form-field editor-field">
@@ -48,7 +63,13 @@
   </form>
 
   <form method="POST" action="?/delete" class="delete-form">
-    <button type="submit" class="form-submit danger" onclick={(e) => { if (!confirm('Delete this page?')) e.preventDefault(); }}>Delete Page</button>
+    <button
+      type="submit"
+      class="form-submit danger"
+      onclick={(e) => {
+        if (!confirm('Delete this page?')) e.preventDefault();
+      }}>Delete Page</button
+    >
   </form>
 </section>
 

@@ -80,8 +80,28 @@ describe('selectDefaultVersion', () => {
 describe('prepareVersionCopy', () => {
   const now = new Date();
   const sourcePages: DocsPage[] = [
-    { id: 'p1', versionId: 'old', title: 'Intro', slug: 'intro', content: '# Intro', sortOrder: 0, parentId: null, createdAt: now, updatedAt: now },
-    { id: 'p2', versionId: 'old', title: 'Setup', slug: 'setup', content: '# Setup', sortOrder: 1, parentId: 'p1', createdAt: now, updatedAt: now },
+    {
+      id: 'p1',
+      versionId: 'old',
+      title: 'Intro',
+      slug: 'intro',
+      content: '# Intro',
+      sortOrder: 0,
+      parentId: null,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'p2',
+      versionId: 'old',
+      title: 'Setup',
+      slug: 'setup',
+      content: '# Setup',
+      sortOrder: 1,
+      parentId: 'p1',
+      createdAt: now,
+      updatedAt: now,
+    },
   ];
 
   it('should create page copies with new versionId', () => {

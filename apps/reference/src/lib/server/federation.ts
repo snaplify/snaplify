@@ -12,7 +12,6 @@ import {
   generateKeypair,
   exportPublicKeyPem,
   exportPrivateKeyPem,
-  buildKeyId,
   resolveActor,
   contentToArticle,
   buildCreateActivity,
@@ -62,10 +61,7 @@ export async function getOrCreateActorKeypair(
 
 // --- Actor Resolution ---
 
-export async function resolveRemoteActor(
-  db: DB,
-  actorUri: string,
-): Promise<ResolvedActor | null> {
+export async function resolveRemoteActor(db: DB, actorUri: string): Promise<ResolvedActor | null> {
   // Check cache first
   const cached = await db
     .select()
@@ -273,13 +269,12 @@ export async function unfollowRemote(
 
 // --- Content Federation ---
 
-export async function federateContent(
-  db: DB,
-  contentId: string,
-  domain: string,
-): Promise<void> {
+export async function federateContent(db: DB, contentId: string, domain: string): Promise<void> {
   const rows = await db
-    .select({ content: contentItems, author: { username: users.username, displayName: users.displayName } })
+    .select({
+      content: contentItems,
+      author: { username: users.username, displayName: users.displayName },
+    })
     .from(contentItems)
     .innerJoin(users, eq(contentItems.authorId, users.id))
     .where(eq(contentItems.id, contentId))
@@ -302,13 +297,12 @@ export async function federateContent(
   });
 }
 
-export async function federateUpdate(
-  db: DB,
-  contentId: string,
-  domain: string,
-): Promise<void> {
+export async function federateUpdate(db: DB, contentId: string, domain: string): Promise<void> {
   const rows = await db
-    .select({ content: contentItems, author: { username: users.username, displayName: users.displayName } })
+    .select({
+      content: contentItems,
+      author: { username: users.username, displayName: users.displayName },
+    })
     .from(contentItems)
     .innerJoin(users, eq(contentItems.authorId, users.id))
     .where(eq(contentItems.id, contentId))
@@ -440,7 +434,9 @@ export async function listFederationActivity(
     conditions.push(eq(activities.direction, filters.direction));
   }
   if (filters.status) {
-    conditions.push(eq(activities.status, filters.status as 'pending' | 'delivered' | 'failed' | 'processed'));
+    conditions.push(
+      eq(activities.status, filters.status as 'pending' | 'delivered' | 'failed' | 'processed'),
+    );
   }
   if (filters.type) {
     conditions.push(eq(activities.type, filters.type));

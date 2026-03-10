@@ -3,11 +3,7 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 // --- Auth & Users ---
 export const userRoleEnum = pgEnum('user_role', ['member', 'pro', 'verified', 'staff', 'admin']);
 export const userStatusEnum = pgEnum('user_status', ['active', 'suspended', 'deleted']);
-export const profileVisibilityEnum = pgEnum('profile_visibility', [
-  'public',
-  'members',
-  'private',
-]);
+export const profileVisibilityEnum = pgEnum('profile_visibility', ['public', 'members', 'private']);
 
 // --- Content ---
 export const contentStatusEnum = pgEnum('content_status', ['draft', 'published', 'archived']);
@@ -19,11 +15,7 @@ export const contentTypeEnum = pgEnum('content_type', [
   'explainer',
 ]);
 export const difficultyEnum = pgEnum('difficulty', ['beginner', 'intermediate', 'advanced']);
-export const contentVisibilityEnum = pgEnum('content_visibility', [
-  'public',
-  'members',
-  'private',
-]);
+export const contentVisibilityEnum = pgEnum('content_visibility', ['public', 'members', 'private']);
 
 // --- Social ---
 export const likeTargetTypeEnum = pgEnum('like_target_type', [

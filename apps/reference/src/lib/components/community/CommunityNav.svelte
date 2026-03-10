@@ -1,7 +1,11 @@
 <script lang="ts">
   import { hasPermission } from '$lib/utils/community-permissions';
 
-  let { slug, active, role = null }: {
+  let {
+    slug,
+    active,
+    role = null,
+  }: {
     slug: string;
     active: string;
     role: string | null;

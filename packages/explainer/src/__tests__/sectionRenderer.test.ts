@@ -26,7 +26,9 @@ describe('renderBlockTuples', () => {
   });
 
   it('renders image blocks', () => {
-    const html = renderBlockTuples([['image', { src: 'https://example.com/img.png', alt: 'Test' }]]);
+    const html = renderBlockTuples([
+      ['image', { src: 'https://example.com/img.png', alt: 'Test' }],
+    ]);
     expect(html).toContain('src="https://example.com/img.png"');
     expect(html).toContain('alt="Test"');
     expect(html).toContain('loading="lazy"');
@@ -115,13 +117,18 @@ describe('renderControlsHtml', () => {
 
   it('renders select control', () => {
     const html = renderControlsHtml(
-      [{
-        type: 'select',
-        id: 'sel1',
-        label: 'Theme',
-        options: [{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }],
-        defaultValue: 'light',
-      }],
+      [
+        {
+          type: 'select',
+          id: 'sel1',
+          label: 'Theme',
+          options: [
+            { value: 'light', label: 'Light' },
+            { value: 'dark', label: 'Dark' },
+          ],
+          defaultValue: 'light',
+        },
+      ],
       'sec-1',
     );
     expect(html).toContain('<select');
@@ -167,7 +174,15 @@ describe('renderSection', () => {
       type: 'quiz',
       content: [],
       questions: [
-        { id: 'q1', question: 'Q?', options: [{ id: 'a', text: 'A' }, { id: 'b', text: 'B' }], correctOptionId: 'a' },
+        {
+          id: 'q1',
+          question: 'Q?',
+          options: [
+            { id: 'a', text: 'A' },
+            { id: 'b', text: 'B' },
+          ],
+          correctOptionId: 'a',
+        },
       ],
       passingScore: 70,
       isGate: true,

@@ -130,11 +130,7 @@ export function buildUndoActivity(
   };
 }
 
-export function buildLikeActivity(
-  domain: string,
-  actorUri: string,
-  objectUri: string,
-): APLike {
+export function buildLikeActivity(domain: string, actorUri: string, objectUri: string): APLike {
   return {
     '@context': AP_CONTEXT,
     type: 'Like',

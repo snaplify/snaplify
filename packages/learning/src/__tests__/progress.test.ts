@@ -72,11 +72,7 @@ describe('isPathComplete', () => {
 
 describe('getNextLesson', () => {
   const modules = [makeModule('m1', 0), makeModule('m2', 1)];
-  const lessons = [
-    makeLesson('l1', 'm1', 0),
-    makeLesson('l2', 'm1', 1),
-    makeLesson('l3', 'm2', 0),
-  ];
+  const lessons = [makeLesson('l1', 'm1', 0), makeLesson('l2', 'm1', 1), makeLesson('l3', 'm2', 0)];
 
   it('should return first lesson when none completed', () => {
     const next = getNextLesson(modules, lessons, new Set());
@@ -106,11 +102,7 @@ describe('getNextLesson', () => {
 
 describe('getLessonStatus', () => {
   const modules = [makeModule('m1', 0)];
-  const lessons = [
-    makeLesson('l1', 'm1', 0),
-    makeLesson('l2', 'm1', 1),
-    makeLesson('l3', 'm1', 2),
-  ];
+  const lessons = [makeLesson('l1', 'm1', 0), makeLesson('l2', 'm1', 1), makeLesson('l3', 'm1', 2)];
 
   it('should return completed for completed lesson', () => {
     expect(getLessonStatus('l1', modules, lessons, new Set(['l1']))).toBe('completed');
@@ -131,11 +123,7 @@ describe('getLessonStatus', () => {
 
 describe('getCompletionPercentageByModule', () => {
   const modules = [makeModule('m1', 0), makeModule('m2', 1)];
-  const lessons = [
-    makeLesson('l1', 'm1', 0),
-    makeLesson('l2', 'm1', 1),
-    makeLesson('l3', 'm2', 0),
-  ];
+  const lessons = [makeLesson('l1', 'm1', 0), makeLesson('l2', 'm1', 1), makeLesson('l3', 'm2', 0)];
 
   it('should return 0 for all modules when none completed', () => {
     const result = getCompletionPercentageByModule(modules, lessons, new Set());

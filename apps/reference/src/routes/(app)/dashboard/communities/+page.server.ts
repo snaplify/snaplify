@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { authGuard } from '@snaplify/auth';
-import { communityMembers, communities, users } from '@snaplify/schema';
+import { communityMembers, communities } from '@snaplify/schema';
 import { eq, desc } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 

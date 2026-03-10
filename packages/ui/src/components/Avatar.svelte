@@ -7,13 +7,7 @@
     class?: string;
   }
 
-  let {
-    src,
-    alt,
-    name = '',
-    size = 'md',
-    class: className = '',
-  }: Props = $props();
+  let { src, alt, name = '', size = 'md', class: className = '' }: Props = $props();
 
   const initials = $derived(
     name
@@ -22,7 +16,7 @@
       .filter(Boolean)
       .slice(0, 2)
       .join('')
-      .toUpperCase()
+      .toUpperCase(),
   );
 
   let imgError = $state(false);

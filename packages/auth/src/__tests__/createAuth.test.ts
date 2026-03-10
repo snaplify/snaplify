@@ -79,10 +79,7 @@ describe('createAuth', () => {
       secret: 'test-secret',
     });
 
-    expect(drizzleAdapter).toHaveBeenCalledWith(
-      db,
-      expect.objectContaining({ provider: 'pg' }),
-    );
+    expect(drizzleAdapter).toHaveBeenCalledWith(db, expect.objectContaining({ provider: 'pg' }));
   });
 
   it('should use custom baseURL if provided', () => {
@@ -155,9 +152,7 @@ describe('createAuth', () => {
 
     expect(betterAuth).toHaveBeenCalledWith(
       expect.objectContaining({
-        plugins: expect.arrayContaining([
-          expect.objectContaining({ id: 'username' }),
-        ]),
+        plugins: expect.arrayContaining([expect.objectContaining({ id: 'username' })]),
       }),
     );
   });

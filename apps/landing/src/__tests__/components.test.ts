@@ -122,7 +122,8 @@ describe('CodeBlock', () => {
     render(CodeBlock, {
       props: { code },
     });
-    expect(screen.getByText(code)).toBeInTheDocument();
+    const codeEl = screen.getByRole('region', { name: 'Code example' }).querySelector('code');
+    expect(codeEl?.textContent).toBe(code);
   });
 });
 

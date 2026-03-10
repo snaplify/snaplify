@@ -1,9 +1,11 @@
 # ADR 023: Polish & Launch Architecture
 
 ## Status
+
 Accepted
 
 ## Context
+
 Phase 12 delivers polish and hardening for v1 launch. We need Meilisearch integration for docs search, a static landing page, security hardening, and launch documentation.
 
 ## Decisions

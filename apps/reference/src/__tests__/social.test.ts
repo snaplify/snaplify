@@ -27,9 +27,9 @@ function mockChain(result: unknown = []) {
   chain.limit = vi.fn().mockReturnValue(chain);
   chain.values = vi.fn().mockReturnValue(chain);
   chain.returning = vi.fn().mockResolvedValue(Array.isArray(result) ? result : [result]);
-  chain.then = vi.fn().mockImplementation((resolve) =>
-    resolve(Array.isArray(result) ? result : [result]),
-  );
+  chain.then = vi
+    .fn()
+    .mockImplementation((resolve) => resolve(Array.isArray(result) ? result : [result]));
   return chain;
 }
 

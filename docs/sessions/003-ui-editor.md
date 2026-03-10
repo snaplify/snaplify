@@ -5,6 +5,7 @@
 ## What Was Done
 
 ### Research & ADRs
+
 - Created 3 research documents:
   - `docs/research/svelte-5-component-libraries.md` — Headless component patterns, svelte-package build
   - `docs/research/tiptap-svelte-5-integration.md` — Pure TS editor strategy, no Svelte adapter needed
@@ -14,6 +15,7 @@
   - `docs/adr/012-tiptap-architecture.md` — Pure TypeScript editor with BlockTuple serialization
 
 ### @snaplify/ui — 15 Headless Components (116 tests)
+
 - **Build infrastructure**: svelte-package, svelte-check, @sveltejs/vite-plugin-svelte in vitest, jsdom with browser resolve conditions
 - **Components** (all accept `class` prop, all use `var(--*)` tokens):
   1. VisuallyHidden — Screen-reader-only content
@@ -34,6 +36,7 @@
   16. Separator — role=separator, horizontal/vertical orientation
 
 ### @snaplify/editor — Block Type System + Extensions (69 tests)
+
 - **Block type system**: BlockTuple type, BlockDefinition interface, Zod content schemas
 - **6 core block types** with schemas: text, heading, code, image, quote, callout
 - **Block registry**: register, lookup, list, validate, clearRegistry, registerCoreBlocks
@@ -45,6 +48,7 @@
 - **Type-safe commands**: Proper TypeScript module augmentation for all custom commands
 
 ## Decisions Made
+
 - Used `axe-core` directly instead of `vitest-axe` (v0.1.0 had empty dist, broken package)
 - Svelte 5 snippets (`{@render children()}`) used for component composition; tests pass empty functions as snippets since testing-library doesn't need to render them
 - Tabs component removed dynamic slot names (Svelte 5 doesn't support them) — tab panels are structural only, content rendering is the consumer's concern
@@ -52,23 +56,26 @@
 - Vitest excludes `.svelte-kit` and `dist` directories to prevent duplicate test runs
 
 ## Test Summary
-| Package | Tests | Files |
-|---------|-------|-------|
-| @snaplify/schema | 43 | 2 |
-| @snaplify/config | 17 | 1 |
-| @snaplify/auth | 42 | 6 |
-| @snaplify/snaplify | 42 | 6 |
-| @snaplify/test-utils | 14 | 2 |
-| @snaplify/ui | 116 | 16 |
-| @snaplify/editor | 69 | 11 |
-| Stubs (docs/explainer/learning) | 3 | 3 |
-| **Total** | **346** | **47** |
+
+| Package                         | Tests   | Files  |
+| ------------------------------- | ------- | ------ |
+| @snaplify/schema                | 43      | 2      |
+| @snaplify/config                | 17      | 1      |
+| @snaplify/auth                  | 42      | 6      |
+| @snaplify/snaplify              | 42      | 6      |
+| @snaplify/test-utils            | 14      | 2      |
+| @snaplify/ui                    | 116     | 16     |
+| @snaplify/editor                | 69      | 11     |
+| Stubs (docs/explainer/learning) | 3       | 3      |
+| **Total**                       | **346** | **47** |
 
 ## Open Questions
+
 - Svelte 5 snippet testing could be improved — currently passing empty functions. A test harness component pattern might be better for testing children rendering.
 - The `.svelte-kit/__package__` build output from svelte-package could be committed (it generates dist-like output for package consumers) or gitignored.
 
 ## Next Steps
+
 - Phase 4: Reference App + Content System
   - Svelte NodeView rendering for editor blocks
   - SvelteKit routes for content CRUD

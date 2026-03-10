@@ -20,6 +20,7 @@ Use `<svelte:head>` in page components or a reusable `SeoHead.svelte`:
 ## JSON-LD Structured Data
 
 ### Article (for blog, article, guide content types)
+
 ```json
 {
   "@context": "https://schema.org",
@@ -34,6 +35,7 @@ Use `<svelte:head>` in page components or a reusable `SeoHead.svelte`:
 ```
 
 ### HowTo (for project content type)
+
 ```json
 {
   "@context": "https://schema.org",
@@ -50,16 +52,21 @@ Use `<svelte:head>` in page components or a reusable `SeoHead.svelte`:
 Pattern: `https://{domain}/{type}/{slug}`
 
 Examples:
+
 - `https://hack.build/projects/led-matrix-display`
 - `https://hack.build/blog/getting-started-with-esp32`
 
 ## Sitemap Generation
 
 `/sitemap.xml` route queries published content and generates XML:
+
 ```typescript
 // src/routes/sitemap.xml/+server.ts
 export async function GET({ locals }) {
-  const items = await db.select({ slug, type, updatedAt }).from(contentItems).where(eq(status, 'published'));
+  const items = await db
+    .select({ slug, type, updatedAt })
+    .from(contentItems)
+    .where(eq(status, 'published'));
   const xml = generateSitemapXml(items);
   return new Response(xml, { headers: { 'Content-Type': 'application/xml' } });
 }

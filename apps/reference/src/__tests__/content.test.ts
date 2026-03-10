@@ -468,9 +468,11 @@ describe('Content Service', () => {
         from: vi.fn().mockReturnThis(),
         innerJoin: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) =>
-          resolve([{ id: 'tag-1', name: 'svelte', slug: 'svelte' }]),
-        ),
+        then: vi
+          .fn()
+          .mockImplementation((resolve) =>
+            resolve([{ id: 'tag-1', name: 'svelte', slug: 'svelte' }]),
+          ),
       };
 
       let callCount = 0;

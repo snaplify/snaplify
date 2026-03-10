@@ -120,12 +120,12 @@
         if (e.key.length === 1 && open) {
           const char = e.key.toLowerCase();
           const idx = options.findIndex(
-            (o, i) => i > activeIndex && o.label.toLowerCase().startsWith(char) && !o.disabled
+            (o, i) => i > activeIndex && o.label.toLowerCase().startsWith(char) && !o.disabled,
           );
           if (idx !== -1) activeIndex = idx;
           else {
             const wrapIdx = options.findIndex(
-              (o) => o.label.toLowerCase().startsWith(char) && !o.disabled
+              (o) => o.label.toLowerCase().startsWith(char) && !o.disabled,
             );
             if (wrapIdx !== -1) activeIndex = wrapIdx;
           }
@@ -149,10 +149,7 @@
   }
 </script>
 
-<div
-  class={['snaplify-select', className].filter(Boolean).join(' ')}
-  onkeydown={handleKeydown}
->
+<div class={['snaplify-select', className].filter(Boolean).join(' ')} onkeydown={handleKeydown}>
   <label class="snaplify-select-label" id={`${id}-label`}>{label}</label>
   <button
     bind:this={triggerRef}

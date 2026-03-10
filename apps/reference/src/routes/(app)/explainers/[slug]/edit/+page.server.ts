@@ -1,6 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { authGuard } from '@snaplify/auth';
-import { getContentBySlug, updateContent, publishContent, onContentUpdated, onContentPublished } from '$lib/server/content';
+import {
+  getContentBySlug,
+  updateContent,
+  publishContent,
+  onContentUpdated,
+  onContentPublished,
+} from '$lib/server/content';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -58,9 +64,13 @@ export const actions: Actions = {
       }
     }
 
-    const tags = tagsRaw !== null
-      ? tagsRaw.split(',').map((t) => t.trim()).filter(Boolean)
-      : undefined;
+    const tags =
+      tagsRaw !== null
+        ? tagsRaw
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : undefined;
 
     const updated = await updateContent(locals.db, item.id, locals.user.id, {
       ...(title !== null ? { title: title.trim() } : {}),

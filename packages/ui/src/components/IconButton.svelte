@@ -24,7 +24,12 @@
 
 <button
   type="button"
-  class={['snaplify-icon-btn', `snaplify-icon-btn--${variant}`, `snaplify-icon-btn--${size}`, className]
+  class={[
+    'snaplify-icon-btn',
+    `snaplify-icon-btn--${variant}`,
+    `snaplify-icon-btn--${size}`,
+    className,
+  ]
     .filter(Boolean)
     .join(' ')}
   aria-label={ariaLabel}

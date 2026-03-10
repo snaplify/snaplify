@@ -17,11 +17,20 @@
   }
 </script>
 
-<div class={['admin-theme-picker', className].filter(Boolean).join(' ')} role="radiogroup" aria-label="Theme selection">
+<div
+  class={['admin-theme-picker', className].filter(Boolean).join(' ')}
+  role="radiogroup"
+  aria-label="Theme selection"
+>
   {#each BUILT_IN_THEMES as theme (theme.id)}
     <button
       type="button"
-      class={['admin-theme-picker__card', selected === theme.id ? 'admin-theme-picker__card--selected' : ''].filter(Boolean).join(' ')}
+      class={[
+        'admin-theme-picker__card',
+        selected === theme.id ? 'admin-theme-picker__card--selected' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       role="radio"
       aria-checked={selected === theme.id}
       aria-label={`${theme.name}: ${theme.description}`}

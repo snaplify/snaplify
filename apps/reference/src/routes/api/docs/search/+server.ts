@@ -23,7 +23,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
   // Use provided versionId or default version
   let activeVersionId = versionId;
   if (!activeVersionId) {
-    const defaultVersion = siteResult.versions.find((v) => v.isDefault === 1) ?? siteResult.versions[0];
+    const defaultVersion =
+      siteResult.versions.find((v) => v.isDefault === 1) ?? siteResult.versions[0];
     if (!defaultVersion) return json([]);
     activeVersionId = defaultVersion.id;
   }

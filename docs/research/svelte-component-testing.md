@@ -10,14 +10,14 @@ How to test Svelte 5 components with runes using Vitest, @testing-library/svelte
 
 ### Testing Stack
 
-| Tool | Purpose | Version |
-|------|---------|---------|
-| `vitest` | Test runner | ^3.0.0 |
-| `@testing-library/svelte` | Component rendering + queries | ^5.0.0 |
-| `@testing-library/jest-dom` | DOM matchers (toBeVisible, toHaveAttribute) | ^6.0.0 |
-| `vitest-axe` | axe-core accessibility assertions | ^1.0.0 |
-| `@sveltejs/vite-plugin-svelte` | Svelte compilation in Vitest | ^5.0.0 |
-| `jsdom` | DOM environment | ^25.0.0 |
+| Tool                           | Purpose                                     | Version |
+| ------------------------------ | ------------------------------------------- | ------- |
+| `vitest`                       | Test runner                                 | ^3.0.0  |
+| `@testing-library/svelte`      | Component rendering + queries               | ^5.0.0  |
+| `@testing-library/jest-dom`    | DOM matchers (toBeVisible, toHaveAttribute) | ^6.0.0  |
+| `vitest-axe`                   | axe-core accessibility assertions           | ^1.0.0  |
+| `@sveltejs/vite-plugin-svelte` | Svelte compilation in Vitest                | ^5.0.0  |
+| `jsdom`                        | DOM environment                             | ^25.0.0 |
 
 ### Vitest Configuration
 

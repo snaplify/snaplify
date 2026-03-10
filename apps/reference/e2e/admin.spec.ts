@@ -28,7 +28,10 @@ test.describe('Admin Panel', () => {
       if (status === 200) {
         // If 200, should show access denied message or be redirected content
         const url = page.url();
-        const hasDenied = await page.getByText(/forbidden|access denied|not authorized/i).isVisible().catch(() => false);
+        const hasDenied = await page
+          .getByText(/forbidden|access denied|not authorized/i)
+          .isVisible()
+          .catch(() => false);
         expect(hasDenied || !url.includes('/admin')).toBeTruthy();
       }
     }

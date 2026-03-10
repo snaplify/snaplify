@@ -9,7 +9,11 @@
   let { label, value, description, class: className = '' }: Props = $props();
 </script>
 
-<div class={['admin-stat-card', className].filter(Boolean).join(' ')} role="group" aria-label={label}>
+<div
+  class={['admin-stat-card', className].filter(Boolean).join(' ')}
+  role="group"
+  aria-label={label}
+>
   <span class="admin-stat-card__label">{label}</span>
   <span class="admin-stat-card__value">{value}</span>
   {#if description}

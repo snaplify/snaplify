@@ -14,6 +14,7 @@ Phases 0–10 are complete (869 tests). The codebase has a working reference app
 Rust single binary — no Node runtime required for scaffolding. Uses `clap` (derive macro) for arg parsing, `dialoguer` for interactive prompts. Templates are rendered programmatically via format strings with input sanitization.
 
 Prompts:
+
 - Instance name
 - Domain
 - Database URL (or use bundled Postgres)
@@ -45,12 +46,12 @@ Stage 4 (runtime):   Copy build output + prod-only node_modules, non-root user
 
 `deploy/docker-compose.prod.yml` with four services:
 
-| Service | Image | Purpose |
-|---------|-------|---------|
-| `app` | `ghcr.io/snaplify/snaplify:latest` | SvelteKit app (adapter-node) |
-| `postgres` | `postgres:16-alpine` | Primary database |
-| `redis` | `redis:7-alpine` | Queue + session cache |
-| `meilisearch` | `getmeili/meilisearch:v1` | Full-text search |
+| Service       | Image                              | Purpose                      |
+| ------------- | ---------------------------------- | ---------------------------- |
+| `app`         | `ghcr.io/snaplify/snaplify:latest` | SvelteKit app (adapter-node) |
+| `postgres`    | `postgres:16-alpine`               | Primary database             |
+| `redis`       | `redis:7-alpine`                   | Queue + session cache        |
+| `meilisearch` | `getmeili/meilisearch:v1`          | Full-text search             |
 
 All services have health checks. Postgres data on a named volume. App depends on healthy Postgres + Redis before starting.
 
@@ -67,7 +68,7 @@ services:
 databases:
   - name: db
     engine: PG
-    version: "16"
+    version: '16'
 ```
 
 Redis and Meilisearch run as worker components or external add-ons.
@@ -103,13 +104,13 @@ Tag format: `v{major}.{minor}.{patch}` (semver). Only tagged commits produce Doc
 
 Playwright tests covering the critical paths — not exhaustive, just the flows that must never break:
 
-| Journey | What it tests |
-|---------|---------------|
-| Auth | Sign up → sign in → sign out |
-| Content | Create → edit → publish → view |
-| Theme | Switch theme → verify CSS vars applied |
-| Admin | Access admin panel → change setting → verify audit log |
-| Docs | Create site → add page → search → verify render |
+| Journey | What it tests                                          |
+| ------- | ------------------------------------------------------ |
+| Auth    | Sign up → sign in → sign out                           |
+| Content | Create → edit → publish → view                         |
+| Theme   | Switch theme → verify CSS vars applied                 |
+| Admin   | Access admin panel → change setting → verify audit log |
+| Docs    | Create site → add page → search → verify render        |
 
 E2E tests run against a Docker Compose stack (app + Postgres + Redis) in CI. Separate workflow from unit/integration tests to keep feedback fast.
 

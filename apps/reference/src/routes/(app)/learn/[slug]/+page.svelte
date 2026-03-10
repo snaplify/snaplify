@@ -110,9 +110,15 @@
     text-transform: capitalize;
   }
 
-  .difficulty-beginner { color: var(--color-success, #22c55e); }
-  .difficulty-intermediate { color: var(--color-warning, #f59e0b); }
-  .difficulty-advanced { color: var(--color-error, #dc2626); }
+  .difficulty-beginner {
+    color: var(--color-success, #22c55e);
+  }
+  .difficulty-intermediate {
+    color: var(--color-warning, #f59e0b);
+  }
+  .difficulty-advanced {
+    color: var(--color-error, #dc2626);
+  }
 
   .curriculum h2 {
     font-size: var(--font-size-xl, 1.5rem);

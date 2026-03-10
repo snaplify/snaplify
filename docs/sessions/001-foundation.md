@@ -5,6 +5,7 @@
 ## What Was Done
 
 ### Phase 0: Foundation (Complete)
+
 - Moved HTML mockups to `docs/mockups/`
 - Created monorepo structure with all directories
 - Root configuration: `pnpm-workspace.yaml`, `turbo.json`, `package.json`, `tsconfig.json`, `vitest.workspace.ts`, `playwright.config.ts`, `.prettierrc`, `.nvmrc`, `.npmrc`, `.gitignore`
@@ -19,6 +20,7 @@
 ### Phase 1: Schema + Config + Tokens (In Progress)
 
 #### @snaplify/config (Complete)
+
 - `defineSnaplifyConfig()` factory with Zod validation
 - Feature flags: communities, docs, video, contests, learning, explainers, federation
 - Auth config: emailPassword, magicLink, passkeys, OAuth, sharedAuthDb, trustedInstances
@@ -27,6 +29,7 @@
 - **17 tests passing**
 
 #### @snaplify/schema (Complete)
+
 - Drizzle tables ported from hack-build (25 tables) + deveco-io patterns:
   - **Auth**: users, sessions, accounts, organizations, members, federatedAccounts, oauthClients
   - **Content**: contentItems (unified), contentForks, tags, contentTags
@@ -43,28 +46,33 @@
 - **34 tests passing**
 
 #### CSS Token Surface (Complete)
+
 - `packages/ui/theme/base.css` — complete token contract (colors, typography, spacing, shadows, borders, radii, transitions, z-index, layout, focus ring)
 - `packages/ui/theme/deepwood.css` — Snaplify brand (forest greens, lime #b8f542, Raleway/DM Sans/DM Mono)
 - `packages/ui/theme/hackbuild.css` — punk zine (paper #f5f0e6, ink #1a1a1a, accent #ff3366, hard-edge shadows, Permanent Marker)
 - `packages/ui/theme/deveco.css` — clean tech (white, teal/pink, Poppins/Nunito, rounded corners)
 
 ### Verification
+
 - `pnpm install` ✅
 - `pnpm build` ✅ (24/24 tasks)
 - `pnpm test` ✅ (24/24 tasks, 51 tests passing)
 
 ## Key Design Decisions
+
 - **Unified content table**: `content_items` with `type` enum instead of separate tables per content type (project, article, guide, blog, explainer). Simpler queries, consistent social/tagging.
 - **Normalized learning paths**: Separate `learning_modules` and `learning_lessons` tables instead of hack-build's nested JSON array. Better for progress tracking queries.
 - **UUID primary keys**: Following deveco-io pattern (uuid with defaultRandom) instead of hack-build's Convex IDs.
 - **Timestamps with timezone**: All timestamps use `withTimezone: true` per deveco-io pattern.
 
 ## Open Questions
+
 - ESLint shared config location
 - Husky + lint-staged timing
 - Content items: should explainer sections live in `content` JSON or in `sections` JSON column?
 
 ## Next Steps
+
 1. Phase 2: `@snaplify/auth` — Better Auth wrapper with createAuth() factory
 2. Phase 2: `@snaplify/snaplify` — Fedify integration, WebFinger, NodeInfo
 3. Research: Fedify SvelteKit integration, Better Auth org plugin, AP Actor SSO

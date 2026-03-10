@@ -37,7 +37,10 @@
   }
 </script>
 
-<div class={['admin-token-editor', className].filter(Boolean).join(' ')} aria-label="Custom token overrides">
+<div
+  class={['admin-token-editor', className].filter(Boolean).join(' ')}
+  aria-label="Custom token overrides"
+>
   <div class="admin-token-editor__list">
     {#each Object.entries(overrides) as [key, value] (key)}
       <div class="admin-token-editor__row">
@@ -56,11 +59,7 @@
   </div>
 
   <div class="admin-token-editor__add">
-    <select
-      bind:value={newKey}
-      aria-label="Token name"
-      class="admin-token-editor__select"
-    >
+    <select bind:value={newKey} aria-label="Token name" class="admin-token-editor__select">
       <option value="">Select token...</option>
       {#each TOKEN_NAMES as token}
         <option value={token}>{token}</option>

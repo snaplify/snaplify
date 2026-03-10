@@ -10,9 +10,7 @@ import {
 } from '../schemas';
 
 const baseSection = { id: 'sec-1', title: 'Test Section', anchor: 'test-section' };
-const sampleContent: [string, Record<string, unknown>][] = [
-  ['text', { html: '<p>Hello</p>' }],
-];
+const sampleContent: [string, Record<string, unknown>][] = [['text', { html: '<p>Hello</p>' }]];
 
 describe('textSectionSchema', () => {
   it('validates a valid text section', () => {
@@ -156,9 +154,7 @@ describe('interactiveSectionSchema', () => {
       ...baseSection,
       type: 'interactive',
       content: sampleContent,
-      controls: [
-        { type: 'toggle', id: 't1', label: 'Enable', defaultValue: true },
-      ],
+      controls: [{ type: 'toggle', id: 't1', label: 'Enable', defaultValue: true }],
       visualConfig: { type: 'diagram', config: {} },
     });
     expect(result.success).toBe(true);
@@ -235,7 +231,15 @@ describe('explainerSectionsSchema', () => {
         type: 'quiz',
         content: sampleContent,
         questions: [
-          { id: 'q1', question: 'Q?', options: [{ id: 'a', text: 'A' }, { id: 'b', text: 'B' }], correctOptionId: 'a' },
+          {
+            id: 'q1',
+            question: 'Q?',
+            options: [
+              { id: 'a', text: 'A' },
+              { id: 'b', text: 'B' },
+            ],
+            correctOptionId: 'a',
+          },
         ],
         passingScore: 50,
         isGate: false,

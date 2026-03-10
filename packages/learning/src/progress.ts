@@ -67,7 +67,5 @@ function sortedModules(modules: LearningModule[]): LearningModule[] {
 }
 
 function sortedLessonsForModule(lessons: Lesson[], moduleId: string): Lesson[] {
-  return lessons
-    .filter((l) => l.moduleId === moduleId)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  return lessons.filter((l) => l.moduleId === moduleId).sort((a, b) => a.sortOrder - b.sortOrder);
 }

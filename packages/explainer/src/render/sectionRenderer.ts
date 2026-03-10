@@ -25,7 +25,9 @@ export function renderBlockTuples(blocks: BlockTuple[]): string {
         }
         case 'code': {
           const code = escapeHtml(attrs.code as string);
-          const lang = attrs.language ? ` data-language="${escapeHtml(attrs.language as string)}"` : '';
+          const lang = attrs.language
+            ? ` data-language="${escapeHtml(attrs.language as string)}"`
+            : '';
           const filename = attrs.filename
             ? `<div class="code-filename">${escapeHtml(attrs.filename as string)}</div>`
             : '';

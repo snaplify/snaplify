@@ -44,9 +44,15 @@
     <input type="hidden" name="key" value="theme.default" />
     <select id="default-theme" name="value" class="admin-select">
       <option value="base" selected={data.settings['theme.default'] === 'base'}>Base</option>
-      <option value="deepwood" selected={data.settings['theme.default'] === 'deepwood'}>Deepwood</option>
-      <option value="hackbuild" selected={data.settings['theme.default'] === 'hackbuild'}>hack.build</option>
-      <option value="deveco" selected={data.settings['theme.default'] === 'deveco'}>deveco.io</option>
+      <option value="deepwood" selected={data.settings['theme.default'] === 'deepwood'}
+        >Deepwood</option
+      >
+      <option value="hackbuild" selected={data.settings['theme.default'] === 'hackbuild'}
+        >hack.build</option
+      >
+      <option value="deveco" selected={data.settings['theme.default'] === 'deveco'}
+        >deveco.io</option
+      >
     </select>
     <button type="submit" class="admin-btn">Save</button>
   </form>

@@ -24,12 +24,11 @@
 
 <section class="settings-section">
   <h2 class="settings-subheading">Theme</h2>
-  <p class="settings-description">Choose your preferred theme. Click a card to preview, then apply to save.</p>
+  <p class="settings-description">
+    Choose your preferred theme. Click a card to preview, then apply to save.
+  </p>
 
-  <ThemePicker
-    selected={selectedTheme}
-    onSelect={previewTheme}
-  />
+  <ThemePicker selected={selectedTheme} onSelect={previewTheme} />
 
   <form method="post" action="?/setTheme" class="settings-form">
     <input type="hidden" name="themeId" value={selectedTheme} />

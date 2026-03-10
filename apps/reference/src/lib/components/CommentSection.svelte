@@ -64,7 +64,13 @@
 <section class="comments" aria-label="Comments">
   <h2>Comments</h2>
 
-  <form class="comment-form" onsubmit={(e) => { e.preventDefault(); submitComment(); }}>
+  <form
+    class="comment-form"
+    onsubmit={(e) => {
+      e.preventDefault();
+      submitComment();
+    }}
+  >
     <textarea
       bind:value={newComment}
       placeholder="Write a comment..."
@@ -87,14 +93,22 @@
         <div class="comment">
           <div class="comment-header">
             {#if comment.author.avatarUrl}
-              <img src={comment.author.avatarUrl} alt="" class="comment-avatar" width="32" height="32" />
+              <img
+                src={comment.author.avatarUrl}
+                alt=""
+                class="comment-avatar"
+                width="32"
+                height="32"
+              />
             {:else}
               <span class="comment-avatar-placeholder">
                 {comment.author.displayName?.[0] ?? comment.author.username[0]}
               </span>
             {/if}
             <div>
-              <span class="comment-author">{comment.author.displayName ?? comment.author.username}</span>
+              <span class="comment-author"
+                >{comment.author.displayName ?? comment.author.username}</span
+              >
               <time class="comment-date" datetime={comment.createdAt.toString()}>
                 {new Date(comment.createdAt).toLocaleDateString()}
               </time>
@@ -106,8 +120,12 @@
               {#each comment.replies as reply (reply.id)}
                 <div class="comment reply">
                   <div class="comment-header">
-                    <span class="comment-author">{reply.author.displayName ?? reply.author.username}</span>
-                    <time class="comment-date">{new Date(reply.createdAt).toLocaleDateString()}</time>
+                    <span class="comment-author"
+                      >{reply.author.displayName ?? reply.author.username}</span
+                    >
+                    <time class="comment-date"
+                      >{new Date(reply.createdAt).toLocaleDateString()}</time
+                    >
                   </div>
                   <p class="comment-content">{reply.content}</p>
                 </div>

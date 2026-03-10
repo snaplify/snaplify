@@ -57,11 +57,7 @@
     </div>
   {/if}
 
-  <LessonNav
-    prevLesson={data.prevLesson}
-    nextLesson={data.nextLesson}
-    pathSlug={data.path.slug}
-  />
+  <LessonNav prevLesson={data.prevLesson} nextLesson={data.nextLesson} pathSlug={data.path.slug} />
 </article>
 
 <style>

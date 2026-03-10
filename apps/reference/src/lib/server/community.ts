@@ -201,12 +201,7 @@ export async function updateCommunity(
   const member = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (member.length === 0 || !hasPermission(member[0]!.role, 'editCommunity')) {
@@ -251,12 +246,7 @@ export async function deleteCommunity(
   const member = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (member.length === 0 || member[0]!.role !== 'owner') {
@@ -285,12 +275,7 @@ export async function joinCommunity(
   const existing = await db
     .select({ userId: communityMembers.userId })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (existing.length > 0) {
@@ -342,12 +327,7 @@ export async function leaveCommunity(
   const member = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (member.length === 0) {
@@ -360,12 +340,7 @@ export async function leaveCommunity(
 
   await db
     .delete(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    );
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)));
 
   await db
     .update(communities)
@@ -392,12 +367,7 @@ export async function getMember(
     })
     .from(communityMembers)
     .innerJoin(users, eq(communityMembers.userId, users.id))
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) return null;
@@ -412,10 +382,7 @@ export async function getMember(
   };
 }
 
-export async function listMembers(
-  db: DB,
-  communityId: string,
-): Promise<CommunityMemberItem[]> {
+export async function listMembers(db: DB, communityId: string): Promise<CommunityMemberItem[]> {
   const rows = await db
     .select({
       member: communityMembers,
@@ -452,10 +419,7 @@ export async function changeRole(
       .select({ role: communityMembers.role })
       .from(communityMembers)
       .where(
-        and(
-          eq(communityMembers.communityId, communityId),
-          eq(communityMembers.userId, actorId),
-        ),
+        and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, actorId)),
       )
       .limit(1),
     db
@@ -493,10 +457,7 @@ export async function changeRole(
     .update(communityMembers)
     .set({ role: newRole as 'admin' | 'moderator' | 'member' })
     .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, targetUserId),
-      ),
+      and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, targetUserId)),
     );
 
   return { changed: true };
@@ -513,10 +474,7 @@ export async function kickMember(
       .select({ role: communityMembers.role })
       .from(communityMembers)
       .where(
-        and(
-          eq(communityMembers.communityId, communityId),
-          eq(communityMembers.userId, actorId),
-        ),
+        and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, actorId)),
       )
       .limit(1),
     db
@@ -547,10 +505,7 @@ export async function kickMember(
   await db
     .delete(communityMembers)
     .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, targetUserId),
-      ),
+      and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, targetUserId)),
     );
 
   await db
@@ -633,9 +588,7 @@ export async function listPosts(
   const conditions = [eq(communityPosts.communityId, communityId)];
 
   if (filters.type) {
-    conditions.push(
-      eq(communityPosts.type, filters.type as 'text' | 'link' | 'share' | 'poll'),
-    );
+    conditions.push(eq(communityPosts.type, filters.type as 'text' | 'link' | 'share' | 'poll'));
   }
 
   const where = and(...conditions);
@@ -714,10 +667,7 @@ export async function deletePost(
       .select({ role: communityMembers.role })
       .from(communityMembers)
       .where(
-        and(
-          eq(communityMembers.communityId, communityId),
-          eq(communityMembers.userId, userId),
-        ),
+        and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)),
       )
       .limit(1);
 
@@ -745,12 +695,7 @@ export async function togglePinPost(
   const member = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (member.length === 0 || !hasPermission(member[0]!.role, 'pinPost')) {
@@ -783,12 +728,7 @@ export async function toggleLockPost(
   const member = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (member.length === 0 || !hasPermission(member[0]!.role, 'lockPost')) {
@@ -879,10 +819,7 @@ export async function createReply(
   };
 }
 
-export async function listReplies(
-  db: DB,
-  postId: string,
-): Promise<CommunityReplyItem[]> {
+export async function listReplies(db: DB, postId: string): Promise<CommunityReplyItem[]> {
   const rows = await db
     .select({
       reply: communityPostReplies,
@@ -948,10 +885,7 @@ export async function deleteReply(
       .select({ role: communityMembers.role })
       .from(communityMembers)
       .where(
-        and(
-          eq(communityMembers.communityId, communityId),
-          eq(communityMembers.userId, userId),
-        ),
+        and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)),
       )
       .limit(1);
 
@@ -985,10 +919,7 @@ export async function banUser(
       .select({ role: communityMembers.role })
       .from(communityMembers)
       .where(
-        and(
-          eq(communityMembers.communityId, communityId),
-          eq(communityMembers.userId, actorId),
-        ),
+        and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, actorId)),
       )
       .limit(1),
     db
@@ -1054,12 +985,7 @@ export async function unbanUser(
   const actorMember = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, actorId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, actorId)))
     .limit(1);
 
   if (actorMember.length === 0 || !hasPermission(actorMember[0]!.role, 'banUser')) {
@@ -1068,12 +994,7 @@ export async function unbanUser(
 
   await db
     .delete(communityBans)
-    .where(
-      and(
-        eq(communityBans.communityId, communityId),
-        eq(communityBans.userId, targetUserId),
-      ),
-    );
+    .where(and(eq(communityBans.communityId, communityId), eq(communityBans.userId, targetUserId)));
 
   return { unbanned: true };
 }
@@ -1090,12 +1011,7 @@ export async function checkBan(
       expiresAt: communityBans.expiresAt,
     })
     .from(communityBans)
-    .where(
-      and(
-        eq(communityBans.communityId, communityId),
-        eq(communityBans.userId, userId),
-      ),
-    )
+    .where(and(eq(communityBans.communityId, communityId), eq(communityBans.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) return null;
@@ -1109,10 +1025,7 @@ export async function checkBan(
   return ban;
 }
 
-export async function listBans(
-  db: DB,
-  communityId: string,
-): Promise<CommunityBanItem[]> {
+export async function listBans(db: DB, communityId: string): Promise<CommunityBanItem[]> {
   const rows = await db
     .select({
       ban: communityBans,
@@ -1131,7 +1044,10 @@ export async function listBans(
   // We need bannedBy info too — fetch separately to avoid ambiguous join
   const banIds = rows.map((r) => r.ban.bannedById);
   const uniqueBannerIds = [...new Set(banIds)];
-  const banners = new Map<string, { id: string; username: string; displayName: string | null; avatarUrl: string | null }>();
+  const banners = new Map<
+    string,
+    { id: string; username: string; displayName: string | null; avatarUrl: string | null }
+  >();
 
   if (uniqueBannerIds.length > 0) {
     for (const bannerId of uniqueBannerIds) {
@@ -1178,12 +1094,7 @@ export async function createInvite(
   const member = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (member.length === 0 || !hasPermission(member[0]!.role, 'manageMembers')) {
@@ -1267,12 +1178,7 @@ export async function revokeInvite(
   const member = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (member.length === 0 || !hasPermission(member[0]!.role, 'manageMembers')) {
@@ -1283,10 +1189,7 @@ export async function revokeInvite(
   return true;
 }
 
-export async function listInvites(
-  db: DB,
-  communityId: string,
-): Promise<CommunityInviteItem[]> {
+export async function listInvites(db: DB, communityId: string): Promise<CommunityInviteItem[]> {
   const rows = await db
     .select({
       invite: communityInvites,
@@ -1325,12 +1228,7 @@ export async function shareContent(
   const member = await db
     .select({ role: communityMembers.role })
     .from(communityMembers)
-    .where(
-      and(
-        eq(communityMembers.communityId, communityId),
-        eq(communityMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)))
     .limit(1);
 
   if (member.length === 0) return null;

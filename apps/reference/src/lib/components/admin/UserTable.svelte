@@ -22,7 +22,11 @@
   let { users, class: className = '', onRoleChange, onStatusChange }: Props = $props();
 </script>
 
-<div class={['admin-user-table-wrapper', className].filter(Boolean).join(' ')} role="region" aria-label="User management table">
+<div
+  class={['admin-user-table-wrapper', className].filter(Boolean).join(' ')}
+  role="region"
+  aria-label="User management table"
+>
   <table class="admin-user-table">
     <thead>
       <tr>

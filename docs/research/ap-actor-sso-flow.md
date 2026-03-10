@@ -122,12 +122,14 @@ federatedAccounts: {
 ### Provider Side (Instance A)
 
 Uses Better Auth's `oauthProvider` plugin to serve as an OAuth2 provider:
+
 - Registers Instance B as an `oauthClients` record
 - Serves `/api/auth/oauth2/authorize` and `/api/auth/oauth2/token` endpoints
 
 ### Consumer Side (Instance B)
 
 Uses Better Auth's `genericOAuth` plugin to consume SSO:
+
 - Configured with discovered OAuth endpoint from WebFinger
 - Creates local user + `federatedAccounts` record on successful auth
 

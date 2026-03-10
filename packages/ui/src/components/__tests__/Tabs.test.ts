@@ -29,10 +29,7 @@ describe('Tabs', () => {
     render(Tabs, { props: { tabs, onchange: handler } });
     await userEvent.click(screen.getByRole('tab', { name: 'Security' }));
     expect(handler).toHaveBeenCalledWith('security');
-    expect(screen.getByRole('tab', { name: 'Security' })).toHaveAttribute(
-      'aria-selected',
-      'true'
-    );
+    expect(screen.getByRole('tab', { name: 'Security' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('navigates with ArrowRight', async () => {

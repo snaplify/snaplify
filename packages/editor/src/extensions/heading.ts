@@ -70,7 +70,7 @@ export const SnaplifyHeading = Node.create<HeadingOptions>({
           const hashes = match[1]?.length ?? level;
           return { level: Math.min(hashes, 4) };
         },
-      })
+      }),
     );
   },
 
@@ -81,7 +81,7 @@ export const SnaplifyHeading = Node.create<HeadingOptions>({
         [`Mod-Alt-${level}`]: () =>
           this.editor.commands.toggleNode(this.name, 'paragraph', { level }),
       }),
-      {} as Record<string, () => boolean>
+      {} as Record<string, () => boolean>,
     );
   },
 });

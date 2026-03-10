@@ -15,10 +15,14 @@ Each theme CSS scopes to `[data-theme="themeName"]`. Base theme stays on `:root`
 
 ```css
 /* base.css — stays as :root (default) */
-:root { --color-primary: #3b82f6; }
+:root {
+  --color-primary: #3b82f6;
+}
 
 /* deepwood.css */
-[data-theme="deepwood"] { --color-primary: #b8f542; }
+[data-theme='deepwood'] {
+  --color-primary: #b8f542;
+}
 ```
 
 **Why**: Natural CSS cascade, zero JS runtime, matches how DaisyUI/Skeleton do it.
@@ -54,6 +58,7 @@ CREATE TABLE instance_settings (
 ### 5. Admin Panel: Route Group
 
 Admin lives in `apps/reference/src/routes/(app)/admin/` — no new package. Gated by:
+
 - `FEATURE_ADMIN` feature flag (default `false`)
 - `roleGuard('staff')` in layout server load
 

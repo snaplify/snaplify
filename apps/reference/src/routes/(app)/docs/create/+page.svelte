@@ -31,12 +31,7 @@
 
     <div class="form-field">
       <label for="description" class="form-label">Description (optional)</label>
-      <textarea
-        id="description"
-        name="description"
-        maxlength="2000"
-        class="form-textarea"
-        rows="3"
+      <textarea id="description" name="description" maxlength="2000" class="form-textarea" rows="3"
       ></textarea>
     </div>
 

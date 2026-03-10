@@ -1,11 +1,13 @@
 # SvelteKit Form Actions vs API Routes for CRUD
 
 ## Question
+
 Should content mutations use SvelteKit form actions or API routes?
 
 ## Analysis
 
 ### Form Actions (`+page.server.ts`)
+
 - Progressive enhancement via `use:enhance` — works without JS
 - Automatic CSRF protection (SvelteKit handles origin checking)
 - Type-safe with `ActionData` — form errors flow back to the page
@@ -14,23 +16,27 @@ Should content mutations use SvelteKit form actions or API routes?
 - File uploads via `FormData` parsing
 
 ### API Routes (`+server.ts`)
+
 - Required for client-side AJAX (fetch from components)
 - JSON request/response — better for toggle operations
 - No built-in CSRF (must validate manually or use auth headers)
 - Useful for operations that don't navigate (like/bookmark toggles)
 
 ### `use:enhance` Progressive Enhancement
+
 ```svelte
 <form method="POST" action="?/create" use:enhance>
   <!-- Fields -->
 </form>
 ```
+
 - Prevents full-page reload when JS is available
 - Submits as `FormData`, not JSON
 - `ActionFailure` returns validation errors to the form
 - Custom `enhance` callback for optimistic UI
 
 ### Error Handling Pattern
+
 ```typescript
 // +page.server.ts
 export const actions = {
@@ -42,7 +48,7 @@ export const actions = {
     }
     // ... create content
     redirect(303, `/projects/${slug}`);
-  }
+  },
 };
 ```
 

@@ -1,8 +1,4 @@
-import type {
-  SearchAdapter,
-  SearchResult,
-  MeiliSearchClient,
-} from './types';
+import type { SearchAdapter, SearchResult, MeiliSearchClient } from './types';
 import type { SearchDocument } from '../types';
 
 /**
@@ -64,11 +60,7 @@ export class MeilisearchSearchAdapter implements SearchAdapter {
    * Search a Meilisearch index for the given site, filtering by versionId.
    * Returns highlighted content snippets.
    */
-  async search(
-    query: string,
-    siteId: string,
-    versionId: string,
-  ): Promise<SearchResult[]> {
+  async search(query: string, siteId: string, versionId: string): Promise<SearchResult[]> {
     if (!query.trim()) return [];
 
     const index = this.client.index(this.indexName(siteId));

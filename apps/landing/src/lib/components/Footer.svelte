@@ -4,7 +4,9 @@
 
 <footer class="footer {className}">
   <div class="footer-inner">
-    <p class="footer-text">&copy; {new Date().getFullYear()} Snaplify. Open source under MIT license.</p>
+    <p class="footer-text">
+      &copy; {new Date().getFullYear()} Snaplify. Open source under MIT license.
+    </p>
     <nav aria-label="Footer navigation">
       <ul class="footer-links" role="list">
         <li><a href="https://github.com/snaplify/snaplify" rel="noopener noreferrer">GitHub</a></li>

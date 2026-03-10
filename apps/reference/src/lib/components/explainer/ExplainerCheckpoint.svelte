@@ -22,14 +22,14 @@
     </p>
     <button class="checkpoint__btn" disabled aria-label="Continue (locked)">Continue</button>
   {:else if completed}
-    <p class="checkpoint__message checkpoint__message--done">
-      Checkpoint completed!
-    </p>
+    <p class="checkpoint__message checkpoint__message--done">Checkpoint completed!</p>
   {:else}
-    <p class="checkpoint__message">
-      Ready to continue to the next section.
-    </p>
-    <button class="checkpoint__btn" onclick={handleContinue} aria-label="Mark checkpoint as complete">
+    <p class="checkpoint__message">Ready to continue to the next section.</p>
+    <button
+      class="checkpoint__btn"
+      onclick={handleContinue}
+      aria-label="Mark checkpoint as complete"
+    >
       Continue
     </button>
   {/if}

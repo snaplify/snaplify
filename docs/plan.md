@@ -29,23 +29,23 @@ The user wants this done with extreme care: test-driven, well-documented, access
 
 ## Tech Stack (Locked per plan v4.5)
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | SvelteKit (adapter-node for apps, adapter-static for snaplify.com) |
-| Auth | Better Auth via `@snaplify/auth` |
-| Federation | Fedify (`@fedify/sveltekit`, `@fedify/postgres`, `@fedify/redis`) |
-| Database | PostgreSQL 16 + Drizzle ORM |
-| Editor | TipTap (content blocks), CodeMirror 6 (docs) |
-| Docs Rendering | unified + remark + rehype + shiki + mermaid-isomorphic |
-| Search | Meilisearch (primary), Postgres FTS (fallback) |
-| Animation | GSAP + ScrollTrigger (explainer snap sections) |
-| Email | Resend |
-| Analytics | Plausible (self-hosted) |
-| Storage | DO Spaces (S3-compatible) |
-| Queue | Redis/Valkey |
-| CLI | Rust (`create-snaplify`) |
-| Worker | TypeScript v1, Rust v2 |
-| Monorepo | Turborepo + pnpm |
+| Layer          | Technology                                                         |
+| -------------- | ------------------------------------------------------------------ |
+| Framework      | SvelteKit (adapter-node for apps, adapter-static for snaplify.com) |
+| Auth           | Better Auth via `@snaplify/auth`                                   |
+| Federation     | Fedify (`@fedify/sveltekit`, `@fedify/postgres`, `@fedify/redis`)  |
+| Database       | PostgreSQL 16 + Drizzle ORM                                        |
+| Editor         | TipTap (content blocks), CodeMirror 6 (docs)                       |
+| Docs Rendering | unified + remark + rehype + shiki + mermaid-isomorphic             |
+| Search         | Meilisearch (primary), Postgres FTS (fallback)                     |
+| Animation      | GSAP + ScrollTrigger (explainer snap sections)                     |
+| Email          | Resend                                                             |
+| Analytics      | Plausible (self-hosted)                                            |
+| Storage        | DO Spaces (S3-compatible)                                          |
+| Queue          | Redis/Valkey                                                       |
+| CLI            | Rust (`create-snaplify`)                                           |
+| Worker         | TypeScript v1, Rust v2                                             |
+| Monorepo       | Turborepo + pnpm                                                   |
 
 ---
 
@@ -94,38 +94,51 @@ snaplify/
 ## Phased Implementation
 
 ### Phase 0: Foundation (Week 1)
+
 **Goal**: Monorepo scaffolding, CI/CD, dev environment, docs skeleton. Zero features, but `pnpm install && pnpm build && pnpm test` passes.
 
 ### Phase 1: Schema + Config + Token Surface (Weeks 2-3)
+
 **Goal**: `@snaplify/schema`, `@snaplify/config`, and CSS token surface are locked and tested.
 
 ### Phase 2: Auth + Protocol (Weeks 4-5)
+
 **Goal**: `@snaplify/auth` and `@snaplify/snaplify` functional. Two local instances exchange AP Actor SSO logins.
 
 ### Phase 3: Core UI Kit + Block Editor (Weeks 6-8)
+
 **Goal**: `@snaplify/ui` component library + `@snaplify/editor` with all block types.
 
 ### Phase 4: Reference App + Content System (Weeks 9-11)
+
 **Goal**: Working SvelteKit app with content CRUD, views, social features, SEO.
 
 ### Phase 5: Explainer System (Weeks 12-14)
+
 **Goal**: Full interactive explainer runtime, editor integration, single-file HTML export.
 
 ### Phase 6: Learning System (Weeks 15-17)
+
 **Goal**: Learning paths with modules, lessons, enrollment, progress, certificates.
 
 ### Phase 7: Community System (Weeks 18-20)
+
 **Goal**: Communities with feeds, membership, roles, moderation.
 
 ### Phase 8: Federation (Weeks 21-24)
+
 **Goal**: Two instances federate content via ActivityPub.
 
 ### Phase 9: Docs Module (Weeks 25-26)
+
 **Goal**: `@snaplify/docs` with CodeMirror editor, markdown rendering, versioning, search.
 
 ### Phase 10: Theming Engine + Admin (Weeks 27-28)
+
 ### Phase 11: CLI + Deployment (Weeks 29-31)
+
 ### Phase 12: Polish + Hardening (Weeks 32-34) ✅
+
 **Goal**: Launch-ready v1 with Meilisearch search, static landing page, security hardening, and documentation.
 
 - Meilisearch `SearchAdapter` interface with Postgres FTS fallback
@@ -142,34 +155,36 @@ snaplify/
 ## What to Extract from Existing Apps
 
 ### From hack-build (Vue 3 + Convex)
-| Source | Extract | Target |
-|--------|---------|--------|
-| `convex/schema.ts` | Full data model: users, projects, posts, comments, likes, follows, hubs, contests, learning paths, enrollments, certificates, explainers, blogs, videos | `@snaplify/schema` Drizzle tables |
-| `app/src/assets/styles/tokens.css` | Design token surface: paper/ink palette, fonts, spacing, shadows, z-index | `@snaplify/ui/theme/base.css` token contract |
-| `app/src/components/editor/` | 13 block types + editor infrastructure | `@snaplify/editor` TipTap extensions |
-| `convex/learn.ts` | Learning path CRUD, enrollment, progress tracking, certificate generation | `@snaplify/learning` business logic |
-| `app/src/stores/editor.store.ts` | Block CRUD operations, selection, dirty tracking | `@snaplify/editor` state management |
-| `convex/__tests__/` | Test patterns and coverage map | Test strategy reference |
-| `app/src/composables/` | `useUpload`, `useDragReorder`, `useMediaQuery`, `useClipboard`, `useDebounce`, `useInfiniteScroll` | Svelte equivalents |
+
+| Source                             | Extract                                                                                                                                                 | Target                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `convex/schema.ts`                 | Full data model: users, projects, posts, comments, likes, follows, hubs, contests, learning paths, enrollments, certificates, explainers, blogs, videos | `@snaplify/schema` Drizzle tables            |
+| `app/src/assets/styles/tokens.css` | Design token surface: paper/ink palette, fonts, spacing, shadows, z-index                                                                               | `@snaplify/ui/theme/base.css` token contract |
+| `app/src/components/editor/`       | 13 block types + editor infrastructure                                                                                                                  | `@snaplify/editor` TipTap extensions         |
+| `convex/learn.ts`                  | Learning path CRUD, enrollment, progress tracking, certificate generation                                                                               | `@snaplify/learning` business logic          |
+| `app/src/stores/editor.store.ts`   | Block CRUD operations, selection, dirty tracking                                                                                                        | `@snaplify/editor` state management          |
+| `convex/__tests__/`                | Test patterns and coverage map                                                                                                                          | Test strategy reference                      |
+| `app/src/composables/`             | `useUpload`, `useDragReorder`, `useMediaQuery`, `useClipboard`, `useDebounce`, `useInfiniteScroll`                                                      | Svelte equivalents                           |
 
 ### From deveco-io (Nuxt 3 + Drizzle + tRPC)
-| Source | Extract | Target |
-|--------|---------|--------|
-| `packages/db/src/schema/` | Drizzle ORM syntax and patterns | `@snaplify/schema` implementation patterns |
-| `packages/auth/src/config.ts` | Better Auth config with graceful social provider handling | `@snaplify/auth` |
-| `turbo.json` + `pnpm-workspace.yaml` | Turborepo pipeline config | Monorepo setup |
-| `apps/web/assets/css/main.css` | Color palette, typography, dark/light mode tokens | `@snaplify/ui/theme/deveco.css` |
+
+| Source                               | Extract                                                   | Target                                     |
+| ------------------------------------ | --------------------------------------------------------- | ------------------------------------------ |
+| `packages/db/src/schema/`            | Drizzle ORM syntax and patterns                           | `@snaplify/schema` implementation patterns |
+| `packages/auth/src/config.ts`        | Better Auth config with graceful social provider handling | `@snaplify/auth`                           |
+| `turbo.json` + `pnpm-workspace.yaml` | Turborepo pipeline config                                 | Monorepo setup                             |
+| `apps/web/assets/css/main.css`       | Color palette, typography, dark/light mode tokens         | `@snaplify/ui/theme/deveco.css`            |
 
 ---
 
 ## Testing Strategy
 
-| Level | Tool | Scope |
-|-------|------|-------|
-| Unit | Vitest | Zod validators, config validation, auth flows, AP handlers, business logic |
-| Component | @testing-library/svelte + axe-core | All `@snaplify/ui` components |
-| Integration | Vitest + test Postgres | API routes, content lifecycle, auth flows |
-| E2E | Playwright | Critical user journeys, cross-instance federation |
+| Level       | Tool                               | Scope                                                                      |
+| ----------- | ---------------------------------- | -------------------------------------------------------------------------- |
+| Unit        | Vitest                             | Zod validators, config validation, auth flows, AP handlers, business logic |
+| Component   | @testing-library/svelte + axe-core | All `@snaplify/ui` components                                              |
+| Integration | Vitest + test Postgres             | API routes, content lifecycle, auth flows                                  |
+| E2E         | Playwright                         | Critical user journeys, cross-instance federation                          |
 
 ---
 

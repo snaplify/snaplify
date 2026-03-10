@@ -34,10 +34,7 @@ export interface MeiliIndex {
     documents: Array<Record<string, unknown>>,
     options?: { primaryKey?: string },
   ): Promise<unknown>;
-  search(
-    query: string,
-    options?: Record<string, unknown>,
-  ): Promise<MeiliSearchResponse>;
+  search(query: string, options?: Record<string, unknown>): Promise<MeiliSearchResponse>;
   deleteDocuments(ids: string[]): Promise<unknown>;
   updateFilterableAttributes(attributes: string[]): Promise<unknown>;
   updateSearchableAttributes(attributes: string[]): Promise<unknown>;

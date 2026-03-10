@@ -24,14 +24,14 @@
 
 ## File Naming
 
-| Type | Convention | Example |
-|------|-----------|---------|
-| Svelte components | PascalCase | `ProjectCard.svelte` |
-| TypeScript modules | camelCase | `contentService.ts` |
-| Schema files | camelCase | `learningPath.ts` |
-| CSS files | kebab-case | `base-tokens.css` |
-| Test files | *.test.ts | `config.test.ts` |
-| ADRs | NNN-kebab | `001-sveltekit.md` |
+| Type               | Convention | Example              |
+| ------------------ | ---------- | -------------------- |
+| Svelte components  | PascalCase | `ProjectCard.svelte` |
+| TypeScript modules | camelCase  | `contentService.ts`  |
+| Schema files       | camelCase  | `learningPath.ts`    |
+| CSS files          | kebab-case | `base-tokens.css`    |
+| Test files         | \*.test.ts | `config.test.ts`     |
+| ADRs               | NNN-kebab  | `001-sveltekit.md`   |
 
 ## Testing
 

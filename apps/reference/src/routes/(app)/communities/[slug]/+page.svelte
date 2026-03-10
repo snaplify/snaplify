@@ -26,9 +26,7 @@
   {/if}
 
   {#if data.community.isBanned}
-    <div class="banned-banner" role="alert">
-      You are banned from this community.
-    </div>
+    <div class="banned-banner" role="alert">You are banned from this community.</div>
   {/if}
 
   <div class="posts-feed">
@@ -38,11 +36,7 @@
       </div>
     {:else}
       {#each data.posts as post (post.id)}
-        <PostCard
-          {post}
-          slug={data.community.slug}
-          userRole={data.community.currentUserRole}
-        />
+        <PostCard {post} slug={data.community.slug} userRole={data.community.currentUserRole} />
       {/each}
     {/if}
   </div>
