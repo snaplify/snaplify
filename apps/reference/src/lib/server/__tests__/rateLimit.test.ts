@@ -66,7 +66,18 @@ describe('getTierForPath', () => {
     expect(getTierForPath('/api/auth/session')).toBe(DEFAULT_TIERS.auth);
   });
 
-  it('returns api tier for /api/ paths', () => {
+  it('returns social tier for /api/social/ paths', () => {
+    expect(getTierForPath('/api/social/like')).toBe(DEFAULT_TIERS.social);
+    expect(getTierForPath('/api/social/comments')).toBe(DEFAULT_TIERS.social);
+  });
+
+  it('returns federation tier for federation paths', () => {
+    expect(getTierForPath('/api/federation/follow')).toBe(DEFAULT_TIERS.federation);
+    expect(getTierForPath('/inbox')).toBe(DEFAULT_TIERS.federation);
+    expect(getTierForPath('/users/alice/inbox')).toBe(DEFAULT_TIERS.federation);
+  });
+
+  it('returns api tier for other /api/ paths', () => {
     expect(getTierForPath('/api/docs/search')).toBe(DEFAULT_TIERS.api);
   });
 

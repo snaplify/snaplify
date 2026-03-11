@@ -43,7 +43,7 @@ export async function listPaths(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = filters.limit ?? 20;
+  const limit = Math.min(filters.limit ?? 20, 100);
   const offset = filters.offset ?? 0;
 
   const [rows, countResult] = await Promise.all([
@@ -569,7 +569,7 @@ export async function unenroll(db: DB, userId: string, pathId: string): Promise<
   // Decrement enrollment count
   await db
     .update(learningPaths)
-    .set({ enrollmentCount: sql`greatest(${learningPaths.enrollmentCount} - 1, 0)` })
+    .set({ enrollmentCount: sql`GREATEST(${learningPaths.enrollmentCount} - 1, 0)` })
     .where(eq(learningPaths.id, pathId));
 
   return true;

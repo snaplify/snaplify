@@ -1,26 +1,31 @@
 import type { Handle } from '@sveltejs/kit';
 
-/** Default CSP directives for production */
-const CSP_DIRECTIVES: Record<string, string> = {
-  'default-src': "'self'",
-  'script-src': "'self' 'unsafe-inline'",
-  'style-src': "'self' 'unsafe-inline'",
-  'img-src': "'self' data: https:",
-  'font-src': "'self'",
-  'connect-src': "'self'",
-  'frame-ancestors': "'none'",
-  'base-uri': "'self'",
-  'form-action': "'self'",
-};
+/** Build CSP directives with optional nonce for script-src */
+export function buildCspDirectives(nonce?: string): Record<string, string> {
+  const scriptSrc = nonce ? `'self' 'nonce-${nonce}'` : "'self'";
+  const styleSrc = nonce ? `'self' 'nonce-${nonce}'` : "'self' 'unsafe-inline'";
+  return {
+    'default-src': "'self'",
+    'script-src': scriptSrc,
+    'style-src': styleSrc,
+    'img-src': "'self' data: https:",
+    'font-src': "'self'",
+    'connect-src': "'self'",
+    'frame-ancestors': "'none'",
+    'base-uri': "'self'",
+    'form-action': "'self'",
+  };
+}
 
 /** Build a CSP header string from directives */
-export function buildCspHeader(directives: Record<string, string> = CSP_DIRECTIVES): string {
-  return Object.entries(directives)
+export function buildCspHeader(directives?: Record<string, string>): string {
+  const dirs = directives ?? buildCspDirectives();
+  return Object.entries(dirs)
     .map(([key, value]) => `${key} ${value}`)
     .join('; ');
 }
 
-/** Security headers applied to every response */
+/** Security headers applied to every response (static, without nonce) */
 export function getSecurityHeaders(isDev: boolean): Record<string, string> {
   const headers: Record<string, string> = {
     'X-Content-Type-Options': 'nosniff',
@@ -28,11 +33,6 @@ export function getSecurityHeaders(isDev: boolean): Record<string, string> {
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
   };
-
-  // CSP only in production — dev needs eval for HMR
-  if (!isDev) {
-    headers['Content-Security-Policy'] = buildCspHeader();
-  }
 
   // HSTS only in production
   if (!isDev) {
@@ -49,15 +49,28 @@ export function getStaticCacheHeaders(): Record<string, string> {
   };
 }
 
-/** SvelteKit handle hook that adds security headers */
+/** SvelteKit handle hook that adds security headers with nonce-based CSP */
 export function createSecurityHook(isDev: boolean): Handle {
-  const securityHeaders = getSecurityHeaders(isDev);
+  const staticHeaders = getSecurityHeaders(isDev);
 
   return async ({ event, resolve }) => {
-    const response = await resolve(event);
+    // Generate a per-request nonce for CSP
+    const nonce = isDev ? undefined : crypto.randomUUID().replace(/-/g, '');
 
-    for (const [key, value] of Object.entries(securityHeaders)) {
+    const response = await resolve(event, {
+      transformPageChunk: nonce
+        ? ({ html }) => html.replace(/%sveltekit\.nonce%/g, nonce)
+        : undefined,
+    });
+
+    for (const [key, value] of Object.entries(staticHeaders)) {
       response.headers.set(key, value);
+    }
+
+    // Add nonce-based CSP in production
+    if (!isDev) {
+      const cspDirectives = buildCspDirectives(nonce);
+      response.headers.set('Content-Security-Policy', buildCspHeader(cspDirectives));
     }
 
     // Add cache headers for immutable static assets

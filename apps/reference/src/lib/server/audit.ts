@@ -64,7 +64,7 @@ export async function listAuditLogs(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = filters.limit ?? 50;
+  const limit = Math.min(filters.limit ?? 50, 100);
   const offset = filters.offset ?? 0;
 
   const [rows, countResult] = await Promise.all([

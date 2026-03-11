@@ -4,6 +4,7 @@ import { validateAuthorizeRequest } from '@snaplify/snaplify';
 import { eq } from 'drizzle-orm';
 import { oauthClients } from '@snaplify/schema';
 import { randomUUID } from 'node:crypto';
+import { storeAuthCode } from '$lib/server/oauthCodes';
 
 /** OAuth2 Authorization Endpoint — Provider side
  * Validates the authorize request and redirects back with an authorization code.
@@ -50,11 +51,10 @@ export const GET: RequestHandler = async ({ url, locals }) => {
     return json(validationError, { status: 400 });
   }
 
-  // Generate authorization code (stored in-memory for v1 — production should use DB/Redis)
+  // Generate and store authorization code
   const code = randomUUID();
+  storeAuthCode(code, locals.user.id, clientId, redirectUri);
 
-  // In production, store code → { userId, clientId, redirectUri, expiresAt }
-  // For v1, embed userId in the code via a simple scheme
   const redirectUrl = new URL(redirectUri);
   redirectUrl.searchParams.set('code', code);
   if (state) {

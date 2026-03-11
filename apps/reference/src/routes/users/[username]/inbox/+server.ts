@@ -1,9 +1,9 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { processInboxActivity } from '@snaplify/snaplify';
+import { processInboxActivity, verifyHttpSignature } from '@snaplify/snaplify';
 import { eq, and } from 'drizzle-orm';
 import { users, activities, followRelationships } from '@snaplify/schema';
-import { acceptFollow } from '$lib/server/federation';
+import { acceptFollow, resolveRemoteActor } from '$lib/server/federation';
 
 export const POST: RequestHandler = async ({ params, request, locals }) => {
   if (!locals.config.features.federation) {
@@ -26,6 +26,22 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
     body = await request.json();
   } catch {
     return json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  // Verify HTTP Signature
+  const actorUri = body.actor as string;
+  if (!actorUri) {
+    return json({ error: 'Missing actor' }, { status: 400 });
+  }
+
+  const actor = await resolveRemoteActor(locals.db, actorUri);
+  const publicKeyPem = actor?.publicKey?.publicKeyPem;
+
+  if (publicKeyPem) {
+    const signatureValid = await verifyHttpSignature(request, publicKeyPem);
+    if (!signatureValid) {
+      return json({ error: 'Invalid HTTP Signature' }, { status: 401 });
+    }
   }
 
   const domain = locals.config.instance.domain;

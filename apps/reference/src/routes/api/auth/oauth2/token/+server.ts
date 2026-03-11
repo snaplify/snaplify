@@ -4,6 +4,7 @@ import { validateTokenRequest } from '@snaplify/snaplify';
 import { eq } from 'drizzle-orm';
 import { oauthClients } from '@snaplify/schema';
 import { randomUUID } from 'node:crypto';
+import { consumeAuthCode } from '$lib/server/oauthCodes';
 
 /** OAuth2 Token Endpoint — Provider side
  * Exchanges an authorization code for an access token.
@@ -62,8 +63,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     );
   }
 
-  // In production, verify code against stored authorization codes
-  // For v1, issue an access token directly
+  // Verify authorization code
+  const codeResult = consumeAuthCode(code, clientId, redirectUri);
+  if (!codeResult) {
+    return json(
+      { error: 'invalid_grant', error_description: 'Invalid, expired, or already-used authorization code' },
+      { status: 400 },
+    );
+  }
+
   const accessToken = randomUUID();
 
   return json({

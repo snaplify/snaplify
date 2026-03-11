@@ -4,6 +4,7 @@ import { users } from './auth';
 import { contentItems } from './content';
 import { contestStatusEnum } from './enums';
 
+/** @v2 — Contest system. Tables defined but not yet referenced in application code. */
 export const contests = pgTable('contests', {
   id: uuid('id').defaultRandom().primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -32,6 +33,7 @@ export const contests = pgTable('contests', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+/** @v2 — Contest entries. Tables defined but not yet referenced in application code. */
 export const contestEntries = pgTable('contest_entries', {
   id: uuid('id').defaultRandom().primaryKey(),
   contestId: uuid('contest_id')

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCspHeader, getSecurityHeaders, getStaticCacheHeaders } from '../security';
+import { buildCspHeader, buildCspDirectives, getSecurityHeaders, getStaticCacheHeaders } from '../security';
 
 describe('buildCspHeader', () => {
   it('builds semicolon-separated CSP string from directives', () => {
@@ -14,7 +14,20 @@ describe('buildCspHeader', () => {
     const header = buildCspHeader();
     expect(header).toContain("default-src 'self'");
     expect(header).toContain("frame-ancestors 'none'");
-    expect(header).toContain("script-src 'self' 'unsafe-inline'");
+  });
+});
+
+describe('buildCspDirectives', () => {
+  it('uses unsafe-inline for styles when no nonce', () => {
+    const directives = buildCspDirectives();
+    expect(directives['style-src']).toContain("'unsafe-inline'");
+    expect(directives['script-src']).toBe("'self'");
+  });
+
+  it('uses nonce-based CSP when nonce provided', () => {
+    const directives = buildCspDirectives('abc123');
+    expect(directives['script-src']).toBe("'self' 'nonce-abc123'");
+    expect(directives['style-src']).toBe("'self' 'nonce-abc123'");
   });
 });
 
@@ -27,16 +40,19 @@ describe('getSecurityHeaders', () => {
     expect(headers['Permissions-Policy']).toBe('camera=(), microphone=(), geolocation=()');
   });
 
-  it('omits CSP and HSTS in dev mode', () => {
+  it('omits HSTS in dev mode', () => {
     const headers = getSecurityHeaders(true);
-    expect(headers['Content-Security-Policy']).toBeUndefined();
     expect(headers['Strict-Transport-Security']).toBeUndefined();
   });
 
-  it('includes CSP and HSTS in production', () => {
+  it('includes HSTS in production', () => {
     const headers = getSecurityHeaders(false);
-    expect(headers['Content-Security-Policy']).toContain("default-src 'self'");
     expect(headers['Strict-Transport-Security']).toContain('max-age=31536000');
+  });
+
+  it('does not include CSP in static headers (CSP is per-request with nonce)', () => {
+    const headers = getSecurityHeaders(false);
+    expect(headers['Content-Security-Policy']).toBeUndefined();
   });
 });
 

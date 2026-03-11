@@ -158,7 +158,7 @@ export async function listUsers(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = filters.limit ?? 20;
+  const limit = Math.min(filters.limit ?? 20, 100);
   const offset = filters.offset ?? 0;
 
   const [rows, countResult] = await Promise.all([
@@ -258,7 +258,7 @@ export async function listReports(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = filters.limit ?? 20;
+  const limit = Math.min(filters.limit ?? 20, 100);
   const offset = filters.offset ?? 0;
 
   const reviewerAlias = alias(users, 'reviewer');

@@ -81,7 +81,7 @@ export {
 export type { ResolvedActor, FetchFn } from './actorResolver';
 
 // Keypair Management
-export { generateKeypair, exportPublicKeyPem, exportPrivateKeyPem, buildKeyId } from './keypairs';
+export { generateKeypair, exportPublicKeyPem, exportPrivateKeyPem, buildKeyId, verifyHttpSignature } from './keypairs';
 export type { ActorKeypair } from './keypairs';
 
 // Inbox Processing

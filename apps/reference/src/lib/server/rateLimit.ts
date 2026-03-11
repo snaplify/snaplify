@@ -68,7 +68,9 @@ export class RateLimitStore {
 
 /** Default rate limit tiers by route prefix */
 export const DEFAULT_TIERS: Record<string, RateLimitTier> = {
-  auth: { limit: 10, windowMs: 60_000 },
+  auth: { limit: 5, windowMs: 60_000 },
+  social: { limit: 30, windowMs: 60_000 },
+  federation: { limit: 60, windowMs: 60_000 },
   api: { limit: 60, windowMs: 60_000 },
   general: { limit: 120, windowMs: 60_000 },
 };
@@ -77,6 +79,12 @@ export const DEFAULT_TIERS: Record<string, RateLimitTier> = {
 export function getTierForPath(pathname: string): RateLimitTier {
   if (pathname.startsWith('/auth/') || pathname.startsWith('/api/auth/')) {
     return DEFAULT_TIERS.auth;
+  }
+  if (pathname.startsWith('/api/social/')) {
+    return DEFAULT_TIERS.social;
+  }
+  if (pathname.startsWith('/api/federation/') || pathname.startsWith('/inbox') || pathname.startsWith('/users/')) {
+    return DEFAULT_TIERS.federation;
   }
   if (pathname.startsWith('/api/')) {
     return DEFAULT_TIERS.api;

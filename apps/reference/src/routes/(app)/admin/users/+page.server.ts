@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { listUsers, updateUserRole, updateUserStatus } from '$lib/server/admin';
+import { listUsers, updateUserRole, updateUserStatus, deleteUser } from '$lib/server/admin';
 import { updateUserRoleSchema, updateUserStatusSchema } from '@snaplify/schema';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -67,5 +67,25 @@ export const actions: Actions = {
     );
 
     return { success: true };
+  },
+
+  deleteUser: async ({ request, locals, getClientAddress }) => {
+    if (!locals.user) return fail(401, { error: 'Not authenticated' });
+    if (locals.user.role !== 'admin') return fail(403, { error: 'Only admins can delete users' });
+
+    const formData = await request.formData();
+    const userId = formData.get('userId') as string;
+    const confirm = formData.get('confirm') as string;
+
+    if (!userId) return fail(400, { error: 'User ID is required' });
+    if (confirm !== 'DELETE') return fail(400, { error: 'Confirmation required: type DELETE to confirm' });
+    if (userId === locals.user.id) return fail(400, { error: 'Cannot delete your own account' });
+
+    try {
+      await deleteUser(locals.db, userId, locals.user.id, getClientAddress());
+      return { success: true, deleted: true };
+    } catch (err) {
+      return fail(500, { error: err instanceof Error ? err.message : 'Failed to delete user' });
+    }
   },
 };
