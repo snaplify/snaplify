@@ -50,6 +50,6 @@ export const instanceConfigSchema = z.object({
 
 export const configSchema = z.object({
   instance: instanceConfigSchema,
-  features: featureFlagsSchema.default({}),
-  auth: authConfigSchema.default({}),
+  features: featureFlagsSchema.default(() => featureFlagsSchema.parse({})),
+  auth: authConfigSchema.default(() => authConfigSchema.parse({})),
 });

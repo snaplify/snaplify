@@ -102,6 +102,30 @@ describe('scoreQuiz', () => {
     expect(result.correct).toBe(0);
     expect(result.total).toBe(3);
   });
+
+  it('passed is true when score >= 70 (default threshold)', () => {
+    const result = scoreQuiz(questions, { q1: 'b', q2: 'b', q3: 'a' });
+    expect(result.score).toBe(100);
+    expect(result.passed).toBe(true);
+  });
+
+  it('passed is false when score < 70 (default threshold)', () => {
+    const result = scoreQuiz(questions, { q1: 'b', q2: 'a', q3: 'a' });
+    expect(result.score).toBe(67);
+    expect(result.passed).toBe(false);
+  });
+
+  it('custom passingScore works when provided', () => {
+    const result = scoreQuiz(questions, { q1: 'b', q2: 'a', q3: 'a' }, 60);
+    expect(result.score).toBe(67);
+    expect(result.passed).toBe(true);
+  });
+
+  it('passed is false when score below custom threshold', () => {
+    const result = scoreQuiz(questions, { q1: 'b', q2: 'b', q3: 'a' }, 101);
+    expect(result.score).toBe(100);
+    expect(result.passed).toBe(false);
+  });
 });
 
 describe('isQuizPassed', () => {

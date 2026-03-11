@@ -32,12 +32,9 @@ export function buildVerificationUrl(baseUrl: string, code: string): string {
 // --- Helpers ---
 
 function randomHex(length: number): string {
-  const chars = '0123456789abcdef';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return result;
+  const bytes = new Uint8Array(Math.ceil(length / 2));
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, length);
 }
 
 function formatDate(date: Date): string {

@@ -64,7 +64,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 
   // Verify authorization code
-  const codeResult = consumeAuthCode(code, clientId, redirectUri);
+  const codeResult = await consumeAuthCode(locals.db, code, clientId, redirectUri);
   if (!codeResult) {
     return json(
       { error: 'invalid_grant', error_description: 'Invalid, expired, or already-used authorization code' },

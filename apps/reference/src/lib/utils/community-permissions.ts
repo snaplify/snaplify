@@ -7,7 +7,8 @@ type CommunityAction =
   | 'lockPost'
   | 'banUser'
   | 'deleteCommunity'
-  | 'kickMember';
+  | 'kickMember'
+  | 'deletePost';
 
 const ROLE_WEIGHTS: Record<CommunityRole, number> = {
   owner: 4,
@@ -25,6 +26,7 @@ const ROLE_PERMISSIONS: Record<CommunityRole, Set<CommunityAction>> = {
     'banUser',
     'deleteCommunity',
     'kickMember',
+    'deletePost',
   ]),
   admin: new Set([
     'editCommunity',
@@ -33,8 +35,9 @@ const ROLE_PERMISSIONS: Record<CommunityRole, Set<CommunityAction>> = {
     'lockPost',
     'banUser',
     'kickMember',
+    'deletePost',
   ]),
-  moderator: new Set(['pinPost', 'lockPost', 'banUser']),
+  moderator: new Set(['pinPost', 'lockPost', 'banUser', 'deletePost']),
   member: new Set(),
 };
 

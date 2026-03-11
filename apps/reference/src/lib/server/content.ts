@@ -300,7 +300,7 @@ export async function onContentPublished(
   config: SnaplifyConfig,
 ): Promise<void> {
   if (!config.features.federation) return;
-  await federateContent(db, contentId, config.instance.domain).catch(() => {});
+  await federateContent(db, contentId, config.instance.domain).catch((err: unknown) => { console.error('[federation]', err); });
 }
 
 export async function onContentUpdated(
@@ -309,7 +309,7 @@ export async function onContentUpdated(
   config: SnaplifyConfig,
 ): Promise<void> {
   if (!config.features.federation) return;
-  await federateUpdate(db, contentId, config.instance.domain).catch(() => {});
+  await federateUpdate(db, contentId, config.instance.domain).catch((err: unknown) => { console.error('[federation]', err); });
 }
 
 export async function onContentDeleted(
@@ -319,5 +319,5 @@ export async function onContentDeleted(
   config: SnaplifyConfig,
 ): Promise<void> {
   if (!config.features.federation) return;
-  await federateDelete(db, contentId, config.instance.domain, authorUsername).catch(() => {});
+  await federateDelete(db, contentId, config.instance.domain, authorUsername).catch((err: unknown) => { console.error('[federation]', err); });
 }

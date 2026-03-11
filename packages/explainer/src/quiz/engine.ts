@@ -10,7 +10,7 @@ export function checkAnswer(question: QuizQuestion, selectedOptionId: string): A
 }
 
 /** Score a complete quiz given questions and a map of answers */
-export function scoreQuiz(questions: QuizQuestion[], answers: Record<string, string>): QuizResult {
+export function scoreQuiz(questions: QuizQuestion[], answers: Record<string, string>, passingScore = 70): QuizResult {
   let correct = 0;
   for (const question of questions) {
     const selected = answers[question.id];
@@ -20,7 +20,7 @@ export function scoreQuiz(questions: QuizQuestion[], answers: Record<string, str
   }
   const total = questions.length;
   const score = total === 0 ? 0 : Math.round((correct / total) * 100);
-  return { score, passed: false, total, correct };
+  return { score, passed: isQuizPassed(score, passingScore), total, correct };
 }
 
 /** Check if a quiz score meets the passing threshold */

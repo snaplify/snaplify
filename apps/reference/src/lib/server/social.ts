@@ -283,5 +283,5 @@ export async function onContentLiked(
   config: SnaplifyConfig,
 ): Promise<void> {
   if (!config.features.federation) return;
-  await federateLike(db, userId, contentUri, config.instance.domain).catch(() => {});
+  await federateLike(db, userId, contentUri, config.instance.domain).catch((err: unknown) => { console.error('[federation]', err); });
 }

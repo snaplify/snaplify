@@ -154,7 +154,7 @@ export const createActivitySchema = z.object({
   type: z.string().min(1).max(64),
   actorUri: actorUriSchema,
   objectUri: actorUriSchema.optional(),
-  payload: z.record(z.unknown()),
+  payload: z.record(z.string(), z.unknown()),
   direction: activityDirectionSchema,
 });
 

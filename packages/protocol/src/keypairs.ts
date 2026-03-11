@@ -31,14 +31,14 @@ export function buildKeyId(domain: string, username: string): string {
 
 /** Verify an HTTP Signature on an incoming ActivityPub request.
  *  Returns true if the signature is valid, false otherwise.
- *  Returns true if no Signature header is present (allow unsigned for compat).
+ *  Returns false if no Signature header is present.
  */
 export async function verifyHttpSignature(
   request: Request,
   publicKeyPem: string,
 ): Promise<boolean> {
   const signatureHeader = request.headers.get('signature');
-  if (!signatureHeader) return true; // No signature = pass through (logged but not blocked)
+  if (!signatureHeader) return false;
 
   try {
     // Parse the Signature header

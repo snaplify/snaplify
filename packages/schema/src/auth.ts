@@ -105,6 +105,17 @@ export const oauthClients = pgTable('oauth_clients', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const oauthCodes = pgTable('oauth_codes', {
+  code: varchar('code', { length: 255 }).primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  clientId: varchar('client_id', { length: 255 }).notNull(),
+  redirectUri: text('redirect_uri').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const verifications = pgTable('verifications', {
   id: uuid('id').defaultRandom().primaryKey(),
   identifier: varchar('identifier', { length: 255 }).notNull(),

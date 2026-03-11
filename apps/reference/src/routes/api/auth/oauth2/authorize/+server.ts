@@ -53,7 +53,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
   // Generate and store authorization code
   const code = randomUUID();
-  storeAuthCode(code, locals.user.id, clientId, redirectUri);
+  await storeAuthCode(locals.db, code, locals.user.id, clientId, redirectUri);
 
   const redirectUrl = new URL(redirectUri);
   redirectUrl.searchParams.set('code', code);

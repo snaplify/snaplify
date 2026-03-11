@@ -24,7 +24,7 @@
     "@snaplify/config": "workspace:*",
     "@snaplify/explainer": "workspace:*",
     "@snaplify/editor": "workspace:*",
-    "zod": "^3.23.0"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

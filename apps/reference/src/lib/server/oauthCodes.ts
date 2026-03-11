@@ -1,61 +1,58 @@
-/** In-memory authorization code store for OAuth2 flows.
- *  Production deployments should replace this with Redis or a DB table.
+/** Database-backed authorization code store for OAuth2 flows.
+ *  Codes are single-use with a 10-minute TTL.
+ *  Safe for multi-process deployments.
  */
 
-interface StoredCode {
-  userId: string;
-  clientId: string;
-  redirectUri: string;
-  expiresAt: number;
-}
+import { eq, and, lt } from 'drizzle-orm';
+import { oauthCodes } from '@snaplify/schema';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-const codes = new Map<string, StoredCode>();
+type DB = NodePgDatabase<Record<string, unknown>>;
 
 const CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 /** Store an authorization code */
-export function storeAuthCode(
+export async function storeAuthCode(
+  db: DB,
   code: string,
   userId: string,
   clientId: string,
   redirectUri: string,
-): void {
-  codes.set(code, {
+): Promise<void> {
+  await db.insert(oauthCodes).values({
+    code,
     userId,
     clientId,
     redirectUri,
-    expiresAt: Date.now() + CODE_TTL_MS,
+    expiresAt: new Date(Date.now() + CODE_TTL_MS),
   });
 }
 
 /** Consume an authorization code (single-use). Returns the stored data or null. */
-export function consumeAuthCode(
+export async function consumeAuthCode(
+  db: DB,
   code: string,
   clientId: string,
   redirectUri: string,
-): { userId: string } | null {
-  const stored = codes.get(code);
-  if (!stored) return null;
+): Promise<{ userId: string } | null> {
+  // Delete and return in one operation for atomicity
+  const deleted = await db
+    .delete(oauthCodes)
+    .where(eq(oauthCodes.code, code))
+    .returning();
 
-  // Always delete — codes are single-use
-  codes.delete(code);
+  if (deleted.length === 0) return null;
 
-  if (Date.now() > stored.expiresAt) return null;
+  const stored = deleted[0]!;
+
+  if (new Date() > stored.expiresAt) return null;
   if (stored.clientId !== clientId) return null;
   if (stored.redirectUri !== redirectUri) return null;
 
   return { userId: stored.userId };
 }
 
-/** Clean up expired codes (called periodically) */
-export function cleanupExpiredCodes(): void {
-  const now = Date.now();
-  for (const [code, stored] of codes) {
-    if (now > stored.expiresAt) {
-      codes.delete(code);
-    }
-  }
+/** Clean up expired codes */
+export async function cleanupExpiredCodes(db: DB): Promise<void> {
+  await db.delete(oauthCodes).where(lt(oauthCodes.expiresAt, new Date()));
 }
-
-// Periodic cleanup
-setInterval(cleanupExpiredCodes, 60_000);

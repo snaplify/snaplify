@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
 /** BlockTuple schema — [type, content] */
-const blockTupleSchema = z.tuple([z.string(), z.record(z.unknown())]);
+const blockTupleSchema = z.tuple([z.string(), z.record(z.string(), z.unknown())]);
 
 /** Visual config schema (Phase 5b) */
 const visualConfigSchema = z.object({
   type: z.enum(['animation', 'diagram', 'code-demo']),
-  config: z.record(z.unknown()),
+  config: z.record(z.string(), z.unknown()),
 });
 
 /** Slider control schema */

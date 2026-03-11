@@ -3,13 +3,13 @@ import { verifyHttpSignature, generateKeypair, exportPublicKeyPem } from '../ind
 import { createSign } from 'node:crypto';
 
 describe('verifyHttpSignature', () => {
-  it('returns true when no Signature header is present', async () => {
+  it('returns false when no Signature header is present', async () => {
     const request = new Request('https://example.com/inbox', {
       method: 'POST',
       body: '{}',
     });
     const result = await verifyHttpSignature(request, 'some-key');
-    expect(result).toBe(true);
+    expect(result).toBe(false);
   });
 
   it('returns false for malformed signature header', async () => {

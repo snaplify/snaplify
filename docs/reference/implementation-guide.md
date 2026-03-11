@@ -347,9 +347,11 @@ See [Deployment Guide](../deployment.md) for full production setup.
 
 ## 17. Known Blockers & Limitations
 
-- **better-auth/zod v4**: Build fails due to Zod version mismatch. See [v1 Limitations](./guides/v1-limitations.md).
+- ~~**better-auth/zod v4**: Build fails due to Zod version mismatch.~~ Resolved — upgraded to zod v4.3.6.
 - **Federation stubs**: Inbound activities logged but not processed
 - **No activity delivery**: Outbound activities logged but not sent
 - **Communities local-only**: No AP Group support
 - **GSAP animations**: Deferred (Phase 5b)
 - **Mermaid rendering**: Deferred (Phase 9b)
+
+See [v1 Limitations](./guides/v1-limitations.md) for full details and [Federation Roadmap](./guides/federation.md#federation-roadmap-post-v1) for the federation development plan.

@@ -82,6 +82,22 @@ describe('Community Permissions', () => {
     it('should return false for unknown role', () => {
       expect(hasPermission('unknown', 'editCommunity')).toBe(false);
     });
+
+    it('should grant owner deletePost permission', () => {
+      expect(hasPermission('owner', 'deletePost')).toBe(true);
+    });
+
+    it('should grant admin deletePost permission', () => {
+      expect(hasPermission('admin', 'deletePost')).toBe(true);
+    });
+
+    it('should grant moderator deletePost permission', () => {
+      expect(hasPermission('moderator', 'deletePost')).toBe(true);
+    });
+
+    it('should not grant member deletePost permission', () => {
+      expect(hasPermission('member', 'deletePost')).toBe(false);
+    });
   });
 
   describe('canJoin', () => {

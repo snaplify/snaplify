@@ -1,8 +1,9 @@
 # OAuth Codes
 
-> In-memory authorization code store for OAuth flows with single-use consumption and automatic expiry cleanup.
+> Database-backed authorization code store for OAuth flows with single-use consumption and automatic expiry cleanup.
 
 **Source**: `apps/reference/src/lib/server/oauthCodes.ts`
+**Table**: `oauth_codes` (defined in `@snaplify/schema`)
 
 ---
 
@@ -10,35 +11,37 @@
 
 | Export | Kind | Description |
 |--------|------|-------------|
-| `storeAuthCode` | Function | Stores an authorization code with TTL |
-| `consumeAuthCode` | Function | Single-use code consumption with validation |
-| `cleanupExpiredCodes` | Function | Removes expired entries from the store |
+| `storeAuthCode` | Async Function | Stores an authorization code with TTL |
+| `consumeAuthCode` | Async Function | Single-use code consumption with validation |
+| `cleanupExpiredCodes` | Async Function | Removes expired entries from the database |
 
 ---
 
 ## API Reference
 
-### `storeAuthCode(code, userId, clientId, redirectUri): void`
+### `storeAuthCode(db, code, userId, clientId, redirectUri): Promise<void>`
 
 Stores an OAuth authorization code with a 10-minute time-to-live.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
+| `db` | `DB` | Drizzle database instance |
 | `code` | `string` | The authorization code |
 | `userId` | `string` | User who authorized the code |
 | `clientId` | `string` | OAuth client that requested authorization |
 | `redirectUri` | `string` | Redirect URI bound to this code |
 
-**Notes**: The code expires 10 minutes after storage.
+**Notes**: The code expires 10 minutes after storage. Stored in the `oauth_codes` database table.
 
 ---
 
-### `consumeAuthCode(code, clientId, redirectUri): { userId: string } | null`
+### `consumeAuthCode(db, code, clientId, redirectUri): Promise<{ userId: string } | null>`
 
 Consumes an authorization code, returning the associated user ID if valid.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
+| `db` | `DB` | Drizzle database instance |
 | `code` | `string` | The authorization code to consume |
 | `clientId` | `string` | Must match the client ID the code was issued to |
 | `redirectUri` | `string` | Must match the redirect URI the code was bound to |
@@ -47,7 +50,7 @@ Consumes an authorization code, returning the associated user ID if valid.
 
 **Behavior**:
 
-1. The code is **always deleted** from the store, regardless of whether validation succeeds. This ensures single-use semantics.
+1. The code row is **always deleted** from the database, regardless of whether validation succeeds. This ensures single-use semantics via atomic DELETE...RETURNING.
 2. Validates that the code has not expired (10-minute TTL).
 3. Validates that `clientId` matches the stored client ID.
 4. Validates that `redirectUri` matches the stored redirect URI.
@@ -55,14 +58,27 @@ Consumes an authorization code, returning the associated user ID if valid.
 
 ---
 
-### `cleanupExpiredCodes(): void`
+### `cleanupExpiredCodes(db): Promise<void>`
 
-Removes all expired authorization codes from the in-memory store.
+Removes all expired authorization codes from the database.
 
-**Notes**: This function is automatically invoked every 60 seconds via `setInterval` to prevent unbounded memory growth.
+**Notes**: Should be called periodically (e.g., via a cron job or background task) to prevent unbounded row growth. Unlike the previous in-memory implementation, expired rows persist until explicitly cleaned up.
 
 ---
 
+## Database Schema
+
+```sql
+CREATE TABLE oauth_codes (
+  code VARCHAR(255) PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  client_id VARCHAR(255) NOT NULL,
+  redirect_uri TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
 ## Implementation Notes
 
-The store is backed by an in-memory `Map`. This is suitable for single-instance development and testing but **should be replaced with Redis or a database table for production** deployments where multiple server instances may handle token exchange requests.
+The store is backed by the `oauth_codes` database table. This is safe for multi-process production deployments — any server instance can issue or consume codes. The atomic DELETE...RETURNING ensures single-use semantics without race conditions.

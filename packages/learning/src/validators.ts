@@ -26,7 +26,7 @@ export const updateLessonSchema = createLessonSchema.omit({ moduleId: true }).pa
 
 const articleContentSchema = z.object({
   type: z.literal('article'),
-  blocks: z.array(z.tuple([z.string(), z.record(z.unknown())])),
+  blocks: z.array(z.tuple([z.string(), z.record(z.string(), z.unknown())])),
 });
 
 const videoContentSchema = z.object({

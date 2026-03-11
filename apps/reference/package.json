@@ -31,7 +31,7 @@
     "drizzle-orm": "^0.41.0",
     "isomorphic-dompurify": "^3.1.0",
     "pg": "^8.13.0",
-    "zod": "^3.25.76"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.0.0",

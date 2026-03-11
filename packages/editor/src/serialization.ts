@@ -5,7 +5,7 @@ import type { BlockTuple } from './blocks/types';
 import { lookupBlock, listBlocks } from './blocks/registry';
 
 /** Zod schema for validating raw block tuples */
-const blockTupleSchema = z.tuple([z.string(), z.record(z.unknown())]);
+const blockTupleSchema = z.tuple([z.string(), z.record(z.string(), z.unknown())]);
 const blockTuplesSchema = z.array(blockTupleSchema);
 
 /** Validate raw input as BlockTuple[] using registered block schemas */

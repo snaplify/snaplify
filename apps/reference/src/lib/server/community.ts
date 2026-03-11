@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, ilike } from 'drizzle-orm';
+import { eq, and, desc, sql, ilike, inArray } from 'drizzle-orm';
 import {
   communities,
   communityMembers,
@@ -668,7 +668,7 @@ export async function deletePost(
       )
       .limit(1);
 
-    if (member.length === 0 || !hasPermission(member[0]!.role, 'pinPost')) {
+    if (member.length === 0 || !hasPermission(member[0]!.role, 'deletePost')) {
       return false;
     }
   }
@@ -890,7 +890,7 @@ export async function deleteReply(
       )
       .limit(1);
 
-    if (member.length === 0 || !hasPermission(member[0]!.role, 'pinPost')) {
+    if (member.length === 0 || !hasPermission(member[0]!.role, 'deletePost')) {
       return false;
     }
   }
@@ -1018,8 +1018,9 @@ export async function checkBan(
   if (rows.length === 0) return null;
 
   const ban = rows[0]!;
-  // Expired bans are not active
+  // Expired bans are not active — clean up the stale row
   if (ban.expiresAt && ban.expiresAt < new Date()) {
+    await db.delete(communityBans).where(eq(communityBans.id, ban.id));
     return null;
   }
 
@@ -1051,20 +1052,12 @@ export async function listBans(db: DB, communityId: string): Promise<CommunityBa
   >();
 
   if (uniqueBannerIds.length > 0) {
-    for (const bannerId of uniqueBannerIds) {
-      const bannerRows = await db
-        .select({
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-        })
-        .from(users)
-        .where(eq(users.id, bannerId))
-        .limit(1);
-      if (bannerRows.length > 0) {
-        banners.set(bannerId, bannerRows[0]!);
-      }
+    const bannerRows = await db
+      .select({ id: users.id, username: users.username, displayName: users.displayName, avatarUrl: users.avatarUrl })
+      .from(users)
+      .where(inArray(users.id, uniqueBannerIds));
+    for (const row of bannerRows) {
+      banners.set(row.id, row);
     }
   }
 
