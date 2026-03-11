@@ -8,16 +8,25 @@
   import { onMount, onDestroy } from 'svelte';
   import FloatingToolbar from './editor/FloatingToolbar.svelte';
   import SlashMenu from './editor/SlashMenu.svelte';
+  import NodeMenu from './editor/NodeMenu.svelte';
+
+  export interface BlockSelectInfo {
+    type: string;
+    attrs: Record<string, unknown>;
+    pos: number;
+  }
 
   let {
     content = null,
     editable = true,
     onupdate = null,
+    onblockselect = null,
     class: className = '',
   }: {
     content?: unknown;
     editable?: boolean;
     onupdate?: ((blocks: BlockTuple[]) => void) | null;
+    onblockselect?: ((info: BlockSelectInfo | null) => void) | null;
     class?: string;
   } = $props();
 
@@ -36,6 +45,30 @@
         onUpdate: onupdate ? (blocks: BlockTuple[]) => onupdate(blocks) : undefined,
         element,
       });
+
+      // Track block selection for PropertiesPanel
+      if (onblockselect && editor) {
+        editor.on('selectionUpdate', () => {
+          if (!editor) return;
+          const { state } = editor;
+          const resolvedPos = state.selection.$from;
+
+          // Walk up to find the nearest block-level node
+          for (let d = resolvedPos.depth; d >= 0; d--) {
+            const node = resolvedPos.node(d);
+            const name = node.type.name;
+            if (name !== 'doc' && name !== 'text') {
+              onblockselect({
+                type: name,
+                attrs: { ...node.attrs },
+                pos: resolvedPos.before(d),
+              });
+              return;
+            }
+          }
+          onblockselect(null);
+        });
+      }
     });
   });
 
@@ -54,6 +87,7 @@
   {#if editable}
     <FloatingToolbar {editor} />
     <SlashMenu {editor} />
+    <NodeMenu {editor} />
   {/if}
 </div>
 
@@ -171,5 +205,44 @@
     max-width: 100%;
     border-radius: var(--radius-md, 6px);
     margin: var(--space-3, 0.75rem) 0;
+  }
+
+  /* Callout blocks */
+  .editor-wrapper :global(.ProseMirror .callout) {
+    border-left: 4px solid var(--color-primary, #5b9cf6);
+    background: var(--color-surface-alt, #141413);
+    border-radius: var(--radius-md, 6px);
+    padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+    margin: var(--space-3, 0.75rem) 0;
+  }
+
+  .editor-wrapper :global(.ProseMirror .callout-info) {
+    border-left-color: var(--color-info, #3b82f6);
+  }
+
+  .editor-wrapper :global(.ProseMirror .callout-tip) {
+    border-left-color: var(--color-success, #22c55e);
+  }
+
+  .editor-wrapper :global(.ProseMirror .callout-warning) {
+    border-left-color: var(--color-warning, #f59e0b);
+  }
+
+  .editor-wrapper :global(.ProseMirror .callout-danger) {
+    border-left-color: var(--color-error, #ef4444);
+  }
+
+  .editor-wrapper :global(.ProseMirror .callout p) {
+    margin: 0;
+  }
+
+  /* Image placeholder (empty src) */
+  .editor-wrapper :global(.ProseMirror img[src=""]) {
+    display: block;
+    width: 100%;
+    height: 120px;
+    background: var(--color-surface-alt, #141413);
+    border: 2px dashed var(--color-border, #272725);
+    border-radius: var(--radius-md, 6px);
   }
 </style>

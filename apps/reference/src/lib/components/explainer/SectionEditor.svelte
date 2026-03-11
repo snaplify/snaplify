@@ -36,27 +36,21 @@
   }
 </script>
 
-<div class="section-editor">
-  <div class="section-editor__header">
-    <span class="section-editor__type-badge">{section.type}</span>
-  </div>
+<div class="se">
+  <!-- Inline title editing -->
+  <input
+    class="se-title"
+    type="text"
+    value={section.title}
+    oninput={(e) => update('title', (e.target as HTMLInputElement).value)}
+    placeholder="Section title..."
+  />
 
-  <div class="section-editor__field">
-    <label for="section-title">Section Title</label>
+  <!-- Anchor (small, below title) -->
+  <div class="se-anchor-row">
+    <span class="se-anchor-label">anchor</span>
     <input
-      id="section-title"
-      type="text"
-      value={section.title}
-      oninput={(e) => update('title', (e.target as HTMLInputElement).value)}
-      placeholder="Section title"
-      required
-    />
-  </div>
-
-  <div class="section-editor__field">
-    <label for="section-anchor">Anchor ID</label>
-    <input
-      id="section-anchor"
+      class="se-anchor"
       type="text"
       value={section.anchor}
       oninput={(e) => update('anchor', (e.target as HTMLInputElement).value)}
@@ -64,77 +58,134 @@
     />
   </div>
 
-  <div class="section-editor__field">
-    <label for="section-content">Content</label>
+  <!-- Rich content editor -->
+  <div class="se-content">
     <ContentEditor content={section.content} onupdate={handleContentUpdate} />
   </div>
 
+  <!-- Quiz-specific controls -->
   {#if section.type === 'quiz'}
-    <QuizEditor
-      questions={section.questions}
-      passingScore={section.passingScore}
-      isGate={section.isGate}
-      onquestionschange={handleQuestionsChange}
-      onpassingscorechange={handlePassingScoreChange}
-      onisgatechange={handleIsGateChange}
-    />
+    <div class="se-type-controls">
+      <QuizEditor
+        questions={section.questions}
+        passingScore={section.passingScore}
+        isGate={section.isGate}
+        onquestionschange={handleQuestionsChange}
+        onpassingscorechange={handlePassingScoreChange}
+        onisgatechange={handleIsGateChange}
+      />
+    </div>
   {/if}
 
+  <!-- Checkpoint-specific controls -->
   {#if section.type === 'checkpoint'}
-    <div class="section-editor__field">
-      <label>
+    <div class="se-type-controls">
+      <label class="se-checkbox">
         <input
           type="checkbox"
           checked={section.requiresPrevious}
           onchange={(e) => handleRequiresPreviousChange((e.target as HTMLInputElement).checked)}
         />
-        Require all previous sections to be completed
+        <span class="se-checkbox-text">Require previous sections completed</span>
       </label>
     </div>
   {/if}
 </div>
 
 <style>
-  .section-editor {
-    padding: var(--space-4, 1rem);
+  .se {
+    padding: var(--space-2, 0.5rem) 0 0;
   }
 
-  .section-editor__header {
-    margin-bottom: var(--space-4, 1rem);
-  }
-
-  .section-editor__type-badge {
-    display: inline-block;
-    padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
-    background: var(--color-primary-light, #eff6ff);
-    color: var(--color-primary, #2563eb);
-    border-radius: var(--radius-sm, 4px);
-    font-size: var(--text-xs, 0.75rem);
-    font-weight: var(--font-weight-semibold, 600);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .section-editor__field {
-    margin-bottom: var(--space-4, 1rem);
-  }
-
-  .section-editor__field label {
+  /* Inline title — looks like editable heading, not a form field */
+  .se-title {
     display: block;
-    margin-bottom: var(--space-1, 0.25rem);
-    font-size: var(--text-sm, 0.875rem);
-    font-weight: var(--font-weight-medium, 500);
+    width: 100%;
+    padding: 0;
+    margin: 0 0 var(--space-1, 0.25rem);
+    border: none;
+    background: transparent;
     color: var(--color-text, #d8d5cf);
+    font-size: var(--text-md, 1rem);
+    font-weight: var(--font-weight-medium, 500);
+    outline: none;
+    box-sizing: border-box;
   }
 
-  .section-editor__field input[type='text'] {
-    width: 100%;
-    padding: var(--space-2, 0.5rem);
+  .se-title::placeholder {
+    color: var(--color-text-muted, #444440);
+  }
+
+  .se-title:focus {
+    border-bottom: 1px solid var(--color-primary, #5b9cf6);
+  }
+
+  /* Anchor row */
+  .se-anchor-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
+    margin-bottom: var(--space-3, 0.75rem);
+  }
+
+  .se-anchor-label {
+    font-family: var(--font-mono, monospace);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted, #444440);
+    flex-shrink: 0;
+  }
+
+  .se-anchor {
+    flex: 1;
+    padding: 2px var(--space-2, 0.5rem);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm, 4px);
+    background: transparent;
+    color: var(--color-text-secondary, #888884);
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-xs, 0.75rem);
+    outline: none;
+  }
+
+  .se-anchor:focus {
+    border-color: var(--color-border, #272725);
+    background: var(--color-surface-alt, #141413);
+  }
+
+  /* Content editor area */
+  .se-content {
     border: 1px solid var(--color-border, #272725);
     border-radius: var(--radius-sm, 4px);
-    font-size: var(--text-md, 1rem);
-    background: var(--color-surface, #0c0c0b);
-    color: var(--color-text, #d8d5cf);
-    box-sizing: border-box;
+    padding: var(--space-2, 0.5rem);
+    min-height: 80px;
+    background: var(--color-surface-alt, #141413);
+  }
+
+  /* Type-specific controls */
+  .se-type-controls {
+    margin-top: var(--space-3, 0.75rem);
+    padding-top: var(--space-3, 0.75rem);
+    border-top: 1px solid var(--color-border, #272725);
+  }
+
+  /* Checkbox styling */
+  .se-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
+    cursor: pointer;
+  }
+
+  .se-checkbox input[type='checkbox'] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--color-primary, #5b9cf6);
+  }
+
+  .se-checkbox-text {
+    font-size: var(--text-xs, 0.75rem);
+    color: var(--color-text-secondary, #888884);
   }
 </style>

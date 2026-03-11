@@ -7,17 +7,33 @@
   let position = $state({ top: 0, left: 0 });
   let selectedIndex = $state(0);
   let slashPos = $state(-1);
+  let filterText = $state('');
 
-  const items = [
-    { type: 'paragraph', label: 'Text', description: 'Plain text block' },
-    { type: 'heading2', label: 'Heading 2', description: 'Medium heading' },
-    { type: 'heading3', label: 'Heading 3', description: 'Small heading' },
-    { type: 'codeBlock', label: 'Code Block', description: 'Syntax-highlighted code' },
-    { type: 'blockquote', label: 'Quote', description: 'Blockquote' },
-    { type: 'bulletList', label: 'Bullet List', description: 'Unordered list' },
-    { type: 'orderedList', label: 'Numbered List', description: 'Ordered list' },
-    { type: 'horizontalRule', label: 'Divider', description: 'Horizontal rule' },
+  const allItems = [
+    { type: 'paragraph', label: 'Text', description: 'Plain text block', keywords: 'text paragraph' },
+    { type: 'heading2', label: 'Heading 2', description: 'Medium heading', keywords: 'heading h2 title' },
+    { type: 'heading3', label: 'Heading 3', description: 'Small heading', keywords: 'heading h3 subtitle' },
+    { type: 'codeBlock', label: 'Code Block', description: 'Syntax-highlighted code', keywords: 'code pre snippet' },
+    { type: 'blockquote', label: 'Quote', description: 'Blockquote with attribution', keywords: 'quote blockquote citation' },
+    { type: 'callout', label: 'Callout', description: 'Info, tip, warning, or danger box', keywords: 'callout alert note info tip warning danger' },
+    { type: 'image', label: 'Image', description: 'Image with alt text & caption', keywords: 'image picture photo' },
+    { type: 'bulletList', label: 'Bullet List', description: 'Unordered list', keywords: 'list bullet unordered ul' },
+    { type: 'orderedList', label: 'Numbered List', description: 'Ordered list', keywords: 'list numbered ordered ol' },
+    { type: 'horizontalRule', label: 'Divider', description: 'Horizontal rule', keywords: 'divider horizontal rule separator hr' },
   ];
+
+  let filteredItems = $derived(
+    filterText
+      ? allItems.filter((item) => {
+          const q = filterText.toLowerCase();
+          return (
+            item.label.toLowerCase().includes(q) ||
+            item.description.toLowerCase().includes(q) ||
+            item.keywords.includes(q)
+          );
+        })
+      : allItems,
+  );
 
   $effect(() => {
     if (!editor) return;
@@ -27,16 +43,17 @@
       const { state } = editor;
       const resolvedPos = state.selection.$from;
 
-      // Only trigger at the start of a block (slash is the only char on the line)
       const textBefore = resolvedPos.parent.textContent.slice(0, resolvedPos.parentOffset);
-      if (textBefore === '/') {
-        slashPos = resolvedPos.pos - 1;
+      if (textBefore.startsWith('/')) {
+        slashPos = resolvedPos.pos - textBefore.length;
+        filterText = textBefore.slice(1);
         const coords = editor.view.coordsAtPos(resolvedPos.pos);
-        position = { top: coords.bottom + 4, left: coords.left };
-        selectedIndex = 0;
+        position = { top: coords.bottom + 4, left: coords.left - (filterText.length * 7) };
+        if (!visible) selectedIndex = 0;
         visible = true;
-      } else if (visible && !textBefore.startsWith('/')) {
+      } else if (visible) {
         visible = false;
+        filterText = '';
       }
     };
 
@@ -46,15 +63,22 @@
     };
   });
 
+  // Reset selection when filter changes
+  $effect(() => {
+    // Access filteredItems to track it
+    if (filteredItems.length > 0 && selectedIndex >= filteredItems.length) {
+      selectedIndex = 0;
+    }
+  });
+
   function selectItem(index: number) {
     if (!editor) return;
-    const item = items[index];
+    const item = filteredItems[index];
     if (!item) return;
 
-    // Delete the slash character
-    if (slashPos >= 0) {
-      editor.chain().focus().deleteRange({ from: slashPos, to: slashPos + 1 }).run();
-    }
+    // Delete the slash + any filter text
+    const deleteEnd = slashPos + 1 + filterText.length;
+    editor.chain().focus().deleteRange({ from: slashPos, to: deleteEnd }).run();
 
     const cmd = editor.chain().focus() as unknown as Record<string, (...args: unknown[]) => { run: () => void }>;
 
@@ -74,6 +98,12 @@
       case 'blockquote':
         editor.chain().focus().toggleBlockquote().run();
         break;
+      case 'callout':
+        cmd.setCallout({ variant: 'info' }).run();
+        break;
+      case 'image':
+        cmd.setImage({ src: '', alt: '' }).run();
+        break;
       case 'bulletList':
         cmd.toggleBulletList().run();
         break;
@@ -86,6 +116,7 @@
     }
 
     visible = false;
+    filterText = '';
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -93,29 +124,35 @@
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      selectedIndex = (selectedIndex + 1) % items.length;
+      selectedIndex = (selectedIndex + 1) % filteredItems.length;
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+      selectedIndex = (selectedIndex - 1 + filteredItems.length) % filteredItems.length;
     } else if (e.key === 'Enter') {
       e.preventDefault();
       selectItem(selectedIndex);
     } else if (e.key === 'Escape') {
       visible = false;
+      filterText = '';
     }
   }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
-{#if visible}
+{#if visible && filteredItems.length > 0}
   <div
     class="slash-menu"
     style="top: {position.top}px; left: {position.left}px;"
     role="listbox"
     aria-label="Insert block"
   >
-    {#each items as item, i}
+    {#if filterText}
+      <div class="slash-menu-filter">
+        <span class="filter-prefix">/</span>{filterText}
+      </div>
+    {/if}
+    {#each filteredItems as item, i}
       <button
         class="slash-menu-item"
         class:selected={i === selectedIndex}
@@ -136,13 +173,28 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    min-width: 220px;
+    min-width: 240px;
+    max-height: 320px;
+    overflow-y: auto;
     background: var(--color-surface, #0c0c0b);
     border: 1px solid var(--color-border, #272725);
     border-radius: var(--radius-md, 6px);
     box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.25));
     padding: var(--space-1, 0.25rem);
     z-index: 50;
+  }
+
+  .slash-menu-filter {
+    padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-xs, 0.75rem);
+    color: var(--color-text-muted, #444440);
+    border-bottom: 1px solid var(--color-border, #272725);
+    margin-bottom: var(--space-1, 0.25rem);
+  }
+
+  .filter-prefix {
+    color: var(--color-text-secondary, #888884);
   }
 
   .slash-menu-item {

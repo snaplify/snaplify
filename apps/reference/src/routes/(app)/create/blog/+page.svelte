@@ -5,17 +5,14 @@
   import BlockLibrary from '$lib/components/editor/BlockLibrary.svelte';
   import PropertiesPanel from '$lib/components/editor/PropertiesPanel.svelte';
   import type { BlockInfo } from '$lib/components/editor/PropertiesPanel.svelte';
-  import type { PageData, ActionData } from './$types';
+  import type { ActionData } from './$types';
 
-  let { data, form }: { data: PageData; form: ActionData } = $props();
+  let { form }: { form: ActionData } = $props();
 
-  let title = $state(data.item.title);
-  let description = $state(data.item.description ?? '');
-  let seoDescription = $state(data.item.seoDescription ?? '');
-  let tags = $state(data.item.tags.map((t: { name: string }) => t.name).join(', '));
-  let contentBlocks = $state<unknown[]>(
-    Array.isArray(data.item.content) ? (data.item.content as unknown[]) : [],
-  );
+  let title = $state('');
+  let description = $state('');
+  let tags = $state('');
+  let contentBlocks = $state<unknown[]>([]);
   let selectedBlock = $state<BlockInfo | null>(null);
   let formEl: HTMLFormElement | undefined = $state();
 
@@ -27,16 +24,8 @@
         { type: 'heading', label: 'Heading', icon: 'H', description: 'Section heading' },
         { type: 'blockquote', label: 'Quote', icon: 'QT', description: 'Blockquote' },
         { type: 'callout', label: 'Callout', icon: '!', description: 'Info/tip/warning box' },
-        { type: 'bulletList', label: 'Bullet List', icon: '•', description: 'Unordered list' },
-        { type: 'orderedList', label: 'Number List', icon: '#', description: 'Ordered list' },
-        { type: 'horizontalRule', label: 'Divider', icon: '—', description: 'Horizontal rule' },
-      ],
-    },
-    {
-      label: 'Media',
-      blocks: [
-        { type: 'codeBlock', label: 'Code', icon: '<>', description: 'Syntax-highlighted code' },
         { type: 'image', label: 'Image', icon: 'IMG', description: 'Image with caption' },
+        { type: 'horizontalRule', label: 'Divider', icon: '—', description: 'Horizontal rule' },
       ],
     },
   ];
@@ -57,7 +46,6 @@
   function handleMetaChange(field: string, value: string) {
     if (field === 'description') description = value;
     else if (field === 'tags') tags = value;
-    else if (field === 'seoDescription') seoDescription = value;
   }
 
   function submitAs(action: string) {
@@ -69,40 +57,38 @@
 </script>
 
 <svelte:head>
-  <title>Edit: {data.item.title} — Snaplify</title>
+  <title>New Blog Post — Snaplify</title>
 </svelte:head>
 
 <form method="POST" use:enhance bind:this={formEl} style="display:contents;">
   <input type="hidden" name="title" value={title} />
   <input type="hidden" name="description" value={description} />
   <input type="hidden" name="tags" value={tags} />
-  <input type="hidden" name="seoDescription" value={seoDescription} />
   <input type="hidden" name="content" value={JSON.stringify(contentBlocks)} />
-  <input type="hidden" name="action" value="save" />
+  <input type="hidden" name="action" value="draft" />
 
   <EditorLayout
     bind:title
-    type={data.item.type}
-    status={data.item.status === 'published' ? 'published' : 'draft'}
-    backHref="/{data.item.type}/{data.item.slug}"
-    onsave={() => submitAs('save')}
-    onpublish={data.item.status !== 'published' ? () => submitAs('publish') : undefined}
+    type="blog"
+    backHref="/create"
+    ondraft={() => submitAs('draft')}
+    onpublish={() => submitAs('publish')}
   >
     {#snippet leftPanel()}
       <BlockLibrary categories={blockCategories} />
     {/snippet}
 
-    <div class="edit-canvas">
+    <div class="blog-canvas">
       {#if form?.error}
         <div class="form-error" role="alert">{form.error}</div>
       {/if}
-      <ContentEditor content={data.item.content} onupdate={handleEditorUpdate} onblockselect={handleBlockSelect} />
+      <ContentEditor onupdate={handleEditorUpdate} onblockselect={handleBlockSelect} />
     </div>
 
     {#snippet rightPanel()}
       <PropertiesPanel
         {selectedBlock}
-        meta={{ description, tags, seoTitle: '', seoDescription }}
+        meta={{ description, tags }}
         onblockattr={handleBlockAttr}
         onmetachange={handleMetaChange}
       />
@@ -111,7 +97,7 @@
 </form>
 
 <style>
-  .edit-canvas {
+  .blog-canvas {
     min-height: 100%;
   }
 

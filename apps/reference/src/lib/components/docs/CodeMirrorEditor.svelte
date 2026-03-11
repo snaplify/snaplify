@@ -3,10 +3,12 @@
 
   let {
     content = $bindable(''),
+    lang = 'markdown',
     class: className = '',
     onchange,
   }: {
     content?: string;
+    lang?: 'markdown' | 'json';
     class?: string;
     onchange?: (value: string) => void;
   } = $props();
@@ -14,18 +16,26 @@
   let editorElement: HTMLDivElement;
   let view: import('@codemirror/view').EditorView | null = null;
 
+  async function loadLanguageExtension(langMode: 'markdown' | 'json') {
+    if (langMode === 'json') {
+      const { json } = await import('@codemirror/lang-json');
+      return json();
+    }
+    const { markdown } = await import('@codemirror/lang-markdown');
+    return markdown();
+  }
+
   onMount(() => {
     Promise.all([
       import('@codemirror/state'),
       import('@codemirror/view'),
       import('@codemirror/commands'),
-      import('@codemirror/lang-markdown'),
       import('@codemirror/language'),
-    ]).then(([stateModule, viewModule, commandsModule, markdownModule, languageModule]) => {
+      loadLanguageExtension(lang),
+    ]).then(([stateModule, viewModule, commandsModule, languageModule, langExtension]) => {
       const { EditorState } = stateModule;
       const { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection } = viewModule;
       const { defaultKeymap, history, historyKeymap } = commandsModule;
-      const { markdown } = markdownModule;
       const { syntaxHighlighting, defaultHighlightStyle, bracketMatching } = languageModule;
 
       const updateListener = EditorView.updateListener.of((update) => {
@@ -64,7 +74,7 @@
           bracketMatching(),
           history(),
           syntaxHighlighting(defaultHighlightStyle),
-          markdown(),
+          langExtension,
           keymap.of([...defaultKeymap, ...historyKeymap]),
           theme,
           updateListener,
@@ -99,7 +109,7 @@
   class="codemirror-editor {className}"
   bind:this={editorElement}
   role="textbox"
-  aria-label="Markdown editor"
+  aria-label={lang === 'json' ? 'JSON editor' : 'Markdown editor'}
   aria-multiline="true"
 ></div>
 

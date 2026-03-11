@@ -1,16 +1,36 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import type { LearningPathDetail } from '$lib/types';
 
-  let { path }: { path: LearningPathDetail } = $props();
+  let { path }: { path: { title: string; description: string | null; difficulty: string | null; estimatedHours: string | null } } = $props();
 
   let title = $state(path.title);
   let description = $state(path.description ?? '');
   let difficulty = $state(path.difficulty ?? '');
   let estimatedHours = $state(path.estimatedHours ?? '');
+  let saved = $state(false);
+
+  $effect(() => {
+    title = path.title;
+    description = path.description ?? '';
+    difficulty = path.difficulty ?? '';
+    estimatedHours = path.estimatedHours ?? '';
+  });
 </script>
 
-<form method="POST" action="?/updatePath" use:enhance class="path-form">
+<form
+  method="POST"
+  action="?/updatePath"
+  use:enhance={() => {
+    return async ({ update, result }) => {
+      if (result.type === 'success') {
+        saved = true;
+        setTimeout(() => (saved = false), 2000);
+      }
+      await update();
+    };
+  }}
+  class="path-form"
+>
   <div class="form-field">
     <label for="path-title">Title</label>
     <input id="path-title" name="title" type="text" bind:value={title} required maxlength="255" />
@@ -18,8 +38,7 @@
 
   <div class="form-field">
     <label for="path-desc">Description</label>
-    <textarea id="path-desc" name="description" bind:value={description} maxlength="2000" rows="3"
-    ></textarea>
+    <textarea id="path-desc" name="description" bind:value={description} maxlength="2000" rows="3"></textarea>
   </div>
 
   <div class="form-row">
@@ -46,7 +65,12 @@
     </div>
   </div>
 
-  <button type="submit" class="btn btn-save">Save Changes</button>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-save">Save Changes</button>
+    {#if saved}
+      <span class="save-indicator" role="status">Saved</span>
+    {/if}
+  </div>
 </form>
 
 <style>
@@ -73,12 +97,23 @@
     background: var(--color-surface, #0c0c0b);
     color: var(--color-text, #d8d5cf);
     box-sizing: border-box;
+    font-family: inherit;
+  }
+
+  .form-field textarea {
+    resize: vertical;
   }
 
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-4, 1rem);
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
   }
 
   .btn-save {
@@ -89,5 +124,10 @@
     border-radius: var(--radius-md, 6px);
     font-size: var(--text-sm, 0.875rem);
     cursor: pointer;
+  }
+
+  .save-indicator {
+    font-size: var(--text-sm, 0.875rem);
+    color: var(--color-success, #22c55e);
   }
 </style>

@@ -4,7 +4,9 @@ import { docsPages } from '@snaplify/schema';
 import { updateDocsPage, deleteDocsPage } from '$lib/server/docs';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, parent }) => {
+  const parentData = await parent();
+
   const rows = await locals.db
     .select()
     .from(docsPages)
@@ -15,7 +17,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     error(404, 'Page not found');
   }
 
-  return { page: rows[0]! };
+  return { page: rows[0]!, site: parentData.site };
 };
 
 export const actions: Actions = {

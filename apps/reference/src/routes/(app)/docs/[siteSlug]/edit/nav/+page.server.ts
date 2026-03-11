@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {
   const parentData = await parent();
-  return { nav: parentData.nav, pages: parentData.pages };
+  return { nav: parentData.nav, pages: parentData.pages, site: parentData.site };
 };
 
 export const actions: Actions = {

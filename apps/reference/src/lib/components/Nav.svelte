@@ -71,7 +71,7 @@
     z-index: var(--z-sticky, 200);
     border-bottom: 1px solid var(--color-border, #272725);
     background: var(--color-surface, #0c0c0b);
-    height: var(--nav-height, 4rem);
+    height: var(--nav-height, 48px);
   }
 
   .nav-inner {

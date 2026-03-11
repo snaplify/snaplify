@@ -1,30 +1,47 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
-  import { Select } from '@snaplify/ui';
-  import ContentEditor from '$lib/components/ContentEditor.svelte';
-  import type { ActionData } from './$types';
-
-  let { form }: { form: ActionData } = $props();
-
-  type FormWithData = ActionData & { title?: string; type?: string; description?: string };
-  const formData = form as FormWithData | null;
-
-  let title = $state(formData?.title ?? '');
-  let type = $state(formData?.type ?? 'project');
-  let description = $state(formData?.description ?? '');
-  let tags = $state('');
-  let contentBlocks = $state<unknown[]>([]);
-
-  function handleEditorUpdate(blocks: unknown[]) {
-    contentBlocks = blocks;
-  }
-
-  const typeOptions = [
-    { value: 'project', label: 'Project' },
-    { value: 'article', label: 'Article' },
-    { value: 'guide', label: 'Guide' },
-    { value: 'blog', label: 'Blog Post' },
-    { value: 'explainer', label: 'Explainer' },
+  const contentTypes = [
+    {
+      type: 'article',
+      label: 'Article',
+      abbr: 'ART',
+      description: 'Long-form content with rich formatting, code blocks, and images.',
+      href: '/create/article',
+    },
+    {
+      type: 'blog',
+      label: 'Blog Post',
+      abbr: 'BLG',
+      description: 'Share thoughts, updates, or stories with your audience.',
+      href: '/create/blog',
+    },
+    {
+      type: 'project',
+      label: 'Project',
+      abbr: 'PRJ',
+      description: 'Document your project with steps, code samples, and screenshots.',
+      href: '/create/project',
+    },
+    {
+      type: 'explainer',
+      label: 'Explainer',
+      abbr: 'EXP',
+      description: 'Interactive modules with quizzes, sliders, and checkpoints.',
+      href: '/explainers/create',
+    },
+    {
+      type: 'learning',
+      label: 'Learning Path',
+      abbr: 'LRN',
+      description: 'Structured curriculum with modules, lessons, and certificates.',
+      href: '/learn/create',
+    },
+    {
+      type: 'docs',
+      label: 'Docs Site',
+      abbr: 'DOC',
+      description: 'Documentation with versioning, search, and navigation.',
+      href: '/docs/create',
+    },
   ];
 </script>
 
@@ -33,233 +50,118 @@
 </svelte:head>
 
 <div class="create-page">
-  {#if form?.error}
-    <div class="form-error" role="alert">{form.error}</div>
-  {/if}
+  <div class="create-header">
+    <h1 class="create-title">Create</h1>
+    <p class="create-desc">Choose a content type to get started.</p>
+  </div>
 
-  <form method="POST" use:enhance class="create-form">
-    <input type="hidden" name="type" value={type} />
-    <input type="hidden" name="content" value={JSON.stringify(contentBlocks)} />
-
-    <div class="create-topbar">
-      <div class="topbar-left">
-        <Select id="type-select" label="" options={typeOptions} bind:value={type} class="type-select" />
-      </div>
-      <div class="topbar-right">
-        <button type="submit" name="action" value="draft" class="topbar-btn topbar-btn-ghost">Draft</button>
-        <button type="submit" name="action" value="publish" class="topbar-btn topbar-btn-primary">Publish</button>
-      </div>
-    </div>
-
-    <div class="create-body">
-      <input
-        class="title-input"
-        name="title"
-        type="text"
-        bind:value={title}
-        required
-        placeholder="Title"
-        maxlength="255"
-      />
-
-      <input
-        class="description-input"
-        name="description"
-        type="text"
-        bind:value={description}
-        placeholder="Add a short description..."
-        maxlength="2000"
-      />
-
-      <div class="editor-area">
-        <ContentEditor onupdate={handleEditorUpdate} />
-      </div>
-
-      <div class="tags-bar">
-        <input
-          class="tags-input"
-          name="tags"
-          type="text"
-          bind:value={tags}
-          placeholder="Tags (comma-separated)"
-        />
-      </div>
-    </div>
-  </form>
+  <div class="type-grid">
+    {#each contentTypes as ct}
+      <a href={ct.href} class="type-card">
+        <span class="tc-icon">{ct.abbr}</span>
+        <div class="tc-info">
+          <span class="tc-label">{ct.label}</span>
+          <span class="tc-description">{ct.description}</span>
+        </div>
+        <span class="tc-arrow">→</span>
+      </a>
+    {/each}
+  </div>
 </div>
 
 <style>
   .create-page {
-    max-width: 780px;
+    max-width: 720px;
     margin: 0 auto;
-    min-height: 80vh;
-    display: flex;
-    flex-direction: column;
+    padding: var(--space-8, 2rem) 0;
   }
 
-  .form-error {
-    padding: var(--space-3, 0.75rem);
-    background: rgba(248, 113, 113, 0.08);
-    border: 1px solid var(--color-error, #f87171);
-    color: var(--color-error, #f87171);
-    border-radius: var(--radius-md, 0.25rem);
+  .create-header {
+    margin-bottom: var(--space-8, 2rem);
+  }
+
+  .create-title {
+    font-size: var(--text-2xl, 1.75rem);
+    font-weight: var(--font-weight-bold, 700);
+    color: var(--color-text, #d8d5cf);
+    margin: 0 0 var(--space-1, 0.25rem);
+  }
+
+  .create-desc {
     font-size: var(--text-sm, 0.875rem);
-    margin-bottom: var(--space-4, 1rem);
+    color: var(--color-text-secondary, #888884);
+    margin: 0;
   }
 
-  .create-form {
+  .type-grid {
     display: flex;
     flex-direction: column;
-    flex: 1;
-  }
-
-  .create-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-2, 0.5rem) 0;
-    margin-bottom: var(--space-4, 1rem);
-    border-bottom: 1px solid var(--color-border, #272725);
-  }
-
-  .topbar-left {
-    display: flex;
-    align-items: center;
-  }
-
-  .topbar-left :global(.snaplify-select-group) {
-    flex-direction: row;
-    gap: 0;
-  }
-
-  .topbar-left :global(.snaplify-select-label) {
-    display: none;
-  }
-
-  .topbar-left :global(.snaplify-select-trigger) {
-    font-family: var(--font-mono, monospace);
-    font-size: var(--text-xs, 0.6875rem);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border: none;
-    background: transparent;
-    color: var(--color-text-muted, #444440);
-    padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
-  }
-
-  .topbar-right {
-    display: flex;
     gap: var(--space-2, 0.5rem);
   }
 
-  .topbar-btn {
-    padding: var(--space-1, 0.25rem) var(--space-4, 1rem);
-    border-radius: var(--radius-md, 0.25rem);
-    font-size: var(--text-sm, 0.875rem);
-    font-family: var(--font-body, sans-serif);
-    cursor: pointer;
-    border: 1px solid var(--color-border, #272725);
-    transition: background var(--transition-fast, 0.1s ease);
-  }
-
-  .topbar-btn-ghost {
-    background: transparent;
-    color: var(--color-text-secondary, #888884);
-  }
-
-  .topbar-btn-ghost:hover {
-    background: var(--color-surface-alt, #141413);
-    color: var(--color-text, #d8d5cf);
-  }
-
-  .topbar-btn-primary {
-    background: var(--color-primary, #5b9cf6);
-    border-color: var(--color-primary, #5b9cf6);
-    color: var(--color-on-primary, #0c0c0b);
-    font-weight: var(--font-weight-medium, 500);
-  }
-
-  .topbar-btn-primary:hover {
-    opacity: 0.9;
-  }
-
-  .create-body {
-    flex: 1;
+  .type-card {
     display: flex;
-    flex-direction: column;
-  }
-
-  .title-input {
-    font-size: var(--text-3xl, 2rem);
-    font-weight: var(--font-weight-bold, 700);
-    font-family: var(--font-heading, sans-serif);
-    color: var(--color-text, #d8d5cf);
+    align-items: center;
+    gap: var(--space-4, 1rem);
+    padding: var(--space-4, 1rem) var(--space-4, 1rem);
+    border: 1px solid var(--color-border, #272725);
+    border-radius: var(--radius-md, 6px);
     background: transparent;
-    border: none;
-    outline: none;
-    padding: 0;
-    margin-bottom: var(--space-2, 0.5rem);
-    width: 100%;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.12s ease, background 0.12s ease;
   }
 
-  .title-input::placeholder {
-    color: var(--color-text-muted, #444440);
+  .type-card:hover {
+    border-color: var(--color-primary, #5b9cf6);
+    background: var(--color-surface-alt, #141413);
   }
 
-  .description-input {
-    font-size: var(--text-md, 1rem);
-    color: var(--color-text-secondary, #888884);
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 0;
-    margin-bottom: var(--space-6, 2rem);
-    width: 100%;
-  }
-
-  .description-input::placeholder {
-    color: var(--color-text-muted, #444440);
-  }
-
-  .editor-area {
-    flex: 1;
-    min-height: 400px;
-  }
-
-  .editor-area :global(.content-editor) {
-    min-height: 400px;
-  }
-
-  .editor-area :global(.editor-wrapper) {
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    background: transparent;
-    min-height: 400px;
-  }
-
-  .editor-area :global(.ProseMirror) {
-    padding: 0 !important;
-  }
-
-  .tags-bar {
-    margin-top: var(--space-6, 2rem);
-    padding-top: var(--space-4, 1rem);
-    border-top: 1px solid var(--color-border, #272725);
-  }
-
-  .tags-input {
-    font-size: var(--text-sm, 0.875rem);
-    color: var(--color-text-secondary, #888884);
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 0;
-    width: 100%;
+  .tc-icon {
     font-family: var(--font-mono, monospace);
+    font-size: 10px;
+    font-weight: var(--font-weight-bold, 700);
+    letter-spacing: 0.08em;
+    color: var(--color-primary, #5b9cf6);
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm, 4px);
+    background: rgba(91, 156, 246, 0.06);
+    border: 1px solid rgba(91, 156, 246, 0.15);
   }
 
-  .tags-input::placeholder {
+  .tc-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tc-label {
+    display: block;
+    font-weight: var(--font-weight-medium, 500);
+    font-size: var(--text-sm, 0.875rem);
+    color: var(--color-text, #d8d5cf);
+    margin-bottom: 2px;
+  }
+
+  .tc-description {
+    display: block;
+    font-size: var(--text-xs, 0.75rem);
+    color: var(--color-text-secondary, #888884);
+    line-height: 1.4;
+  }
+
+  .tc-arrow {
+    font-family: var(--font-mono, monospace);
     color: var(--color-text-muted, #444440);
+    font-size: var(--text-lg, 1.125rem);
+    flex-shrink: 0;
+  }
+
+  .type-card:hover .tc-arrow {
+    color: var(--color-primary, #5b9cf6);
   }
 </style>

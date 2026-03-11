@@ -5,18 +5,17 @@
   import BlockLibrary from '$lib/components/editor/BlockLibrary.svelte';
   import PropertiesPanel from '$lib/components/editor/PropertiesPanel.svelte';
   import type { BlockInfo } from '$lib/components/editor/PropertiesPanel.svelte';
-  import type { PageData, ActionData } from './$types';
+  import type { ActionData } from './$types';
 
-  let { data, form }: { data: PageData; form: ActionData } = $props();
+  let { form }: { form: ActionData } = $props();
 
-  let title = $state(data.item.title);
-  let description = $state(data.item.description ?? '');
-  let seoDescription = $state(data.item.seoDescription ?? '');
-  let tags = $state(data.item.tags.map((t: { name: string }) => t.name).join(', '));
-  let contentBlocks = $state<unknown[]>(
-    Array.isArray(data.item.content) ? (data.item.content as unknown[]) : [],
-  );
+  let title = $state('');
+  let description = $state('');
+  let tags = $state('');
+  let coverImageUrl = $state('');
+  let contentBlocks = $state<unknown[]>([]);
   let selectedBlock = $state<BlockInfo | null>(null);
+  let editorRef: ContentEditor | undefined = $state();
   let formEl: HTMLFormElement | undefined = $state();
 
   const blockCategories = [
@@ -50,14 +49,15 @@
   }
 
   function handleBlockAttr(attr: string, value: unknown) {
-    if (!selectedBlock) return;
+    if (!selectedBlock || !editorRef) return;
+    // Update via ContentEditor's TipTap instance
     selectedBlock = { ...selectedBlock, attrs: { ...selectedBlock.attrs, [attr]: value } };
   }
 
   function handleMetaChange(field: string, value: string) {
     if (field === 'description') description = value;
     else if (field === 'tags') tags = value;
-    else if (field === 'seoDescription') seoDescription = value;
+    else if (field === 'coverImageUrl') coverImageUrl = value;
   }
 
   function submitAs(action: string) {
@@ -69,40 +69,44 @@
 </script>
 
 <svelte:head>
-  <title>Edit: {data.item.title} — Snaplify</title>
+  <title>New Article — Snaplify</title>
 </svelte:head>
 
 <form method="POST" use:enhance bind:this={formEl} style="display:contents;">
   <input type="hidden" name="title" value={title} />
   <input type="hidden" name="description" value={description} />
   <input type="hidden" name="tags" value={tags} />
-  <input type="hidden" name="seoDescription" value={seoDescription} />
+  <input type="hidden" name="coverImageUrl" value={coverImageUrl} />
   <input type="hidden" name="content" value={JSON.stringify(contentBlocks)} />
-  <input type="hidden" name="action" value="save" />
+  <input type="hidden" name="action" value="draft" />
 
   <EditorLayout
     bind:title
-    type={data.item.type}
-    status={data.item.status === 'published' ? 'published' : 'draft'}
-    backHref="/{data.item.type}/{data.item.slug}"
-    onsave={() => submitAs('save')}
-    onpublish={data.item.status !== 'published' ? () => submitAs('publish') : undefined}
+    type="article"
+    backHref="/create"
+    ondraft={() => submitAs('draft')}
+    onpublish={() => submitAs('publish')}
   >
     {#snippet leftPanel()}
       <BlockLibrary categories={blockCategories} />
     {/snippet}
 
-    <div class="edit-canvas">
+    <div class="article-canvas">
       {#if form?.error}
         <div class="form-error" role="alert">{form.error}</div>
       {/if}
-      <ContentEditor content={data.item.content} onupdate={handleEditorUpdate} onblockselect={handleBlockSelect} />
+
+      <ContentEditor
+        bind:this={editorRef}
+        onupdate={handleEditorUpdate}
+        onblockselect={handleBlockSelect}
+      />
     </div>
 
     {#snippet rightPanel()}
       <PropertiesPanel
         {selectedBlock}
-        meta={{ description, tags, seoTitle: '', seoDescription }}
+        meta={{ description, tags, coverImageUrl }}
         onblockattr={handleBlockAttr}
         onmetachange={handleMetaChange}
       />
@@ -111,7 +115,7 @@
 </form>
 
 <style>
-  .edit-canvas {
+  .article-canvas {
     min-height: 100%;
   }
 
