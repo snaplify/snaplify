@@ -10,6 +10,9 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:infra": "docker compose up -d",
+    "dev:app": "turbo run dev --filter=@commonpub/reference",
+    "db:push": "pnpm --filter @commonpub/schema db:push",
     "test": "turbo run test",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",

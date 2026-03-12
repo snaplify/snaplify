@@ -1,6 +1,6 @@
 # Rate Limiting
 
-> Sliding-window rate limiter with five tiers and SvelteKit hook integration.
+> Sliding-window rate limiter with five tiers and Nitro server middleware integration.
 
 **Source**: `apps/reference/src/lib/server/rateLimit.ts`
 
@@ -14,7 +14,7 @@
 | `RateLimitStore` | Class | In-memory sliding window store |
 | `DEFAULT_TIERS` | Constant | Five pre-configured rate limit tiers |
 | `getTierForPath` | Function | Maps a URL pathname to its tier |
-| `createRateLimitHook` | Function | SvelteKit `handle` hook factory |
+| `createRateLimitHook` | Function | Nitro server middleware factory |
 
 ---
 
@@ -90,15 +90,15 @@ Maps a URL pathname to its corresponding rate limit tier.
 
 ---
 
-### `createRateLimitHook(store?): Handle`
+### `createRateLimitHook(store?): EventHandler`
 
-Creates a SvelteKit `handle` hook that enforces rate limiting.
+Creates Nitro server middleware that enforces rate limiting.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `store` | `RateLimitStore` | Optional. Defaults to a new `RateLimitStore` instance |
 
-**Returns**: A SvelteKit `Handle` function.
+**Returns**: A Nitro `EventHandler` function.
 
 **Behavior**:
 
@@ -109,4 +109,4 @@ Creates a SvelteKit `handle` hook that enforces rate limiting.
   - `X-RateLimit-Limit` header (tier limit)
   - `X-RateLimit-Remaining` header (`0`)
   - `X-RateLimit-Reset` header (Unix timestamp)
-- **On allowed**: Request proceeds through the hook chain. Rate limit headers are included in the response.
+- **On allowed**: Request proceeds through the middleware chain. Rate limit headers are included in the response.

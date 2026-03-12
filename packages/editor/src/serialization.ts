@@ -98,6 +98,90 @@ export function buildEditorSchema(): Schema {
       ],
       toDOM: (node: any) => ['img', { src: node.attrs.src, alt: node.attrs.alt }],
     },
+    // Gallery block
+    gallery: {
+      group: 'block',
+      attrs: { images: { default: [] } },
+      parseDOM: [{ tag: 'div.cpub-gallery' }],
+      toDOM: () => ['div', { class: 'cpub-gallery' }],
+    },
+    // Video block
+    video: {
+      group: 'block',
+      attrs: { url: { default: '' }, platform: { default: 'other' }, caption: { default: null } },
+      parseDOM: [{ tag: 'div.cpub-video' }],
+      toDOM: () => ['div', { class: 'cpub-video' }],
+    },
+    // Embed block
+    embed: {
+      group: 'block',
+      attrs: { url: { default: '' }, type: { default: 'generic' }, html: { default: null } },
+      parseDOM: [{ tag: 'div.cpub-embed' }],
+      toDOM: () => ['div', { class: 'cpub-embed' }],
+    },
+    // Markdown block
+    markdown: {
+      group: 'block',
+      attrs: { source: { default: '' } },
+      parseDOM: [{ tag: 'div.cpub-markdown' }],
+      toDOM: () => ['div', { class: 'cpub-markdown' }],
+    },
+    // Parts list block
+    parts_list: {
+      group: 'block',
+      attrs: { parts: { default: [] } },
+      parseDOM: [{ tag: 'div.cpub-parts-list' }],
+      toDOM: () => ['div', { class: 'cpub-parts-list' }],
+    },
+    // Build step block
+    build_step: {
+      group: 'block',
+      attrs: { stepNumber: { default: 1 }, image: { default: null }, instructions: { default: '' }, time: { default: null }, partsUsed: { default: [] } },
+      parseDOM: [{ tag: 'div.cpub-build-step' }],
+      toDOM: () => ['div', { class: 'cpub-build-step' }],
+    },
+    // Tool list block
+    tool_list: {
+      group: 'block',
+      attrs: { tools: { default: [] } },
+      parseDOM: [{ tag: 'div.cpub-tool-list' }],
+      toDOM: () => ['div', { class: 'cpub-tool-list' }],
+    },
+    // Downloads block
+    downloads: {
+      group: 'block',
+      attrs: { files: { default: [] } },
+      parseDOM: [{ tag: 'div.cpub-downloads' }],
+      toDOM: () => ['div', { class: 'cpub-downloads' }],
+    },
+    // Quiz block
+    quiz: {
+      group: 'block',
+      attrs: { question: { default: '' }, options: { default: [] }, feedback: { default: null } },
+      parseDOM: [{ tag: 'div.cpub-quiz' }],
+      toDOM: () => ['div', { class: 'cpub-quiz' }],
+    },
+    // Interactive slider block
+    interactive_slider: {
+      group: 'block',
+      attrs: { label: { default: '' }, min: { default: 0 }, max: { default: 100 }, step: { default: 1 }, defaultValue: { default: 50 }, states: { default: [] } },
+      parseDOM: [{ tag: 'div.cpub-interactive-slider' }],
+      toDOM: () => ['div', { class: 'cpub-interactive-slider' }],
+    },
+    // Checkpoint block
+    checkpoint: {
+      group: 'block',
+      attrs: { message: { default: '' } },
+      parseDOM: [{ tag: 'div.cpub-checkpoint' }],
+      toDOM: () => ['div', { class: 'cpub-checkpoint' }],
+    },
+    // Math notation block
+    math_notation: {
+      group: 'block',
+      attrs: { expression: { default: '' }, display: { default: false } },
+      parseDOM: [{ tag: 'div.cpub-math' }],
+      toDOM: () => ['div', { class: 'cpub-math' }],
+    },
     // Blockquote (maps to our 'quote' block type)
     blockquote: {
       group: 'block',
@@ -241,6 +325,71 @@ export function blockTuplesToDoc(blocks: BlockTuple[], schema?: Schema): ProseMi
         pmNodes.push(s.nodes.horizontal_rule!.create());
         break;
       }
+      case 'gallery': {
+        const c = content as { images: { src: string; alt: string; caption?: string }[] };
+        pmNodes.push(s.nodes.gallery!.create({ images: c.images }));
+        break;
+      }
+      case 'video': {
+        const c = content as { url: string; platform: string; caption?: string };
+        pmNodes.push(s.nodes.video!.create({ url: c.url, platform: c.platform, caption: c.caption ?? null }));
+        break;
+      }
+      case 'embed': {
+        const c = content as { url: string; type: string; html?: string };
+        pmNodes.push(s.nodes.embed!.create({ url: c.url, type: c.type, html: c.html ?? null }));
+        break;
+      }
+      case 'markdown': {
+        const c = content as { source: string };
+        pmNodes.push(s.nodes.markdown!.create({ source: c.source }));
+        break;
+      }
+      case 'partsList': {
+        const c = content as { parts: unknown[] };
+        pmNodes.push(s.nodes.parts_list!.create({ parts: c.parts }));
+        break;
+      }
+      case 'buildStep': {
+        const c = content as { stepNumber: number; instructions: string; image?: string; time?: string; partsUsed?: string[] };
+        pmNodes.push(s.nodes.build_step!.create({
+          stepNumber: c.stepNumber, image: c.image ?? null, instructions: c.instructions,
+          time: c.time ?? null, partsUsed: c.partsUsed ?? [],
+        }));
+        break;
+      }
+      case 'toolList': {
+        const c = content as { tools: unknown[] };
+        pmNodes.push(s.nodes.tool_list!.create({ tools: c.tools }));
+        break;
+      }
+      case 'downloads': {
+        const c = content as { files: unknown[] };
+        pmNodes.push(s.nodes.downloads!.create({ files: c.files }));
+        break;
+      }
+      case 'quiz': {
+        const c = content as { question: string; options: unknown[]; feedback?: string };
+        pmNodes.push(s.nodes.quiz!.create({ question: c.question, options: c.options, feedback: c.feedback ?? null }));
+        break;
+      }
+      case 'interactiveSlider': {
+        const c = content as { label: string; min: number; max: number; step: number; defaultValue: number; states: unknown[] };
+        pmNodes.push(s.nodes.interactive_slider!.create({
+          label: c.label, min: c.min, max: c.max, step: c.step, defaultValue: c.defaultValue, states: c.states,
+        }));
+        break;
+      }
+      case 'checkpoint': {
+        const c = content as { message: string };
+        pmNodes.push(s.nodes.checkpoint!.create({ message: c.message }));
+        break;
+      }
+      case 'mathNotation': {
+        const c = content as { expression: string; display?: boolean };
+        pmNodes.push(s.nodes.math_notation!.create({ expression: c.expression, display: c.display ?? false }));
+        break;
+      }
     }
   }
 
@@ -324,6 +473,70 @@ export function docToBlockTuples(doc: ProseMirrorNode): BlockTuple[] {
       }
       case 'horizontal_rule': {
         blocks.push(['divider', {}]);
+        break;
+      }
+      case 'gallery': {
+        blocks.push(['gallery', { images: node.attrs.images }]);
+        break;
+      }
+      case 'video': {
+        const attrs: Record<string, unknown> = { url: node.attrs.url, platform: node.attrs.platform };
+        if (node.attrs.caption) attrs.caption = node.attrs.caption;
+        blocks.push(['video', attrs]);
+        break;
+      }
+      case 'embed': {
+        const attrs: Record<string, unknown> = { url: node.attrs.url, type: node.attrs.type };
+        if (node.attrs.html) attrs.html = node.attrs.html;
+        blocks.push(['embed', attrs]);
+        break;
+      }
+      case 'markdown': {
+        blocks.push(['markdown', { source: node.attrs.source }]);
+        break;
+      }
+      case 'parts_list': {
+        blocks.push(['partsList', { parts: node.attrs.parts }]);
+        break;
+      }
+      case 'build_step': {
+        const attrs: Record<string, unknown> = {
+          stepNumber: node.attrs.stepNumber,
+          instructions: node.attrs.instructions,
+        };
+        if (node.attrs.image) attrs.image = node.attrs.image;
+        if (node.attrs.time) attrs.time = node.attrs.time;
+        if (node.attrs.partsUsed?.length) attrs.partsUsed = node.attrs.partsUsed;
+        blocks.push(['buildStep', attrs]);
+        break;
+      }
+      case 'tool_list': {
+        blocks.push(['toolList', { tools: node.attrs.tools }]);
+        break;
+      }
+      case 'downloads': {
+        blocks.push(['downloads', { files: node.attrs.files }]);
+        break;
+      }
+      case 'quiz': {
+        const attrs: Record<string, unknown> = { question: node.attrs.question, options: node.attrs.options };
+        if (node.attrs.feedback) attrs.feedback = node.attrs.feedback;
+        blocks.push(['quiz', attrs]);
+        break;
+      }
+      case 'interactive_slider': {
+        blocks.push(['interactiveSlider', {
+          label: node.attrs.label, min: node.attrs.min, max: node.attrs.max,
+          step: node.attrs.step, defaultValue: node.attrs.defaultValue, states: node.attrs.states,
+        }]);
+        break;
+      }
+      case 'checkpoint': {
+        blocks.push(['checkpoint', { message: node.attrs.message }]);
+        break;
+      }
+      case 'math_notation': {
+        blocks.push(['mathNotation', { expression: node.attrs.expression, display: node.attrs.display }]);
         break;
       }
     }

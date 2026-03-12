@@ -9,7 +9,7 @@
 | Requirement | Version | Purpose |
 |-------------|---------|---------|
 | Node.js | 22+ | Runtime |
-| pnpm | 9+ | Package manager |
+| pnpm | 10+ | Package manager |
 | PostgreSQL | 16+ | Primary database |
 | Redis / Valkey | 7+ | Rate limiting, sessions (optional — falls back to in-memory) |
 | Meilisearch | 1.6+ | Full-text search (optional — falls back to Postgres FTS) |
@@ -32,10 +32,13 @@ The monorepo builds all packages in dependency order via Turborepo.
 ## 3. Local Infrastructure (Docker Compose)
 
 ```bash
-docker compose -f deploy/docker-compose.yml up -d
+# From the repo root — uses root docker-compose.yml
+docker compose up -d
+# Or use the convenience script:
+pnpm dev:infra
 ```
 
-This starts PostgreSQL, Redis, and Meilisearch for local development.
+This starts PostgreSQL (port 5433), Redis (port 6380), and Meilisearch (port 7701) for local development.
 
 ---
 
@@ -93,8 +96,8 @@ AUTH_SECRET=your-random-secret-at-least-32-chars
 
 # Optional
 REDIS_URL=redis://localhost:6379
-MEILISEARCH_URL=http://localhost:7700
-MEILISEARCH_API_KEY=your-api-key
+MEILI_URL=http://localhost:7701
+MEILI_MASTER_KEY=your-api-key
 
 # OAuth (if enabled)
 GITHUB_CLIENT_ID=...
@@ -329,8 +332,8 @@ Use the Docker image with environment variables configured in the App Platform d
 1. Install Node.js 22+, PostgreSQL 16+
 2. Clone repo, `pnpm install && pnpm build`
 3. Set environment variables
-4. Run migrations
-5. Start with `node apps/reference/build`
+4. Run migrations: `pnpm db:push`
+5. Start with `node apps/reference/.output/server/index.mjs`
 6. Reverse proxy with nginx + Certbot SSL
 
 ### Scaffolding New Instances

@@ -9,6 +9,7 @@ declare module 'nuxt/app' {
     admin: ComponentProps<typeof import("/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/layouts/admin.vue").default>,
     auth: ComponentProps<typeof import("/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/layouts/auth.vue").default>,
     default: ComponentProps<typeof import("/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/layouts/default.vue").default>,
+    editor: ComponentProps<typeof import("/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/layouts/editor.vue").default>,
 }
   export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts
   interface PageMeta {

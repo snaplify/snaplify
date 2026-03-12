@@ -441,7 +441,7 @@ The following phases describe what needs to be built to achieve full federation.
 **Functions to implement:**
 - `handleOAuthCallback(code: string, state: string): Promise<FederatedAccount>` — exchange code for token
 - `refreshOAuthToken(federatedAccountId: string): Promise<void>`
-- SvelteKit route: `GET /auth/callback/[instance]`
+- Server route: `GET /auth/callback/[instance]`
 
 **Protocol work:** Standard OAuth2 authorization code flow with PKCE (consumer side). Store and refresh tokens.
 

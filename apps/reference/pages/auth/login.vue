@@ -6,6 +6,8 @@ useSeoMeta({
   description: 'Log in to your CommonPub account.',
 });
 
+const { signIn } = useAuth();
+
 const email = ref('');
 const password = ref('');
 const error = ref('');
@@ -16,14 +18,8 @@ async function handleSubmit(): Promise<void> {
   loading.value = true;
 
   try {
-    const response = await $fetch('/api/auth/sign-in/email', {
-      method: 'POST',
-      body: { email: email.value, password: password.value },
-    });
-
-    if (response) {
-      await navigateTo('/');
-    }
+    await signIn(email.value, password.value);
+    await navigateTo('/');
   } catch (err: unknown) {
     const message = (err as { data?: { message?: string } })?.data?.message;
     error.value = message || 'Invalid email or password.';
@@ -84,10 +80,9 @@ async function handleSubmit(): Promise<void> {
 }
 
 .login-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-weight-bold);
-  text-align: center;
-  margin-bottom: var(--space-6);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--space-5);
 }
 
 .login-form {
@@ -100,71 +95,80 @@ async function handleSubmit(): Promise<void> {
   padding: var(--space-3);
   background: var(--red-bg);
   color: var(--red);
-  border: var(--border-width-default) solid var(--red);
+  border: 2px solid var(--red);
   border-radius: var(--radius);
-  font-size: var(--text-sm);
+  font-size: 12px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 4px;
 }
 
 .field-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
 }
 
 .field-input {
-  padding: var(--space-2) var(--space-3);
-  border: var(--border-width-default) solid var(--border);
+  padding: 8px 12px;
+  border: 2px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
-  font-size: var(--text-base);
+  font-size: 13px;
   font-family: var(--font-sans);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field-input::placeholder {
+  color: var(--text-faint);
 }
 
 .field-input:focus {
-  outline: none;
   border-color: var(--accent);
-  box-shadow: var(--focus-ring);
+  box-shadow: var(--shadow-accent);
 }
 
 .submit-btn {
-  padding: var(--space-2) var(--space-4);
+  padding: 7px 14px;
   background: var(--accent);
-  color: var(--color-on-primary);
-  border: var(--border-width-default) solid var(--border);
+  color: #fff;
+  border: 2px solid var(--accent);
   border-radius: var(--radius);
-  font-size: var(--text-base);
-  font-weight: var(--font-weight-medium);
+  font-size: 13px;
+  font-weight: 500;
   font-family: var(--font-sans);
   cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
 }
 
 .submit-btn:hover:not(:disabled) {
+  box-shadow: var(--shadow-md);
   transform: translate(-1px, -1px);
-  box-shadow: var(--shadow-lg);
 }
 
 .submit-btn:active:not(:disabled) {
   transform: translate(1px, 1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .submit-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
 .login-footer {
   text-align: center;
-  font-size: var(--text-sm);
+  font-size: 12px;
   color: var(--text-dim);
   margin-top: var(--space-4);
 }

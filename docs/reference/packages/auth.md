@@ -13,7 +13,7 @@
 | Export | Kind | Description |
 |--------|------|-------------|
 | `createAuth` | Function | Creates a Better Auth instance configured for CommonPub |
-| `createAuthHook` | Function | Creates a SvelteKit hook for session resolution |
+| `createAuthHook` | Function | Creates server middleware for session resolution |
 | `authGuard` | Function | Requires authenticated user |
 | `adminGuard` | Function | Requires admin/staff role |
 | `roleGuard` | Function | Requires minimum role level |
@@ -57,9 +57,9 @@ interface AuthInstance {
 }
 ```
 
-### `createAuthHook(options: CreateAuthHookOptions): Handle`
+### `createAuthHook(options: CreateAuthHookOptions): EventHandler`
 
-Creates a SvelteKit `handle` hook that resolves sessions and populates `event.locals`.
+Creates server middleware that resolves sessions and populates `event.context`.
 
 ```typescript
 interface CreateAuthHookOptions {
@@ -69,7 +69,7 @@ interface CreateAuthHookOptions {
 }
 ```
 
-**Sets on `event.locals`**:
+**Sets on `event.context`**:
 - `user: AuthUser | null`
 - `session: AuthSession | null`
 - `db: DrizzleDB`
@@ -202,7 +202,7 @@ type UserRole = 'member' | 'pro' | 'verified' | 'staff' | 'admin';
 packages/auth/src/
 ├── index.ts       → All exports
 ├── createAuth.ts  → createAuth() factory, Better Auth configuration
-├── hooks.ts       → createAuthHook() for SvelteKit
+├── hooks.ts       → createAuthHook() for server middleware
 ├── guards.ts      → authGuard, adminGuard, roleGuard
 ├── sso.ts         → createSSOProviderConfig, discoverOAuthEndpoint, isTrustedInstance
 └── types.ts       → AuthUser, AuthSession, SessionResult, UserRole, ROLE_HIERARCHY, getRoleLevel

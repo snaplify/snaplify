@@ -19,7 +19,7 @@
 | [Config](./packages/config.md) | `@commonpub/config` | `defineCommonPubConfig()` factory, 10 feature flags, validation schemas |
 | [Protocol](./packages/protocol.md) | `@commonpub/protocol` | ActivityPub types, activity builders, WebFinger, NodeInfo, OAuth2, HTTP signatures |
 | [Auth](./packages/auth.md) | `@commonpub/auth` | Better Auth wrapper, session management, guards, AP actor SSO |
-| [UI](./packages/ui.md) | `@commonpub/ui` | 15 headless Svelte 5 components, 4 themes, 142 CSS tokens |
+| [UI](./packages/ui.md) | `@commonpub/ui` | Headless Vue 3 components, 4 themes, 142 CSS tokens |
 | [Editor](./packages/editor.md) | `@commonpub/editor` | TipTap extensions, BlockTuple serialization, block registry |
 | [Docs](./packages/docs-package.md) | `@commonpub/docs` | Markdown rendering, navigation trees, versioning, search adapters |
 | [Explainer](./packages/explainer.md) | `@commonpub/explainer` | Interactive sections, quiz engine, progress tracking, HTML export |
@@ -57,7 +57,6 @@
 
 ## Also See
 
-- [Full Codebase Map](../full-codebase-map.md) — Raw schema tables, column definitions, and endpoint listings
 - [Deployment Guide](../deployment.md) — Docker, DigitalOcean, VPS deployment
 - [Architecture Decision Records](../adr/) — ADRs 009–023
 - [Accessibility Audit](../a11y-audit.md) — WCAG 2.1 AA compliance report

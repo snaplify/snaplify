@@ -16,7 +16,7 @@ function getAuthMiddleware(): ReturnType<typeof createAuthMiddleware> {
     config,
     db: db as Parameters<typeof createAuth>[0]['db'],
     secret: runtimeConfig.authSecret as string || 'dev-secret-change-me',
-    baseURL: `https://${config.instance.domain}`,
+    baseURL: runtimeConfig.public?.siteUrl as string || `https://${config.instance.domain}`,
   });
 
   authMiddleware = createAuthMiddleware({ auth });

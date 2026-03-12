@@ -5,8 +5,8 @@
 ```mermaid
 graph TD
     subgraph Apps
-        REF["apps/reference<br/>(SvelteKit, adapter-node)"]
-        LAND["apps/landing<br/>(SvelteKit, adapter-static)"]
+        REF["apps/reference<br/>(Nuxt 3)"]
+        LAND["apps/landing<br/>(static site)"]
     end
 
     subgraph Packages
@@ -14,7 +14,7 @@ graph TD
         CONFIG["@commonpub/config<br/>defineCommonPubConfig()"]
         PROTO["@commonpub/protocol<br/>Fedify + AP types"]
         AUTH["@commonpub/auth<br/>Better Auth wrapper"]
-        UI["@commonpub/ui<br/>Svelte 5 components + theme"]
+        UI["@commonpub/ui<br/>Vue 3 components + theme"]
         EDITOR["@commonpub/editor<br/>TipTap extensions"]
         DOCS["@commonpub/docs<br/>Docs module"]
         EXPLAINER["@commonpub/explainer<br/>Interactive modules"]
@@ -60,9 +60,9 @@ graph TD
 ```mermaid
 sequenceDiagram
     participant Browser
-    participant Hooks as hooks.server.ts
-    participant Locals as event.locals
-    participant Route as +page.server.ts
+    participant Hooks as server/middleware
+    participant Locals as event.context
+    participant Route as server/api route
     participant Server as Server Module
     participant DB as PostgreSQL
     participant Fed as Federation
@@ -72,7 +72,7 @@ sequenceDiagram
     Hooks->>Hooks: createRateLimitHook()<br/>(sliding window check)
     Hooks->>Locals: Set db, config, user?, session?
     Hooks->>Hooks: Better Auth session resolution
-    Hooks->>Route: Pass event with locals
+    Hooks->>Route: Pass event with context
 
     alt Page Load (GET)
         Route->>Server: Call server module function
@@ -343,7 +343,7 @@ graph TB
     end
 
     subgraph "Application Layer"
-        SK["SvelteKit<br/>(Node.js)"]
+        NUXT["Nuxt 3<br/>(Node.js)"]
         BA["Better Auth<br/>(embedded)"]
     end
 
@@ -358,11 +358,11 @@ graph TB
         REMOTE["Remote<br/>AP Instances"]
     end
 
-    BROWSER <--> SK
-    SK <--> BA
-    SK <--> PG
-    SK <--> REDIS
-    SK <--> MEILI
-    SK <--> FED
+    BROWSER <--> NUXT
+    NUXT <--> BA
+    NUXT <--> PG
+    NUXT <--> REDIS
+    NUXT <--> MEILI
+    NUXT <--> FED
     FED <--> REMOTE
 ```

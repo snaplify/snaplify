@@ -1,6 +1,6 @@
 # Security
 
-> CSP directive builder, security headers, and SvelteKit hook with per-request nonce support.
+> CSP directive builder, security headers, and Nitro server middleware with per-request nonce support.
 
 **Source**: `apps/reference/src/lib/server/security.ts`
 
@@ -14,7 +14,7 @@
 | `buildCspHeader` | Function | Serializes CSP directives into a header string |
 | `getSecurityHeaders` | Function | Returns standard security headers |
 | `getStaticCacheHeaders` | Function | Returns cache headers for immutable assets |
-| `createSecurityHook` | Function | SvelteKit `handle` hook factory |
+| `createSecurityHook` | Function | Nitro server middleware factory |
 
 ---
 
@@ -95,20 +95,20 @@ Returns cache headers for immutable static assets.
 
 ---
 
-### `createSecurityHook(isDev: boolean): Handle`
+### `createSecurityHook(isDev: boolean): EventHandler`
 
-Creates a SvelteKit `handle` hook that applies security headers and nonce-based CSP.
+Creates Nitro server middleware that applies security headers and nonce-based CSP.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `isDev` | `boolean` | Whether the app is running in development mode |
 
-**Returns**: A SvelteKit `Handle` function.
+**Returns**: A Nitro `EventHandler` function.
 
 **Behavior**:
 
 1. **Nonce generation**: In production, generates a unique per-request nonce. In development, no nonce is generated.
-2. **HTML transformation**: Uses `transformPageChunk` to replace `%sveltekit.nonce%` placeholders in rendered HTML with the generated nonce.
+2. **HTML transformation**: Uses Nitro response hooks to inject the generated nonce into rendered HTML.
 3. **Security headers**: Applies all headers from `getSecurityHeaders(isDev)` to every response.
 4. **CSP header**: In production, builds and attaches a nonce-based CSP header via `buildCspDirectives(nonce)` and `buildCspHeader()`.
-5. **Static asset caching**: Responses for `/_app/` paths receive `getStaticCacheHeaders()`.
+5. **Static asset caching**: Responses for `/_nuxt/` paths receive `getStaticCacheHeaders()`.

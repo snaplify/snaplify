@@ -8,7 +8,9 @@
       <NuxtLink to="/" class="auth-brand" aria-label="Return to homepage">
         CommonPub
       </NuxtLink>
-      <slot />
+      <div class="auth-card">
+        <slot />
+      </div>
     </main>
   </div>
 </template>
@@ -35,9 +37,19 @@
 }
 
 .auth-brand {
-  font-weight: var(--font-weight-bold);
-  font-size: var(--text-2xl);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 18px;
   color: var(--text);
   text-decoration: none;
+}
+
+.auth-card {
+  width: 100%;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
 }
 </style>

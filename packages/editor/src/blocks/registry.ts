@@ -6,6 +6,19 @@ import {
   imageContentSchema,
   quoteContentSchema,
   calloutContentSchema,
+  galleryContentSchema,
+  videoContentSchema,
+  embedContentSchema,
+  markdownContentSchema,
+  dividerContentSchema,
+  partsListContentSchema,
+  buildStepContentSchema,
+  toolListContentSchema,
+  downloadsContentSchema,
+  quizContentSchema,
+  interactiveSliderContentSchema,
+  checkpointContentSchema,
+  mathNotationContentSchema,
 } from './schemas.js';
 
 const registry = new Map<string, BlockDefinition>();
@@ -56,6 +69,19 @@ export function registerCoreBlocks(): void {
     { type: 'image', schema: imageContentSchema, label: 'Image' },
     { type: 'quote', schema: quoteContentSchema, label: 'Quote' },
     { type: 'callout', schema: calloutContentSchema, label: 'Callout' },
+    { type: 'gallery', schema: galleryContentSchema, label: 'Gallery' },
+    { type: 'video', schema: videoContentSchema, label: 'Video' },
+    { type: 'embed', schema: embedContentSchema, label: 'Embed' },
+    { type: 'markdown', schema: markdownContentSchema, label: 'Markdown' },
+    { type: 'divider', schema: dividerContentSchema, label: 'Divider' },
+    { type: 'partsList', schema: partsListContentSchema, label: 'Parts List' },
+    { type: 'buildStep', schema: buildStepContentSchema, label: 'Build Step' },
+    { type: 'toolList', schema: toolListContentSchema, label: 'Tool List' },
+    { type: 'downloads', schema: downloadsContentSchema, label: 'Downloads' },
+    { type: 'quiz', schema: quizContentSchema, label: 'Quiz' },
+    { type: 'interactiveSlider', schema: interactiveSliderContentSchema, label: 'Interactive Slider' },
+    { type: 'checkpoint', schema: checkpointContentSchema, label: 'Checkpoint' },
+    { type: 'mathNotation', schema: mathNotationContentSchema, label: 'Math Notation' },
   ];
 
   for (const block of coreBlocks) {

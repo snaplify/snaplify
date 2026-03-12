@@ -42,7 +42,7 @@ useSeoMeta({
       <main class="docs-main">
         <template v-if="currentPage">
           <h1 class="docs-page-title">{{ currentPage.title }}</h1>
-          <div class="docs-content" v-html="currentPage.content || 'No content yet.'" />
+          <div class="docs-content cpub-prose" v-html="currentPage.content || 'No content yet.'" />
         </template>
         <div v-else class="docs-not-found">
           <h1>Page not found</h1>

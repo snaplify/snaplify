@@ -36,7 +36,7 @@ const auth = createAuth({
 
 ### Route Guards
 
-Protect SvelteKit routes with guards in `+page.server.ts` or hooks:
+Protect routes with guards in Nitro server middleware or API handlers:
 
 ```ts
 import { authGuard, adminGuard, roleGuard } from '@commonpub/auth';
@@ -53,15 +53,15 @@ const modGuard = roleGuard('moderator');
 const result = modGuard(event);
 ```
 
-### SvelteKit Auth Hook
+### Server Middleware
 
 ```ts
-import { createAuthHook } from '@commonpub/auth';
+import { createAuthMiddleware } from '@commonpub/auth';
 
-const authHook = createAuthHook({ auth });
+const authMiddleware = createAuthMiddleware({ auth });
 
-// In hooks.server.ts
-export const handle = authHook;
+// In server/middleware/auth.ts (Nitro)
+export default authMiddleware;
 ```
 
 ### AP Actor SSO (Model B)

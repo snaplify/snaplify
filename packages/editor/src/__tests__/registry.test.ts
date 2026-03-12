@@ -67,24 +67,36 @@ describe('Block Registry', () => {
   });
 
   describe('registerCoreBlocks', () => {
-    it('registers all 6 core block types', () => {
+    it('registers all core block types', () => {
       registerCoreBlocks();
       const blocks = listBlocks();
-      expect(blocks).toHaveLength(6);
-      expect(blocks.map((b) => b.type).sort()).toEqual([
-        'callout',
-        'code',
-        'heading',
-        'image',
-        'quote',
-        'text',
-      ]);
+      expect(blocks).toHaveLength(19);
+      const types = blocks.map((b) => b.type).sort();
+      expect(types).toContain('text');
+      expect(types).toContain('heading');
+      expect(types).toContain('code');
+      expect(types).toContain('image');
+      expect(types).toContain('quote');
+      expect(types).toContain('callout');
+      expect(types).toContain('gallery');
+      expect(types).toContain('video');
+      expect(types).toContain('embed');
+      expect(types).toContain('markdown');
+      expect(types).toContain('divider');
+      expect(types).toContain('partsList');
+      expect(types).toContain('buildStep');
+      expect(types).toContain('toolList');
+      expect(types).toContain('downloads');
+      expect(types).toContain('quiz');
+      expect(types).toContain('interactiveSlider');
+      expect(types).toContain('checkpoint');
+      expect(types).toContain('mathNotation');
     });
 
     it('is idempotent', () => {
       registerCoreBlocks();
       registerCoreBlocks();
-      expect(listBlocks()).toHaveLength(6);
+      expect(listBlocks()).toHaveLength(19);
     });
   });
 });

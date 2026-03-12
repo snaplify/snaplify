@@ -41,7 +41,7 @@ All 4 themes verified against WCAG 2.1 AA (4.5:1 for normal text, 3:1 for large 
 
 ## Known Limitations
 
-- `'unsafe-inline'` in CSP for SvelteKit hydration scripts
+- `'unsafe-inline'` in CSP for Nuxt hydration scripts
 - CodeMirror and TipTap editors rely on their own a11y implementations
 - Dynamic content loaded after page render may not be caught by static axe scans
 

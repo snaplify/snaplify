@@ -77,7 +77,7 @@ packages/name/
 ## Testing
 
 - **Unit**: Vitest for validators, config, business logic
-- **Component**: @testing-library/svelte + axe-core for UI
+- **Component**: @testing-library/vue + axe-core for UI
 - **Integration**: Vitest + test Postgres for API routes
 - **E2E**: Playwright for user journeys
 

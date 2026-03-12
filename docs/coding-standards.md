@@ -8,30 +8,38 @@
 - **Prefer `const`** over `let`, never use `var`
 - **Use Drizzle query builder** — no raw SQL unless necessary and documented
 
-## Svelte
+## Vue 3
 
-- **Svelte 5 runes** syntax (`$state`, `$derived`, `$effect`, `$props`)
-- **No legacy `$:` reactive syntax**
-- **Components accept `class` prop** for external styling
-- **Events use callback props**, not custom events
+- **Composition API** with `<script setup lang="ts">` — no Options API
+- **Components accept `class` prop** for external styling (via `$attrs` or explicit prop)
+- **Events use Vue emit pattern**
+- **Nuxt auto-imports**: `ref`, `computed`, `watch`, `useRoute`, `useFetch`, etc. — no manual imports needed in the reference app
+
+## Nuxt Conventions
+
+- **File-based routing**: `pages/` directory maps to routes
+- **Server routes**: `server/api/` for API endpoints, `server/routes/` for non-API routes
+- **Nitro server middleware**: `server/middleware/` for auth, logging, etc.
+- **Runtime config**: Use `useRuntimeConfig()` — never import `process.env` directly in client code
+- **SEO**: Use `useSeoMeta()` and `useHead()` composables
 
 ## CSS
 
 - **CSS custom properties only** — `var(--*)` for all colors, fonts, spacing, shadows
 - **No hardcoded values** in component styles
 - **Token contract** defined in `packages/ui/theme/base.css`
-- **BEM-like class naming** for component-scoped styles
+- **Class prefix**: `cpub-` for component-scoped styles
 
 ## File Naming
 
-| Type               | Convention | Example              |
-| ------------------ | ---------- | -------------------- |
-| Svelte components  | PascalCase | `ProjectCard.svelte` |
-| TypeScript modules | camelCase  | `contentService.ts`  |
-| Schema files       | camelCase  | `learningPath.ts`    |
-| CSS files          | kebab-case | `base-tokens.css`    |
-| Test files         | \*.test.ts | `config.test.ts`     |
-| ADRs               | NNN-kebab  | `001-sveltekit.md`   |
+| Type               | Convention  | Example              |
+| ------------------ | ----------- | -------------------- |
+| Vue components     | PascalCase  | `ProjectCard.vue`    |
+| TypeScript modules | camelCase   | `contentService.ts`  |
+| Schema files       | camelCase   | `learningPath.ts`    |
+| CSS files          | kebab-case  | `base-tokens.css`    |
+| Test files         | \*.test.ts  | `config.test.ts`     |
+| ADRs               | NNN-kebab   | `025-nuxt-switch.md` |
 
 ## Testing
 
@@ -39,6 +47,7 @@
 - **One assertion per test** when practical
 - **Descriptive test names**: "should reject invalid email format"
 - **Use test factories** from `@commonpub/test-utils`
+- **Component tests** with `@testing-library/vue` + axe-core
 - **Accessibility tests** on all interactive components
 
 ## Git
@@ -61,6 +70,6 @@
 
 - **Never trust client input** — validate at API boundary with Zod
 - **Parameterized queries** only (Drizzle handles this)
-- **CSP headers** configured in SvelteKit hooks
+- **CSP headers** configured in Nitro server middleware
 - **Rate limiting** on auth and API endpoints
 - **No secrets in code** — environment variables only

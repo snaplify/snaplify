@@ -7,110 +7,100 @@ useSeoMeta({
   description: () => `Browse ${contentType.value} on CommonPub.`,
 });
 
+const sortBy = ref('recent');
+const sortOptions = ['recent', 'popular'] as const;
+
 const { data } = await useFetch('/api/content', {
   query: computed(() => ({
     status: 'published',
     type: contentType.value,
+    sort: sortBy.value,
     limit: 20,
   })),
 });
 </script>
 
 <template>
-  <div class="listing-page">
-    <h1 class="listing-title cpub-capitalize">{{ contentType }}</h1>
-
-    <div class="listing-grid" v-if="data?.items?.length">
-      <div class="listing-card" v-for="item in data.items" :key="item.id">
-        <div class="listing-card-thumb" :style="item.coverImageUrl ? `background-image: url(${item.coverImageUrl})` : ''" />
-        <div class="listing-card-body">
-          <h2 class="listing-card-title">
-            <NuxtLink :to="`/${contentType}/${item.slug}`">{{ item.title }}</NuxtLink>
-          </h2>
-          <p class="listing-card-desc" v-if="item.description">{{ item.description }}</p>
-          <div class="listing-card-meta">
-            <span>{{ item.author.displayName || item.author.username }}</span>
-            <span>{{ item.viewCount }} views</span>
-          </div>
-        </div>
+  <div class="cpub-listing">
+    <div class="cpub-listing-header">
+      <h1 class="cpub-listing-title">{{ contentType }}s</h1>
+      <div class="cpub-listing-controls">
+        <select v-model="sortBy" class="cpub-listing-sort" aria-label="Sort by">
+          <option v-for="opt in sortOptions" :key="opt" :value="opt">{{ opt }}</option>
+        </select>
+        <NuxtLink :to="`/${contentType}/new/edit`" class="cpub-listing-create">
+          + New {{ contentType }}
+        </NuxtLink>
       </div>
     </div>
-    <p class="listing-empty" v-else>No {{ contentType }} published yet.</p>
+
+    <div class="cpub-listing-grid" v-if="data?.items?.length">
+      <ContentCard v-for="item in data.items" :key="item.id" :item="item" />
+    </div>
+    <p class="cpub-listing-empty" v-else>No {{ contentType }}s published yet.</p>
   </div>
 </template>
 
 <style scoped>
-.listing-page {
+.cpub-listing {
   max-width: var(--content-max-width);
 }
 
-.listing-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-weight-bold);
+.cpub-listing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--space-6);
 }
 
-.cpub-capitalize {
+.cpub-listing-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-bold);
   text-transform: capitalize;
 }
 
-.listing-grid {
+.cpub-listing-controls {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.cpub-listing-sort {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: capitalize;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.cpub-listing-create {
+  padding: var(--space-2) var(--space-3);
+  background: var(--accent);
+  color: #fff;
+  border: var(--border-width-default) solid var(--border);
+  font-size: var(--text-xs);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+}
+
+.cpub-listing-create:hover {
+  background: var(--color-primary-hover);
+}
+
+.cpub-listing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-4);
 }
 
-.listing-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--surface);
-}
-
-.listing-card-thumb {
-  height: 140px;
-  background: var(--surface2);
-  background-size: cover;
-  background-position: center;
-}
-
-.listing-card-body {
-  padding: var(--space-3);
-}
-
-.listing-card-title {
-  font-size: var(--text-md);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--space-1);
-}
-
-.listing-card-title a {
-  color: var(--text);
-  text-decoration: none;
-}
-
-.listing-card-title a:hover {
-  color: var(--accent);
-}
-
-.listing-card-desc {
-  font-size: var(--text-sm);
-  color: var(--text-dim);
-  line-height: var(--leading-relaxed);
-}
-
-.listing-card-meta {
-  display: flex;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-faint);
-}
-
-.listing-empty {
+.cpub-listing-empty {
   color: var(--text-faint);
   font-size: var(--text-sm);
   text-align: center;
   padding: var(--space-10) 0;
+  text-transform: capitalize;
 }
 </style>

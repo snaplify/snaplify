@@ -87,12 +87,12 @@ describe('createAuth', () => {
       config: createMockConfig(),
       db: {} as any,
       secret: 'test-secret',
-      baseURL: 'http://localhost:5173',
+      baseURL: 'http://localhost:3000',
     });
 
     expect(betterAuth).toHaveBeenCalledWith(
       expect.objectContaining({
-        baseURL: 'http://localhost:5173',
+        baseURL: 'http://localhost:3000',
       }),
     );
   });

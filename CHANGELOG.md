@@ -4,6 +4,40 @@ All notable changes to CommonPub are documented here.
 
 ## v1.0.0 — Launch
 
+### Reference App UI Full Build (2026-03-11)
+
+- Expanded `@commonpub/editor` from 6 to 19 block types: gallery, video, embed, markdown, divider, partsList, buildStep, toolList, downloads, quiz, interactiveSlider, checkpoint, mathNotation
+- Created TipTap Node extensions for all 13 new blocks with full serialization round-trip
+- Built `CpubEditor.vue` — Vue TipTap wrapper with BlockTuple bidirectional sync
+- Built 3-pane editor UI: `EditorBlockLibrary` (left), `EditorToolbar` (center top), `EditorPropertiesPanel` (right)
+- Block library filters by content type (project-only blocks, explainer-only interactive blocks)
+- Properties panel with type-specific metadata (article SEO, project difficulty/cost, explainer objectives)
+- Rewrote `pages/[type]/[slug]/edit.vue` with full-screen editor layout, Write/Preview/Code mode tabs
+- Rewrote `pages/[type]/[slug].vue` with cover image, ContentTypeBadge, AuthorRow, EngagementBar, AuthorCard, related content grid
+- Created reusable view components: ContentTypeBadge, AuthorRow, EngagementBar, AuthorCard, ContentCard
+- Added `packages/ui/theme/prose.css` — comprehensive prose stylesheet matching unified-v2 mockups
+- Rewrote homepage with personalized hero, trending projects grid, for-you feed
+- Enhanced search page with filter chips, sort options, ContentCard grid
+- Rewrote community detail page with hero banner, tabbed interface, post composer, sidebar
+- Rewrote profile page with hero, stats bar, tabbed content, follow button
+- Enhanced learning pages with difficulty filters, expandable curriculum, sidebar stats
+- Created new pages: contests (browse + detail), video hub, notifications, messages (list + thread), settings/profile
+- Enhanced admin dashboard with offset-shadow stat cards and quick actions
+- Updated default layout with Contests, Videos nav items and notification/message icons
+- All 69 editor tests passing, all 27 test suites green, full project builds successfully
+
+### Repo Cleanup & Documentation Overhaul (2026-03-11)
+
+- Restructure completion: all packages rebuilt as framework-agnostic TypeScript, reference app running on Nuxt 3
+- Archived Svelte-era docs, research notes, and sessions 001–020 to `archive/`
+- Rewrote README, CONTRIBUTING, coding standards for Vue 3 / Nuxt 3
+- Added convenience scripts: `dev:infra`, `dev:app`, `db:push`
+- Fixed `.env.example` ports to match `docker-compose.yml` (5433/6380/7701)
+- Created `apps/reference/.env.example` for Nuxt runtimeConfig
+- Added `docs/quickstart.md` with full clone-to-run instructions
+- Expanded `docs/deployment.md` with 4 deployment options
+- Updated all docs to remove stale SvelteKit references
+
 ### Token Debt, Admin Polish, Editor & Composer (2026-03-11)
 
 - Fixed 32 non-contract tokens in `packages/ui/src/` (25 font-size→text, 7 surface-elevated→surface-alt/raised)

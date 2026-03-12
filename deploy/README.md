@@ -16,15 +16,16 @@ Docker Compose configurations, infrastructure scripts, and deployment specs for 
 
 ## Local Development
 
-```bash
-# Start all infrastructure services
-docker compose -f deploy/docker-compose.yml up -d
+> **Recommended**: Use the root `docker-compose.yml` instead for local dev — it remaps ports to avoid conflicts (5433, 6380, 7701). See [quickstart](../docs/quickstart.md).
 
-# Check health
+This `deploy/docker-compose.yml` uses standard ports and is intended for deploy-adjacent testing:
+
+```bash
+docker compose -f deploy/docker-compose.yml up -d
 docker compose -f deploy/docker-compose.yml ps
 ```
 
-Services:
+Services (deploy compose — standard ports):
 
 | Service      | Port  | Credentials                    |
 | ------------ | ----- | ------------------------------ |

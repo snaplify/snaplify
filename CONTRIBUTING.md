@@ -7,12 +7,12 @@ Thank you for your interest in contributing! See the full guide at [docs/contrib
 ```bash
 git clone https://github.com/commonpub/commonpub.git
 cd commonpub
-pnpm install
-docker compose -f deploy/docker-compose.yml up -d
+docker compose up -d
 cp .env.example .env
+pnpm install
 pnpm build
 pnpm test
-pnpm dev
+pnpm dev:app
 ```
 
 ## Workflow
@@ -27,9 +27,11 @@ pnpm dev
 ## Key Standards
 
 - TypeScript strict mode, no `any`
-- Svelte 5 runes syntax
+- Vue 3 Composition API with `<script setup lang="ts">`
+- Nuxt conventions: auto-imports, file-based routing, Nitro server routes
 - CSS custom properties only (`var(--*)`)
 - WCAG 2.1 AA accessibility minimum
 - Feature flags for all new features
+- Component tests with @testing-library/vue + axe-core
 
 See [docs/coding-standards.md](docs/coding-standards.md) for the complete guide.

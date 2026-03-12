@@ -2,7 +2,7 @@
 
 ## Context
 
-CommonPub is an open ActivityPub federation protocol and package suite for self-hosted maker communities. Two existing apps (hack-build in Vue 3/Convex, deveco-io in Nuxt 3/tRPC/Drizzle) serve as **reference implementations** — their value is in schemas, business logic, editors, styling patterns, and UX, not in framework code. Everything gets rebuilt in SvelteKit as the plan specifies, but we extract and port the best of both.
+CommonPub is an open ActivityPub federation protocol and package suite for self-hosted maker communities. Two existing apps (hack-build in Vue 3/Convex, deveco-io in Nuxt 3/tRPC/Drizzle) served as **reference implementations** — their value was in schemas, business logic, editors, styling patterns, and UX. The restructure is now complete: all packages are framework-agnostic TypeScript, the reference app runs on Nuxt 3 (see ADR 025), and the UI layer uses Vue 3 SFCs.
 
 The user wants this done with extreme care: test-driven, well-documented, accessible, secure, SEO-strong, deployable at any scale, easy to maintain and contribute to. No technical debt. No rushing.
 
@@ -27,13 +27,13 @@ The user wants this done with extreme care: test-driven, well-documented, access
 
 ---
 
-## Tech Stack (Locked per plan v4.5)
+## Tech Stack (Updated — see ADR 025)
 
 | Layer          | Technology                                                         |
 | -------------- | ------------------------------------------------------------------ |
-| Framework      | SvelteKit (adapter-node for apps, adapter-static for commonpub.com) |
+| Framework      | Nuxt 3 (reference app) + Vue 3 (UI components)                    |
 | Auth           | Better Auth via `@commonpub/auth`                                   |
-| Federation     | Fedify (`@fedify/sveltekit`, `@fedify/postgres`, `@fedify/redis`)  |
+| Federation     | Fedify (`@fedify/postgres`, `@fedify/redis`)                       |
 | Database       | PostgreSQL 16 + Drizzle ORM                                        |
 | Editor         | TipTap (content blocks), CodeMirror 6 (docs)                       |
 | Docs Rendering | unified + remark + rehype + shiki + mermaid-isomorphic             |
@@ -43,8 +43,6 @@ The user wants this done with extreme care: test-driven, well-documented, access
 | Analytics      | Plausible (self-hosted)                                            |
 | Storage        | DO Spaces (S3-compatible)                                          |
 | Queue          | Redis/Valkey                                                       |
-| CLI            | Rust (`create-commonpub`)                                           |
-| Worker         | TypeScript v1, Rust v2                                             |
 | Monorepo       | Turborepo + pnpm                                                   |
 
 ---
@@ -57,7 +55,8 @@ commonpub/
     schema/                         @commonpub/schema — Drizzle tables + Zod validators
     protocol/                       @commonpub/protocol — Fedify wrapper + AP types
     auth/                           @commonpub/auth — Better Auth wrapper + AP SSO
-    ui/                             @commonpub/ui — headless Svelte 5 components + theme CSS
+    ui/                             @commonpub/ui — headless Vue 3 components + theme CSS
+    server/                         @commonpub/server — framework-agnostic business logic
     config/                         @commonpub/config — defineCommonPubConfig() factory
     docs/                           @commonpub/docs — pluggable docs site module
     editor/                         @commonpub/editor — TipTap extensions + block types
@@ -68,7 +67,7 @@ commonpub/
     create-commonpub/                Rust CLI
     worker/                         AP queue worker (TS v1)
   apps/
-    reference/                      Reference SvelteKit app (becomes template for CLI)
+    reference/                      Nuxt 3 reference app
   deploy/
     docker-compose.yml              Local dev: Postgres + Redis + Meilisearch
     docker-compose.prod.yml         Production compose
@@ -93,49 +92,49 @@ commonpub/
 
 ## Phased Implementation
 
-### Phase 0: Foundation (Week 1)
+### Phase 0: Foundation (Week 1) ✅
 
 **Goal**: Monorepo scaffolding, CI/CD, dev environment, docs skeleton. Zero features, but `pnpm install && pnpm build && pnpm test` passes.
 
-### Phase 1: Schema + Config + Token Surface (Weeks 2-3)
+### Phase 1: Schema + Config + Token Surface (Weeks 2-3) ✅
 
 **Goal**: `@commonpub/schema`, `@commonpub/config`, and CSS token surface are locked and tested.
 
-### Phase 2: Auth + Protocol (Weeks 4-5)
+### Phase 2: Auth + Protocol (Weeks 4-5) ✅
 
 **Goal**: `@commonpub/auth` and `@commonpub/protocol` functional. Two local instances exchange AP Actor SSO logins.
 
-### Phase 3: Core UI Kit + Block Editor (Weeks 6-8)
+### Phase 3: Core UI Kit + Block Editor (Weeks 6-8) ✅
 
 **Goal**: `@commonpub/ui` component library + `@commonpub/editor` with all block types.
 
-### Phase 4: Reference App + Content System (Weeks 9-11)
+### Phase 4: Reference App + Content System (Weeks 9-11) ✅
 
-**Goal**: Working SvelteKit app with content CRUD, views, social features, SEO.
+**Goal**: Working Nuxt 3 app with content CRUD, views, social features, SEO.
 
-### Phase 5: Explainer System (Weeks 12-14)
+### Phase 5: Explainer System (Weeks 12-14) ✅
 
 **Goal**: Full interactive explainer runtime, editor integration, single-file HTML export.
 
-### Phase 6: Learning System (Weeks 15-17)
+### Phase 6: Learning System (Weeks 15-17) ✅
 
 **Goal**: Learning paths with modules, lessons, enrollment, progress, certificates.
 
-### Phase 7: Community System (Weeks 18-20)
+### Phase 7: Community System (Weeks 18-20) ✅
 
 **Goal**: Communities with feeds, membership, roles, moderation.
 
-### Phase 8: Federation (Weeks 21-24)
+### Phase 8: Federation (Weeks 21-24) ✅
 
 **Goal**: Two instances federate content via ActivityPub.
 
-### Phase 9: Docs Module (Weeks 25-26)
+### Phase 9: Docs Module (Weeks 25-26) ✅
 
 **Goal**: `@commonpub/docs` with CodeMirror editor, markdown rendering, versioning, search.
 
-### Phase 10: Theming Engine + Admin (Weeks 27-28)
+### Phase 10: Theming Engine + Admin (Weeks 27-28) ✅
 
-### Phase 11: CLI + Deployment (Weeks 29-31)
+### Phase 11: CLI + Deployment (Weeks 29-31) ✅
 
 ### Phase 12: Polish + Hardening (Weeks 32-34) ✅
 
@@ -164,7 +163,7 @@ commonpub/
 | `convex/learn.ts`                  | Learning path CRUD, enrollment, progress tracking, certificate generation                                                                               | `@commonpub/learning` business logic          |
 | `app/src/stores/editor.store.ts`   | Block CRUD operations, selection, dirty tracking                                                                                                        | `@commonpub/editor` state management          |
 | `convex/__tests__/`                | Test patterns and coverage map                                                                                                                          | Test strategy reference                      |
-| `app/src/composables/`             | `useUpload`, `useDragReorder`, `useMediaQuery`, `useClipboard`, `useDebounce`, `useInfiniteScroll`                                                      | Svelte equivalents                           |
+| `app/src/composables/`             | `useUpload`, `useDragReorder`, `useMediaQuery`, `useClipboard`, `useDebounce`, `useInfiniteScroll`                                                      | Vue 3 equivalents                            |
 
 ### From deveco-io (Nuxt 3 + Drizzle + tRPC)
 
@@ -182,7 +181,7 @@ commonpub/
 | Level       | Tool                               | Scope                                                                      |
 | ----------- | ---------------------------------- | -------------------------------------------------------------------------- |
 | Unit        | Vitest                             | Zod validators, config validation, auth flows, AP handlers, business logic |
-| Component   | @testing-library/svelte + axe-core | All `@commonpub/ui` components                                              |
+| Component   | @testing-library/vue + axe-core    | All `@commonpub/ui` components                                              |
 | Integration | Vitest + test Postgres             | API routes, content lifecycle, auth flows                                  |
 | E2E         | Playwright                         | Critical user journeys, cross-instance federation                          |
 
@@ -190,8 +189,8 @@ commonpub/
 
 ## Conventions
 
-- **File naming**: Components `PascalCase.svelte`, modules `camelCase.ts`, schemas `camelCase.ts`, CSS `kebab-case.css`, tests `*.test.ts`, ADRs `NNN-kebab.md`
-- **Code style**: TypeScript strict, Svelte 5 runes, no `any`, explicit return types on exports, Drizzle query builder, `var(--*)` only in components
+- **File naming**: Components `PascalCase.vue`, modules `camelCase.ts`, schemas `camelCase.ts`, CSS `kebab-case.css`, tests `*.test.ts`, ADRs `NNN-kebab.md`
+- **Code style**: TypeScript strict, Vue 3 Composition API with `<script setup lang="ts">`, no `any`, explicit return types on exports, Drizzle query builder, `var(--*)` only in components, Nuxt conventions (auto-imports, file-based routing, Nitro server routes)
 - **Git**: Conventional commits (`feat(schema):`, `fix(auth):`, `test(editor):`), atomic commits, PRs with summary + test plan, squash merge
 - **Components**: Headless (structure + behavior, no visual opinions beyond tokens), `class` prop for external styling, keyboard navigable, aria labels
 

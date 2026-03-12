@@ -20,6 +20,8 @@ import { NuxtModule, ModuleDependencyMeta } from '@nuxt/schema'
    },
   }
   interface SharedPublicRuntimeConfig {
+   siteUrl: string,
+
    domain: string,
 
    siteName: string,

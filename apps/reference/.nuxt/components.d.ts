@@ -14,6 +14,15 @@ type HydrationStrategies = {
 type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 
 
+export const AuthorCard: typeof import("../components/AuthorCard.vue")['default']
+export const AuthorRow: typeof import("../components/AuthorRow.vue")['default']
+export const ContentCard: typeof import("../components/ContentCard.vue")['default']
+export const ContentTypeBadge: typeof import("../components/ContentTypeBadge.vue")['default']
+export const CpubEditor: typeof import("../components/CpubEditor.vue")['default']
+export const EditorBlockLibrary: typeof import("../components/EditorBlockLibrary.vue")['default']
+export const EditorPropertiesPanel: typeof import("../components/EditorPropertiesPanel.vue")['default']
+export const EditorToolbar: typeof import("../components/EditorToolbar.vue")['default']
+export const EngagementBar: typeof import("../components/EngagementBar.vue")['default']
 export const NuxtWelcome: typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/app/components/welcome.vue")['default']
 export const NuxtLayout: typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/app/components/nuxt-layout")['default']
 export const NuxtErrorBoundary: typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']
@@ -37,6 +46,15 @@ export const Head: typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parce
 export const Html: typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/head/runtime/components")['Html']
 export const Body: typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/head/runtime/components")['Body']
 export const NuxtIsland: typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/app/components/nuxt-island")['default']
+export const LazyAuthorCard: LazyComponent<typeof import("../components/AuthorCard.vue")['default']>
+export const LazyAuthorRow: LazyComponent<typeof import("../components/AuthorRow.vue")['default']>
+export const LazyContentCard: LazyComponent<typeof import("../components/ContentCard.vue")['default']>
+export const LazyContentTypeBadge: LazyComponent<typeof import("../components/ContentTypeBadge.vue")['default']>
+export const LazyCpubEditor: LazyComponent<typeof import("../components/CpubEditor.vue")['default']>
+export const LazyEditorBlockLibrary: LazyComponent<typeof import("../components/EditorBlockLibrary.vue")['default']>
+export const LazyEditorPropertiesPanel: LazyComponent<typeof import("../components/EditorPropertiesPanel.vue")['default']>
+export const LazyEditorToolbar: LazyComponent<typeof import("../components/EditorToolbar.vue")['default']>
+export const LazyEngagementBar: LazyComponent<typeof import("../components/EngagementBar.vue")['default']>
 export const LazyNuxtWelcome: LazyComponent<typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/app/components/welcome.vue")['default']>
 export const LazyNuxtLayout: LazyComponent<typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
 export const LazyNuxtErrorBoundary: LazyComponent<typeof import("../../../node_modules/.pnpm/nuxt@3.21.1_@parcel+watcher@2.5.6_@vue+compiler-sfc@3.5.30_cac@6.7.14_db0@0.3.4_drizzle_e8e72a41c8f7c29d2b6fa04784db8f7b/node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']>

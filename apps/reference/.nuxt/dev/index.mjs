@@ -657,6 +657,7 @@ const _inlineRuntimeConfig = {
     }
   },
   "public": {
+    "siteUrl": "http://localhost:3000",
     "domain": "localhost:3000",
     "siteName": "CommonPub",
     "siteDescription": "A CommonPub instance"
@@ -2048,7 +2049,7 @@ const _nIM2ZPTdIC3OYgBEIG9npK6swPk5YcsbEuMQOPPjAxg = (function(nitro) {
 
 const rootDir = "/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference";
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[],"style":[],"script":[],"noscript":[]};
+const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[{"rel":"stylesheet","href":"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css","crossorigin":"anonymous"}],"style":[],"script":[],"noscript":[]};
 
 const appRootTag = "div";
 
@@ -2149,22 +2150,7 @@ const plugins = [
 _z8kTwy5D8nWeZsb9oR6oxjttOPXEROGrBGSrlgcx6y0
 ];
 
-const assets = {
-  "/index.mjs": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"2a90a-2AYQVIL5P378PNCUU3JKH/pL9a0\"",
-    "mtime": "2026-03-12T01:26:44.654Z",
-    "size": 174346,
-    "path": "index.mjs"
-  },
-  "/index.mjs.map": {
-    "type": "application/json",
-    "etag": "\"8cfe8-G0y0E6R8sf6J+JkKuJWd15MNXRw\"",
-    "mtime": "2026-03-12T01:26:44.655Z",
-    "size": 577512,
-    "path": "index.mjs.map"
-  }
-};
+const assets = {};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
@@ -2283,6 +2269,7 @@ function useDB() {
 
 let authMiddleware = null;
 function getAuthMiddleware() {
+  var _a;
   if (authMiddleware) return authMiddleware;
   const config = useConfig();
   const db = useDB();
@@ -2291,7 +2278,7 @@ function getAuthMiddleware() {
     config,
     db,
     secret: runtimeConfig.authSecret || "dev-secret-change-me",
-    baseURL: `https://${config.instance.domain}`
+    baseURL: ((_a = runtimeConfig.public) == null ? void 0 : _a.siteUrl) || `https://${config.instance.domain}`
   });
   authMiddleware = createAuthMiddleware({ auth });
   return authMiddleware;

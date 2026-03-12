@@ -1,6 +1,8 @@
 # Routing Reference
 
-> All 68 routes organized by type: page loads, form actions, API endpoints, and federation endpoints.
+> All routes in the Nuxt 3 reference app, organized by type: page loads, server API routes, and federation endpoints.
+>
+> Routes use Nuxt file-based routing (`pages/` for views, `server/api/` and `server/routes/` for API endpoints). Form submissions use Nitro server routes.
 
 ---
 

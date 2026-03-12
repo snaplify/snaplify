@@ -106,7 +106,7 @@ Documentation sites were planned to support Mermaid diagram rendering during the
 
 **0 type errors, 71 warnings** (all benign).
 
-The 71 warnings are Svelte state reactivity warnings (`$state` rune references in component files). These do not affect functionality or type safety.
+The warnings are Vue compiler warnings in component files. These do not affect functionality or type safety.
 
 ---
 

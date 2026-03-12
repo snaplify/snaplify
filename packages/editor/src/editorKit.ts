@@ -19,6 +19,18 @@ import { CommonPubCodeBlock } from './extensions/code.js';
 import { CommonPubImage } from './extensions/image.js';
 import { CommonPubQuote } from './extensions/quote.js';
 import { CommonPubCallout } from './extensions/callout.js';
+import { CommonPubGallery } from './extensions/gallery.js';
+import { CommonPubVideo } from './extensions/video.js';
+import { CommonPubEmbed } from './extensions/embed.js';
+import { CommonPubMarkdown } from './extensions/markdown.js';
+import { CommonPubPartsList } from './extensions/partsList.js';
+import { CommonPubBuildStep } from './extensions/buildStep.js';
+import { CommonPubToolList } from './extensions/toolList.js';
+import { CommonPubDownloads } from './extensions/downloads.js';
+import { CommonPubQuiz } from './extensions/quiz.js';
+import { CommonPubInteractiveSlider } from './extensions/interactiveSlider.js';
+import { CommonPubCheckpoint } from './extensions/checkpoint.js';
+import { CommonPubMathNotation } from './extensions/mathNotation.js';
 import { blockTuplesToDoc, docToBlockTuples, buildEditorSchema } from './serialization.js';
 import type { BlockTuple } from './blocks/types.js';
 
@@ -61,6 +73,18 @@ export function createCommonPubEditor(options: CreateCommonPubEditorOptions = {}
     CommonPubImage,
     CommonPubQuote,
     CommonPubCallout,
+    CommonPubGallery,
+    CommonPubVideo,
+    CommonPubEmbed,
+    CommonPubMarkdown,
+    CommonPubPartsList,
+    CommonPubBuildStep,
+    CommonPubToolList,
+    CommonPubDownloads,
+    CommonPubQuiz,
+    CommonPubInteractiveSlider,
+    CommonPubCheckpoint,
+    CommonPubMathNotation,
     Bold,
     Italic,
     Code,

@@ -1,10 +1,10 @@
 # @commonpub/ui
 
-Headless Svelte 5 component library with CSS custom property theming.
+Headless Vue 3 component library with CSS custom property theming.
 
 ## Overview
 
-15 accessible, headless UI components built with Svelte 5 runes syntax. Components define structure and behavior only. All visual styling is controlled via CSS custom properties (`var(--*)`). Zero hardcoded colors or fonts.
+Accessible, headless UI components built with Vue 3 Composition API (`<script setup lang="ts">`). Components define structure and behavior only. All visual styling is controlled via CSS custom properties (`var(--*)`). Zero hardcoded colors or fonts.
 
 Includes 4 built-in theme CSS files and a theming API for runtime theme switching with inline token overrides.
 
@@ -37,29 +37,35 @@ pnpm add @commonpub/ui
 
 ## Usage
 
-```svelte
-<script>
-  import { Button, Input, Dialog, Tabs } from '@commonpub/ui';
+```vue
+<script setup lang="ts">
+import { Button, Input, Dialog, Tabs } from '@commonpub/ui';
+
+const name = ref('');
+const nameError = ref('');
+const showModal = ref(false);
 </script>
 
-<Button onclick={handleClick} variant="primary">
-  Save Project
-</Button>
+<template>
+  <Button @click="handleClick" variant="primary">
+    Save Project
+  </Button>
 
-<Input
-  label="Project Name"
-  bind:value={name}
-  error={nameError}
-/>
+  <Input
+    v-model="name"
+    label="Project Name"
+    :error="nameError"
+  />
 
-<Dialog bind:open={showModal} title="Confirm Delete">
-  <p>Are you sure you want to delete this project?</p>
-</Dialog>
+  <Dialog v-model:open="showModal" title="Confirm Delete">
+    <p>Are you sure you want to delete this project?</p>
+  </Dialog>
+</template>
 ```
 
 All components accept a `class` prop for external styling:
 
-```svelte
+```vue
 <Button class="my-custom-button">Click me</Button>
 ```
 
@@ -140,17 +146,17 @@ All components meet WCAG 2.1 AA:
 
 - **Headless**: Structure and behavior only, no visual opinions
 - **`class` prop**: Every component accepts `class` for external styling
-- **Callback props**: Events use callback props, not custom events
-- **Svelte 5 runes**: `$state`, `$derived`, `$props` syntax
+- **Vue 3 Composition API**: `<script setup lang="ts">` syntax
+- **Events**: Use Vue emit pattern
 
 ## Development
 
 ```bash
-pnpm build        # Build with svelte-package
-pnpm test         # Run 116 tests (including axe-core a11y)
-pnpm typecheck    # Type-check with svelte-check
+pnpm build        # Build with vite-plugin-vue
+pnpm test         # Run tests (including axe-core a11y)
+pnpm typecheck    # Type-check with vue-tsc
 ```
 
 ## Dependencies
 
-- `svelte` (peer): Svelte 5
+- `vue` (peer): Vue 3.4+

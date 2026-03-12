@@ -1,42 +1,43 @@
 # CommonPub Deployment Guide
 
-## Quick Start (Docker Compose)
+## Local Development
 
-The fastest way to run CommonPub in production:
+See [quickstart.md](quickstart.md) for the full local dev setup. TL;DR:
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/commonpub.git
-cd commonpub
-
-# Copy and configure environment
-cp deploy/.env.prod.example deploy/.env
-# Edit deploy/.env with your values (AUTH_SECRET, POSTGRES_PASSWORD, ORIGIN, etc.)
-
-# Start all services
-docker compose -f deploy/docker-compose.prod.yml up -d
-
-# Verify
-curl http://localhost:3000
+docker compose up -d        # Start Postgres, Redis, Meilisearch
+pnpm install && pnpm build  # Build all packages
+pnpm db:push                # Push schema to database
+pnpm dev:app                # Start Nuxt dev server → http://localhost:3000
 ```
+
+---
 
 ## Production Deployment Options
 
-### Option 1: Docker Compose on a VPS
+### Option 1: Single Droplet (Docker Compose)
 
 Best for: single-server deployments, small-to-medium communities.
 
-1. **Provision a server** (Ubuntu 22.04+ recommended, 2GB+ RAM)
-2. **Run the setup script**:
+**Requirements**: Ubuntu 22.04+, 2GB+ RAM, Docker installed.
+
+1. **Run the setup script**:
    ```bash
-   curl -sSL https://raw.githubusercontent.com/your-org/commonpub/main/deploy/droplet-setup.sh | sudo bash
+   curl -sSL https://raw.githubusercontent.com/commonpub/commonpub/main/deploy/droplet-setup.sh | sudo bash
    ```
-3. **Deploy the application**:
+
+2. **Configure environment**:
    ```bash
    cd /opt/commonpub
-   # Copy your docker-compose.prod.yml and .env
-   sudo systemctl start commonpub
+   cp deploy/.env.prod.example deploy/.env
+   # Edit deploy/.env — set AUTH_SECRET, ORIGIN, POSTGRES_PASSWORD, etc.
    ```
+
+3. **Start all services**:
+   ```bash
+   docker compose -f deploy/docker-compose.prod.yml up -d
+   ```
+
 4. **Configure SSL**:
    ```bash
    sudo cp deploy/nginx.conf /etc/nginx/sites-available/commonpub
@@ -45,6 +46,10 @@ Best for: single-server deployments, small-to-medium communities.
    sudo certbot --nginx -d your-domain.com
    sudo systemctl reload nginx
    ```
+
+**Files**: `deploy/docker-compose.prod.yml`, `deploy/nginx.conf`, `deploy/droplet-setup.sh`
+
+---
 
 ### Option 2: DigitalOcean App Platform
 
@@ -62,19 +67,58 @@ Or via CLI:
 doctl apps create --spec deploy/app-spec.yaml
 ```
 
-### Option 3: Pre-built Docker Image
+**File**: `deploy/app-spec.yaml`
 
+---
+
+### Option 3: App Platform + Managed Supabase
+
+Best for: teams who want managed Postgres without self-hosting.
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Copy the connection string from Supabase → Settings → Database
+3. Deploy to App Platform as in Option 2, but set `DATABASE_URL` to your Supabase connection string
+4. Optionally run Redis on App Platform or use Upstash for managed Redis
+
+This gives you managed Postgres with automatic backups, connection pooling (via Supavisor), and a web dashboard — while still deploying the app via App Platform.
+
+**Note**: Set `DATABASE_URL` with `?sslmode=require` for Supabase connections.
+
+---
+
+### Option 4: Generic Docker
+
+Best for: any Docker-compatible host (AWS ECS, Fly.io, Railway, self-hosted k8s, etc.)
+
+**Build the image**:
 ```bash
-docker pull ghcr.io/your-org/commonpub:latest
+docker build -f deploy/Dockerfile -t commonpub .
+```
 
+**Run standalone**:
+```bash
 docker run -d \
   -p 3000:3000 \
-  -e DATABASE_URL=postgresql://... \
-  -e REDIS_URL=redis://... \
-  -e AUTH_SECRET=your-secret \
-  -e ORIGIN=https://your-domain.com \
-  ghcr.io/your-org/commonpub:latest
+  -e DATABASE_URL=postgresql://user:pass@host:5432/commonpub \
+  -e REDIS_URL=redis://host:6379 \
+  -e AUTH_SECRET=your-secret-min-32-chars \
+  -e NUXT_PUBLIC_SITE_URL=https://your-domain.com \
+  commonpub
 ```
+
+**Or use the production compose file** which includes Postgres, Redis, and Meilisearch:
+```bash
+docker compose -f deploy/docker-compose.prod.yml up -d
+```
+
+**Pre-built image** (when published):
+```bash
+docker pull ghcr.io/commonpub/commonpub:latest
+```
+
+**File**: `deploy/Dockerfile`
+
+---
 
 ## Environment Variables Reference
 
@@ -85,7 +129,7 @@ docker run -d \
 | `DATABASE_URL` | PostgreSQL connection string          | `postgresql://user:pass@host:5432/db` |
 | `REDIS_URL`    | Redis connection string               | `redis://host:6379`                   |
 | `AUTH_SECRET`  | Session signing secret (min 32 chars) | `openssl rand -base64 32`             |
-| `ORIGIN`       | Public URL of the instance            | `https://your-domain.com`             |
+| `NUXT_PUBLIC_SITE_URL` | Public URL of the instance     | `https://your-domain.com`             |
 
 ### Instance Identity
 
@@ -177,28 +221,11 @@ docker run --rm -v commonpub_redis_data:/data -v /backups:/backups alpine tar cz
 cd /opt/commonpub
 
 # Pull latest image
-docker compose -f docker-compose.prod.yml pull app
+docker compose -f deploy/docker-compose.prod.yml pull app
 
 # Restart with new image
-docker compose -f docker-compose.prod.yml up -d app
+docker compose -f deploy/docker-compose.prod.yml up -d app
 
 # Verify health
 curl http://localhost:3000
 ```
-
-## Scaffolding a New Instance
-
-Use the `create-commonpub` CLI:
-
-```bash
-# Install
-cargo install create-commonpub
-
-# Interactive setup
-create-commonpub new my-community
-
-# With defaults
-create-commonpub new my-community --defaults
-```
-
-This generates a ready-to-deploy project with `.env`, `commonpub.config.ts`, `docker-compose.yml`, and `package.json`.
