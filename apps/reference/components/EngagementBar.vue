@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
-  contentId: string;
+  targetType: string;
+  targetId: string;
   likeCount: number;
   commentCount: number;
   isLiked?: boolean;
@@ -18,20 +19,36 @@ const bookmarked = ref(props.isBookmarked ?? false);
 const likes = ref(props.likeCount);
 
 async function toggleLike(): Promise<void> {
+  const prev = liked.value;
+  const prevCount = likes.value;
+  liked.value = !liked.value;
+  likes.value += liked.value ? 1 : -1;
+
   try {
-    await $fetch('/api/social/like', { method: 'POST', body: { contentId: props.contentId } });
-    liked.value = !liked.value;
-    likes.value += liked.value ? 1 : -1;
+    await $fetch('/api/social/like', {
+      method: 'POST',
+      body: { targetType: props.targetType, targetId: props.targetId },
+    });
     emit('like');
-  } catch { /* silent */ }
+  } catch {
+    liked.value = prev;
+    likes.value = prevCount;
+  }
 }
 
 async function toggleBookmark(): Promise<void> {
+  const prev = bookmarked.value;
+  bookmarked.value = !bookmarked.value;
+
   try {
-    await $fetch('/api/social/bookmark', { method: 'POST', body: { contentId: props.contentId } });
-    bookmarked.value = !bookmarked.value;
+    await $fetch('/api/social/bookmark', {
+      method: 'POST',
+      body: { targetType: props.targetType, targetId: props.targetId },
+    });
     emit('bookmark');
-  } catch { /* silent */ }
+  } catch {
+    bookmarked.value = prev;
+  }
 }
 </script>
 

@@ -118,7 +118,7 @@ const { data: trendingSearches } = await useFetch<TrendingSearch[]>('/api/search
 });
 
 interface CommunityListItem { id: string; name: string; slug: string; memberCount: number }
-const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[] }>('/api/communities', {
+const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[] }>('/api/hubs', {
   query: { limit: 3 },
   default: () => ({ items: [] }),
 });
@@ -375,7 +375,7 @@ const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[]
                 <i class="fa-solid fa-users"></i>
               </div>
               <div class="cpub-related-hub-info">
-                <NuxtLink :to="`/communities/${hub.slug}`" class="cpub-related-hub-name">{{ hub.name }}</NuxtLink>
+                <NuxtLink :to="`/hubs/${hub.slug}`" class="cpub-related-hub-name">{{ hub.name }}</NuxtLink>
                 <div class="cpub-related-hub-members">{{ hub.memberCount ?? 0 }} members</div>
               </div>
               <button class="cpub-btn-join-sm">

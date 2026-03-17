@@ -1,12 +1,14 @@
 import process from 'node:process';globalThis._importMeta_={url:import.meta.url,env:process.env};import { tmpdir } from 'node:os';
-import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, toWebRequest, sendWebResponse, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getMethod, getResponseStatusText } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/h3@1.15.6/node_modules/h3/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, toWebRequest, sendWebResponse, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, readMultipartFormData, getMethod, getResponseStatusText } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/h3@1.15.6/node_modules/h3/dist/index.mjs';
 import { Server } from 'node:http';
 import { resolve, dirname, join } from 'node:path';
 import nodeCrypto from 'node:crypto';
 import { parentPort, threadId } from 'node:worker_threads';
 import { escapeHtml } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/@vue+shared@3.5.30/node_modules/@vue/shared/dist/shared.cjs.js';
-import { shouldSkipRateLimit, checkRateLimit, RateLimitStore, generateNonce, getSecurityHeaders, listAuditLogs, removeContent, listReports, resolveReport, getInstanceSettings, setInstanceSetting, getPlatformStats, listUsers, deleteUser, updateUserRole, updateUserStatus, getCommunityBySlug, listBans, banUser, unbanUser, listInvites, createInvite, joinCommunity, leaveCommunity, listMembers, kickMember, changeRole, deletePost, listReplies, createReply, listPosts, createPost, shareContent, listCommunities, createCommunity, deleteContent, updateContent, publishContent, onContentPublished, incrementViewCount, getContentBySlug, listContent, createContent, getContestBySlug, updateContest, listContestEntries, submitContestEntry, judgeContestEntry, listContests, createContest, getDocsSiteBySlug, deleteDocsSite, updateDocsSite, getDocsNav, listDocsPages, createDocsPage, updateDocsPage, searchDocsPages, createDocsVersion, listDocsSites, createDocsSite, getPathBySlug, deletePath, updatePath, getLessonBySlug, markLessonComplete, enroll, createLesson, createModule, updateModule, publishPath, unenroll, getUserCertificates, getUserEnrollments, listPaths, createPath, getConversationMessages, markMessagesRead, sendMessage, listConversations, createConversation, deleteNotification, getUnreadCount, listNotifications, markNotificationRead, markAllNotificationsRead, toggleBookmark, listComments, createComment, deleteComment, isLiked, toggleLike, getUserByUsername, getUserContent, getVideoById, incrementVideoViewCount, listVideoCategories, listVideos, createVideo, getOrCreateActorKeypair, getFollowers, getFollowing } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/server/dist/index.js';
-import { createPostSchema, createCommunitySchema, updateContentSchema, createContentSchema, createCommentSchema } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/schema/dist/index.js';
+import { shouldSkipRateLimit, checkRateLimit, RateLimitStore, generateNonce, getSecurityHeaders, listAuditLogs, removeContent, listReports, resolveReport, getInstanceSettings, setInstanceSetting, getPlatformStats, listUsers, deleteUser, updateUserRole, updateUserStatus, deleteContent, updateContent, listContentProducts, addContentProduct, syncContentProducts, removeContentProduct, publishContent, onContentPublished, createReport, listContentVersions, incrementViewCount, getContentBySlug, listContent, createContent, getContestBySlug, deleteContest, updateContest, listContestEntries, submitContestEntry, judgeContestEntry, transitionContestStatus, listContests, createContest, getDocsSiteBySlug, deleteDocsSite, updateDocsSite, getDocsNav, listDocsPages, createDocsPage, updateDocsPage, searchDocsPages, createDocsVersion, listDocsSites, createDocsSite, createStorageFromEnv, validateUpload, isProcessableImage, processImage, generateStorageKey, getHubBySlug, listBans, banUser, unbanUser, listHubGallery, listInvites, createInvite, joinHub, leaveHub, listMembers, kickMember, changeRole, deletePost, listReplies, createReply, listPosts, createPost, listHubProducts, createProduct, shareContent, listHubs, createHub, getPathBySlug, deletePath, updatePath, getLessonBySlug, markLessonComplete, enroll, createLesson, createModule, updateModule, publishPath, unenroll, getUserCertificates, getUserEnrollments, listPaths, createPath, getConversationMessages, markMessagesRead, sendMessage, listConversations, createConversation, deleteNotification, getUnreadCount, listNotifications, markNotificationRead, markAllNotificationsRead, deleteProduct, updateProduct, getProductBySlug, listProductContent, searchProducts, getUserByUsername, updateUserProfile, toggleBookmark, listUserBookmarks, listComments, createComment, deleteComment, isLiked, toggleLike, getUserContent, unfollowUser, followUser, listFollowers, listFollowing, getVideoById, incrementVideoViewCount, listVideoCategories, listVideos, createVideo, getOrCreateActorKeypair, getFollowers, getFollowing } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/server/dist/index.js';
+import { resolveReportSchema, adminSettingSchema, adminUpdateRoleSchema, adminUpdateStatusSchema, updateContentSchema, addContentProductSchema, createReportSchema, createContentSchema, updateContestSchema, judgeEntrySchema, contestTransitionSchema, createContestSchema, updateDocsSiteSchema, createDocsPageSchema, updateDocsPageSchema, createDocsVersionSchema, createDocsSiteSchema, files, banUserSchema, createInviteSchema, changeRoleSchema, createReplySchema, createPostSchema, createProductSchema, createHubSchema, updateLearningPathSchema, createLessonSchema, createModuleSchema, updateModuleSchema, createLearningPathSchema, sendMessageSchema, createConversationSchema, updateProductSchema, updateProfileSchema, createCommentSchema, likeTargetTypeSchema, createVideoSchema, contentItems, users } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/schema/dist/index.js';
+import { z } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/zod@4.3.6/node_modules/zod/index.js';
+import { and, eq, desc } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/drizzle-orm@0.38.4_kysely@0.28.11_pg@8.20.0/node_modules/drizzle-orm/index.js';
 import { parseWebFingerResource, buildWebFingerResponse, processInboxActivity, buildNodeInfoResponse, generateOutboxCollection } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/protocol/dist/index.js';
 import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/vue-bundle-renderer@2.2.0/node_modules/vue-bundle-renderer/dist/runtime.mjs';
 import { parseURL, withoutBase, joinURL, getQuery, withQuery, withTrailingSlash, decodePath, withLeadingSlash, withoutTrailingSlash, joinRelativeURL } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/ufo@1.6.3/node_modules/ufo/dist/index.mjs';
@@ -51,18 +53,18 @@ for (const asset of serverAssets) {
   assets$1.mount(asset.baseName, unstorage_47drivers_47fs({ base: asset.dir, ignore: (asset?.ignore || []) }));
 }
 
-const storage = createStorage({});
+const storage$2 = createStorage({});
 
-storage.mount('/assets', assets$1);
+storage$2.mount('/assets', assets$1);
 
-storage.mount('root', unstorage_47drivers_47fs({"driver":"fs","readOnly":true,"base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference","watchOptions":{"ignored":[null]}}));
-storage.mount('src', unstorage_47drivers_47fs({"driver":"fs","readOnly":true,"base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server","watchOptions":{"ignored":[null]}}));
-storage.mount('build', unstorage_47drivers_47fs({"driver":"fs","readOnly":false,"base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/.nuxt"}));
-storage.mount('cache', unstorage_47drivers_47fs({"driver":"fs","readOnly":false,"base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/.nuxt/cache"}));
-storage.mount('data', unstorage_47drivers_47fs({"driver":"fs","base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/.data/kv"}));
+storage$2.mount('root', unstorage_47drivers_47fs({"driver":"fs","readOnly":true,"base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference","watchOptions":{"ignored":[null]}}));
+storage$2.mount('src', unstorage_47drivers_47fs({"driver":"fs","readOnly":true,"base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server","watchOptions":{"ignored":[null]}}));
+storage$2.mount('build', unstorage_47drivers_47fs({"driver":"fs","readOnly":false,"base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/.nuxt"}));
+storage$2.mount('cache', unstorage_47drivers_47fs({"driver":"fs","readOnly":false,"base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/.nuxt/cache"}));
+storage$2.mount('data', unstorage_47drivers_47fs({"driver":"fs","base":"/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/.data/kv"}));
 
 function useStorage(base = "") {
-  return base ? prefixStorage(storage, base) : storage;
+  return base ? prefixStorage(storage$2, base) : storage$2;
 }
 
 const Hasher = /* @__PURE__ */ (() => {
@@ -654,6 +656,11 @@ const _inlineRuntimeConfig = {
         "headers": {
           "cache-control": "public, max-age=1, immutable"
         }
+      },
+      "/uploads/**": {
+        "headers": {
+          "cache-control": "public, max-age=86400, immutable"
+        }
       }
     }
   },
@@ -664,7 +671,14 @@ const _inlineRuntimeConfig = {
     "siteDescription": "A CommonPub instance"
   },
   "databaseUrl": "",
-  "authSecret": "dev-secret-change-me"
+  "authSecret": "dev-secret-change-me",
+  "s3Bucket": "",
+  "s3Region": "us-east-1",
+  "s3Endpoint": "",
+  "s3AccessKey": "",
+  "s3SecretKey": "",
+  "s3PublicUrl": "",
+  "uploadDir": "./uploads"
 };
 const envOptions = {
   prefix: "NITRO_",
@@ -2151,29 +2165,14 @@ const plugins = [
 _z8kTwy5D8nWeZsb9oR6oxjttOPXEROGrBGSrlgcx6y0
 ];
 
-const assets = {
-  "/index.mjs": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"2e8b8-9D3We9c+X3JTSDT+KrRiHSos6eA\"",
-    "mtime": "2026-03-16T01:52:49.915Z",
-    "size": 190648,
-    "path": "index.mjs"
-  },
-  "/index.mjs.map": {
-    "type": "application/json",
-    "etag": "\"95138-WFbxiyHdqr2FmBydYanR/AafvUM\"",
-    "mtime": "2026-03-16T01:52:49.920Z",
-    "size": 610616,
-    "path": "index.mjs.map"
-  }
-};
+const assets = {};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
   return promises.readFile(resolve$1(serverDir, assets[id].path))
 }
 
-const publicAssetBases = {"/_nuxt/builds/meta/":{"maxAge":31536000},"/_nuxt/builds/":{"maxAge":1}};
+const publicAssetBases = {"/_nuxt/builds/meta/":{"maxAge":31536000},"/_nuxt/builds/":{"maxAge":1},"/uploads/":{"maxAge":86400}};
 
 function isPublicAssetURL(id = '') {
   if (assets[id]) {
@@ -2701,49 +2700,38 @@ async function getIslandContext(event) {
 }
 
 const _lazy_FHTzZS = () => Promise.resolve().then(function () { return audit_get$1; });
-const _lazy_8Q5Vj4 = () => Promise.resolve().then(function () { return _id__delete$9; });
+const _lazy_8Q5Vj4 = () => Promise.resolve().then(function () { return _id__delete$d; });
 const _lazy_2Cg2ym = () => Promise.resolve().then(function () { return reports_get$1; });
 const _lazy_JBIzUV = () => Promise.resolve().then(function () { return resolve_post$1; });
 const _lazy_few2l1 = () => Promise.resolve().then(function () { return settings_get$1; });
 const _lazy_kn45dY = () => Promise.resolve().then(function () { return settings_put$1; });
 const _lazy_k251rA = () => Promise.resolve().then(function () { return stats_get$3; });
 const _lazy_Wew5oZ = () => Promise.resolve().then(function () { return users_get$1; });
-const _lazy_AncTe6 = () => Promise.resolve().then(function () { return _id__delete$7; });
+const _lazy_AncTe6 = () => Promise.resolve().then(function () { return _id__delete$b; });
 const _lazy_rnRD3x = () => Promise.resolve().then(function () { return role_put$1; });
 const _lazy_mSN0U6 = () => Promise.resolve().then(function () { return status_put$1; });
-const _lazy_rdtCyC = () => Promise.resolve().then(function () { return _slug__get$7; });
-const _lazy_FXFCIP = () => Promise.resolve().then(function () { return bans_get$1; });
-const _lazy_76RHNH = () => Promise.resolve().then(function () { return bans_post$1; });
-const _lazy_XceibV = () => Promise.resolve().then(function () { return _userId__delete$3; });
-const _lazy_fH_iYK = () => Promise.resolve().then(function () { return invites_get$1; });
-const _lazy_WWo4X_ = () => Promise.resolve().then(function () { return invites_post$1; });
-const _lazy_69seWK = () => Promise.resolve().then(function () { return join_post$1; });
-const _lazy_2jYnWX = () => Promise.resolve().then(function () { return leave_post$1; });
-const _lazy_g_ykBy = () => Promise.resolve().then(function () { return members_get$1; });
-const _lazy_AQHBBL = () => Promise.resolve().then(function () { return _userId__delete$1; });
-const _lazy_HViDPq = () => Promise.resolve().then(function () { return _userId__put$1; });
-const _lazy_APnU2p = () => Promise.resolve().then(function () { return _postId__delete$1; });
-const _lazy_cArUZn = () => Promise.resolve().then(function () { return replies_get$1; });
-const _lazy_thmyQh = () => Promise.resolve().then(function () { return replies_post$1; });
-const _lazy_uvlwsD = () => Promise.resolve().then(function () { return index_get$h; });
-const _lazy_Xw9Ewa = () => Promise.resolve().then(function () { return index_post$f; });
-const _lazy_svxkl4 = () => Promise.resolve().then(function () { return share_post$1; });
-const _lazy_i0eoRo = () => Promise.resolve().then(function () { return index_get$f; });
-const _lazy_jYpP2c = () => Promise.resolve().then(function () { return index_post$d; });
-const _lazy_aketXu = () => Promise.resolve().then(function () { return _id__delete$5; });
-const _lazy_wWJcsH = () => Promise.resolve().then(function () { return _id__put$1; });
+const _lazy_aketXu = () => Promise.resolve().then(function () { return _id__delete$9; });
+const _lazy_wWJcsH = () => Promise.resolve().then(function () { return _id__put$3; });
+const _lazy_COvTvp = () => Promise.resolve().then(function () { return products_get$3; });
+const _lazy_DP4Ay7 = () => Promise.resolve().then(function () { return products_post$3; });
+const _lazy_UKloZE = () => Promise.resolve().then(function () { return products_put$1; });
+const _lazy_Cs2g1s = () => Promise.resolve().then(function () { return _productId__delete$1; });
 const _lazy_nvGW0A = () => Promise.resolve().then(function () { return publish_post$3; });
+const _lazy_znufi_ = () => Promise.resolve().then(function () { return report_post$1; });
+const _lazy_T1Or0I = () => Promise.resolve().then(function () { return versions_get$1; });
 const _lazy_5xwqzL = () => Promise.resolve().then(function () { return view_post$1; });
-const _lazy_vM03Hh = () => Promise.resolve().then(function () { return _slug__get$5; });
-const _lazy_x5oiU1 = () => Promise.resolve().then(function () { return index_get$d; });
-const _lazy_d1wpDk = () => Promise.resolve().then(function () { return index_post$b; });
-const _lazy_T6VRVr = () => Promise.resolve().then(function () { return _slug__get$3; });
+const _lazy_vM03Hh = () => Promise.resolve().then(function () { return _slug__get$9; });
+const _lazy_x5oiU1 = () => Promise.resolve().then(function () { return index_get$j; });
+const _lazy_d1wpDk = () => Promise.resolve().then(function () { return index_post$f; });
+const _lazy_7DWjCB = () => Promise.resolve().then(function () { return _slug__delete$3; });
+const _lazy_T6VRVr = () => Promise.resolve().then(function () { return _slug__get$7; });
 const _lazy_L6tGde = () => Promise.resolve().then(function () { return _slug__put$3; });
 const _lazy_aWSNzD = () => Promise.resolve().then(function () { return entries_get$1; });
 const _lazy_2Vbyzt = () => Promise.resolve().then(function () { return entries_post$1; });
 const _lazy_KvT54o = () => Promise.resolve().then(function () { return judge_post$1; });
-const _lazy_DECgZ5 = () => Promise.resolve().then(function () { return index_get$b; });
-const _lazy_XOr96X = () => Promise.resolve().then(function () { return index_post$9; });
+const _lazy_Vtturf = () => Promise.resolve().then(function () { return transition_post$1; });
+const _lazy_DECgZ5 = () => Promise.resolve().then(function () { return index_get$h; });
+const _lazy_XOr96X = () => Promise.resolve().then(function () { return index_post$d; });
 const _lazy_4b7WPd = () => Promise.resolve().then(function () { return _siteSlug__delete$1; });
 const _lazy_XjmqdF = () => Promise.resolve().then(function () { return _siteSlug__get$1; });
 const _lazy_HQRiJL = () => Promise.resolve().then(function () { return _siteSlug__put$1; });
@@ -2753,11 +2741,37 @@ const _lazy_t6h8n4 = () => Promise.resolve().then(function () { return pages_pos
 const _lazy_uvwSIz = () => Promise.resolve().then(function () { return _pageId__put$1; });
 const _lazy_kwKJ8K = () => Promise.resolve().then(function () { return search_get$3; });
 const _lazy_9ZpYPh = () => Promise.resolve().then(function () { return versions_post$1; });
-const _lazy_qgBaDe = () => Promise.resolve().then(function () { return index_get$9; });
-const _lazy_d2gy1E = () => Promise.resolve().then(function () { return index_post$7; });
+const _lazy_qgBaDe = () => Promise.resolve().then(function () { return index_get$f; });
+const _lazy_d2gy1E = () => Promise.resolve().then(function () { return index_post$b; });
+const _lazy_Tn0njh = () => Promise.resolve().then(function () { return _id__delete$7; });
+const _lazy_TvYAs4 = () => Promise.resolve().then(function () { return mine_get$1; });
+const _lazy_inDOPa = () => Promise.resolve().then(function () { return upload_post$1; });
 const _lazy_Z1yxwm = () => Promise.resolve().then(function () { return health_get$1; });
+const _lazy_3eNNxC = () => Promise.resolve().then(function () { return _slug__get$5; });
+const _lazy_94SzjH = () => Promise.resolve().then(function () { return bans_get$1; });
+const _lazy_akeW7s = () => Promise.resolve().then(function () { return bans_post$1; });
+const _lazy_rpBiY6 = () => Promise.resolve().then(function () { return _userId__delete$3; });
+const _lazy_rJWQ_1 = () => Promise.resolve().then(function () { return feed_xml_get$3; });
+const _lazy_dnkjHg = () => Promise.resolve().then(function () { return gallery_get$1; });
+const _lazy_PBg7X_ = () => Promise.resolve().then(function () { return invites_get$1; });
+const _lazy_gFIK_y = () => Promise.resolve().then(function () { return invites_post$1; });
+const _lazy_UuI17m = () => Promise.resolve().then(function () { return join_post$1; });
+const _lazy_qT8pYp = () => Promise.resolve().then(function () { return leave_post$1; });
+const _lazy_seQlVL = () => Promise.resolve().then(function () { return members_get$1; });
+const _lazy_P6keue = () => Promise.resolve().then(function () { return _userId__delete$1; });
+const _lazy_vs5UWR = () => Promise.resolve().then(function () { return _userId__put$1; });
+const _lazy_rmgBTp = () => Promise.resolve().then(function () { return _postId__delete$1; });
+const _lazy_Uwo27T = () => Promise.resolve().then(function () { return replies_get$1; });
+const _lazy_9JGU7y = () => Promise.resolve().then(function () { return replies_post$1; });
+const _lazy_HAAigD = () => Promise.resolve().then(function () { return index_get$d; });
+const _lazy_N4SgUN = () => Promise.resolve().then(function () { return index_post$9; });
+const _lazy_gBbnz3 = () => Promise.resolve().then(function () { return products_get$1; });
+const _lazy_RWRJ2C = () => Promise.resolve().then(function () { return products_post$1; });
+const _lazy_7kuZa4 = () => Promise.resolve().then(function () { return share_post$1; });
+const _lazy_CTfFMz = () => Promise.resolve().then(function () { return index_get$b; });
+const _lazy_ScB6nf = () => Promise.resolve().then(function () { return index_post$7; });
 const _lazy_VFAI03 = () => Promise.resolve().then(function () { return _slug__delete$1; });
-const _lazy_PrU_Zc = () => Promise.resolve().then(function () { return _slug__get$1; });
+const _lazy_PrU_Zc = () => Promise.resolve().then(function () { return _slug__get$3; });
 const _lazy_Ub23ql = () => Promise.resolve().then(function () { return _slug__put$1; });
 const _lazy_1zJXwa = () => Promise.resolve().then(function () { return _lessonSlug__get$1; });
 const _lazy_OyZPOn = () => Promise.resolve().then(function () { return complete_post$1; });
@@ -2769,18 +2783,27 @@ const _lazy_d1qV60 = () => Promise.resolve().then(function () { return publish_p
 const _lazy_QicDxD = () => Promise.resolve().then(function () { return unenroll_post$1; });
 const _lazy_R_OGzY = () => Promise.resolve().then(function () { return certificates_get$1; });
 const _lazy_KegwTJ = () => Promise.resolve().then(function () { return enrollments_get$1; });
-const _lazy_y83Zc3 = () => Promise.resolve().then(function () { return index_get$7; });
+const _lazy_y83Zc3 = () => Promise.resolve().then(function () { return index_get$9; });
 const _lazy_QJK2we = () => Promise.resolve().then(function () { return index_post$5; });
 const _lazy_MJWCL7 = () => Promise.resolve().then(function () { return _conversationId__get$1; });
 const _lazy_bdtAxU = () => Promise.resolve().then(function () { return _conversationId__post$1; });
-const _lazy_hB4OMw = () => Promise.resolve().then(function () { return index_get$5; });
+const _lazy_hB4OMw = () => Promise.resolve().then(function () { return index_get$7; });
 const _lazy_FyqIjH = () => Promise.resolve().then(function () { return index_post$3; });
-const _lazy_vP0SVO = () => Promise.resolve().then(function () { return _id__delete$3; });
+const _lazy_vP0SVO = () => Promise.resolve().then(function () { return _id__delete$5; });
 const _lazy_25WxSl = () => Promise.resolve().then(function () { return count_get$1; });
-const _lazy_jIohCW = () => Promise.resolve().then(function () { return index_get$3; });
+const _lazy_jIohCW = () => Promise.resolve().then(function () { return index_get$5; });
 const _lazy_RPIH2G = () => Promise.resolve().then(function () { return read_post$1; });
+const _lazy_P11qqE = () => Promise.resolve().then(function () { return stream_get$1; });
+const _lazy_wrgU9F = () => Promise.resolve().then(function () { return _id__delete$3; });
+const _lazy_w5HYlr = () => Promise.resolve().then(function () { return _id__put$1; });
+const _lazy_HGXzkB = () => Promise.resolve().then(function () { return _slug__get$1; });
+const _lazy_17IMid = () => Promise.resolve().then(function () { return content_get$3; });
+const _lazy_p6cYPD = () => Promise.resolve().then(function () { return index_get$3; });
+const _lazy_hKnS3T = () => Promise.resolve().then(function () { return profile_get$1; });
+const _lazy_MjHZeY = () => Promise.resolve().then(function () { return profile_put$1; });
 const _lazy_Jk2q9O = () => Promise.resolve().then(function () { return search_get$1; });
 const _lazy_RZKWJe = () => Promise.resolve().then(function () { return bookmark_post$1; });
+const _lazy_NrrwiT = () => Promise.resolve().then(function () { return bookmarks_get$1; });
 const _lazy_zTkwK8 = () => Promise.resolve().then(function () { return comments_get$1; });
 const _lazy_j5WvfR = () => Promise.resolve().then(function () { return comments_post$1; });
 const _lazy_BFGQGB = () => Promise.resolve().then(function () { return _id__delete$1; });
@@ -2789,14 +2812,22 @@ const _lazy__1MI6F = () => Promise.resolve().then(function () { return like_post
 const _lazy_9ZZaRw = () => Promise.resolve().then(function () { return stats_get$1; });
 const _lazy_H03rTy = () => Promise.resolve().then(function () { return _username__get$1; });
 const _lazy_04EajR = () => Promise.resolve().then(function () { return content_get$1; });
+const _lazy_cfktEX = () => Promise.resolve().then(function () { return feed_xml_get$1; });
+const _lazy_0U6x7e = () => Promise.resolve().then(function () { return follow_delete$1; });
+const _lazy_a9Dse6 = () => Promise.resolve().then(function () { return follow_post$1; });
+const _lazy_v_BuVH = () => Promise.resolve().then(function () { return followers_get$1; });
+const _lazy_E79g5r = () => Promise.resolve().then(function () { return following_get$1; });
 const _lazy_41m87_ = () => Promise.resolve().then(function () { return _id__get$1; });
 const _lazy_TNPVVm = () => Promise.resolve().then(function () { return categories_get$1; });
 const _lazy_SM0QnG = () => Promise.resolve().then(function () { return index_get$1; });
 const _lazy_V2m1Rm = () => Promise.resolve().then(function () { return index_post$1; });
 const _lazy_UfE1f_ = () => Promise.resolve().then(function () { return nodeinfo$1; });
 const _lazy_SYVK3d = () => Promise.resolve().then(function () { return webfinger$1; });
+const _lazy_WOZO80 = () => Promise.resolve().then(function () { return feed_xml$1; });
 const _lazy_JOhz5F = () => Promise.resolve().then(function () { return inbox$3; });
 const _lazy_5I7kwM = () => Promise.resolve().then(function () { return _2_1$1; });
+const _lazy_DIF4QD = () => Promise.resolve().then(function () { return robots_txt$1; });
+const _lazy_nTomkI = () => Promise.resolve().then(function () { return sitemap_xml$1; });
 const _lazy_8dZriH = () => Promise.resolve().then(function () { return _username_$1; });
 const _lazy_iUTKuI = () => Promise.resolve().then(function () { return followers$1; });
 const _lazy_8IfJxf = () => Promise.resolve().then(function () { return following$1; });
@@ -2819,37 +2850,26 @@ const handlers = [
   { route: '/api/admin/users/:id', handler: _lazy_AncTe6, lazy: true, middleware: false, method: "delete" },
   { route: '/api/admin/users/:id/role', handler: _lazy_rnRD3x, lazy: true, middleware: false, method: "put" },
   { route: '/api/admin/users/:id/status', handler: _lazy_mSN0U6, lazy: true, middleware: false, method: "put" },
-  { route: '/api/communities/:slug', handler: _lazy_rdtCyC, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/bans', handler: _lazy_FXFCIP, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/bans', handler: _lazy_76RHNH, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/bans/:userId', handler: _lazy_XceibV, lazy: true, middleware: false, method: "delete" },
-  { route: '/api/communities/:slug/invites', handler: _lazy_fH_iYK, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/invites', handler: _lazy_WWo4X_, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/join', handler: _lazy_69seWK, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/leave', handler: _lazy_2jYnWX, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/members', handler: _lazy_g_ykBy, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/members/:userId', handler: _lazy_AQHBBL, lazy: true, middleware: false, method: "delete" },
-  { route: '/api/communities/:slug/members/:userId', handler: _lazy_HViDPq, lazy: true, middleware: false, method: "put" },
-  { route: '/api/communities/:slug/posts/:postId', handler: _lazy_APnU2p, lazy: true, middleware: false, method: "delete" },
-  { route: '/api/communities/:slug/posts/:postId/replies', handler: _lazy_cArUZn, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/posts/:postId/replies', handler: _lazy_thmyQh, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/posts', handler: _lazy_uvlwsD, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/posts', handler: _lazy_Xw9Ewa, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/share', handler: _lazy_svxkl4, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities', handler: _lazy_i0eoRo, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities', handler: _lazy_jYpP2c, lazy: true, middleware: false, method: "post" },
   { route: '/api/content/:id', handler: _lazy_aketXu, lazy: true, middleware: false, method: "delete" },
   { route: '/api/content/:id', handler: _lazy_wWJcsH, lazy: true, middleware: false, method: "put" },
+  { route: '/api/content/:id/products', handler: _lazy_COvTvp, lazy: true, middleware: false, method: "get" },
+  { route: '/api/content/:id/products', handler: _lazy_DP4Ay7, lazy: true, middleware: false, method: "post" },
+  { route: '/api/content/:id/products', handler: _lazy_UKloZE, lazy: true, middleware: false, method: "put" },
+  { route: '/api/content/:id/products/:productId', handler: _lazy_Cs2g1s, lazy: true, middleware: false, method: "delete" },
   { route: '/api/content/:id/publish', handler: _lazy_nvGW0A, lazy: true, middleware: false, method: "post" },
+  { route: '/api/content/:id/report', handler: _lazy_znufi_, lazy: true, middleware: false, method: "post" },
+  { route: '/api/content/:id/versions', handler: _lazy_T1Or0I, lazy: true, middleware: false, method: "get" },
   { route: '/api/content/:id/view', handler: _lazy_5xwqzL, lazy: true, middleware: false, method: "post" },
   { route: '/api/content/:slug', handler: _lazy_vM03Hh, lazy: true, middleware: false, method: "get" },
   { route: '/api/content', handler: _lazy_x5oiU1, lazy: true, middleware: false, method: "get" },
   { route: '/api/content', handler: _lazy_d1wpDk, lazy: true, middleware: false, method: "post" },
+  { route: '/api/contests/:slug', handler: _lazy_7DWjCB, lazy: true, middleware: false, method: "delete" },
   { route: '/api/contests/:slug', handler: _lazy_T6VRVr, lazy: true, middleware: false, method: "get" },
   { route: '/api/contests/:slug', handler: _lazy_L6tGde, lazy: true, middleware: false, method: "put" },
   { route: '/api/contests/:slug/entries', handler: _lazy_aWSNzD, lazy: true, middleware: false, method: "get" },
   { route: '/api/contests/:slug/entries', handler: _lazy_2Vbyzt, lazy: true, middleware: false, method: "post" },
   { route: '/api/contests/:slug/judge', handler: _lazy_KvT54o, lazy: true, middleware: false, method: "post" },
+  { route: '/api/contests/:slug/transition', handler: _lazy_Vtturf, lazy: true, middleware: false, method: "post" },
   { route: '/api/contests', handler: _lazy_DECgZ5, lazy: true, middleware: false, method: "get" },
   { route: '/api/contests', handler: _lazy_XOr96X, lazy: true, middleware: false, method: "post" },
   { route: '/api/docs/:siteSlug', handler: _lazy_4b7WPd, lazy: true, middleware: false, method: "delete" },
@@ -2863,7 +2883,33 @@ const handlers = [
   { route: '/api/docs/:siteSlug/versions', handler: _lazy_9ZpYPh, lazy: true, middleware: false, method: "post" },
   { route: '/api/docs', handler: _lazy_qgBaDe, lazy: true, middleware: false, method: "get" },
   { route: '/api/docs', handler: _lazy_d2gy1E, lazy: true, middleware: false, method: "post" },
+  { route: '/api/files/:id', handler: _lazy_Tn0njh, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/files/mine', handler: _lazy_TvYAs4, lazy: true, middleware: false, method: "get" },
+  { route: '/api/files/upload', handler: _lazy_inDOPa, lazy: true, middleware: false, method: "post" },
   { route: '/api/health', handler: _lazy_Z1yxwm, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug', handler: _lazy_3eNNxC, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/bans', handler: _lazy_94SzjH, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/bans', handler: _lazy_akeW7s, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/bans/:userId', handler: _lazy_rpBiY6, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/hubs/:slug/feed.xml', handler: _lazy_rJWQ_1, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/gallery', handler: _lazy_dnkjHg, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/invites', handler: _lazy_PBg7X_, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/invites', handler: _lazy_gFIK_y, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/join', handler: _lazy_UuI17m, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/leave', handler: _lazy_qT8pYp, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/members', handler: _lazy_seQlVL, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/members/:userId', handler: _lazy_P6keue, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/hubs/:slug/members/:userId', handler: _lazy_vs5UWR, lazy: true, middleware: false, method: "put" },
+  { route: '/api/hubs/:slug/posts/:postId', handler: _lazy_rmgBTp, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/hubs/:slug/posts/:postId/replies', handler: _lazy_Uwo27T, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/posts/:postId/replies', handler: _lazy_9JGU7y, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/posts', handler: _lazy_HAAigD, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/posts', handler: _lazy_N4SgUN, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/products', handler: _lazy_gBbnz3, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/products', handler: _lazy_RWRJ2C, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/share', handler: _lazy_7kuZa4, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs', handler: _lazy_CTfFMz, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs', handler: _lazy_ScB6nf, lazy: true, middleware: false, method: "post" },
   { route: '/api/learn/:slug', handler: _lazy_VFAI03, lazy: true, middleware: false, method: "delete" },
   { route: '/api/learn/:slug', handler: _lazy_PrU_Zc, lazy: true, middleware: false, method: "get" },
   { route: '/api/learn/:slug', handler: _lazy_Ub23ql, lazy: true, middleware: false, method: "put" },
@@ -2887,8 +2933,17 @@ const handlers = [
   { route: '/api/notifications/count', handler: _lazy_25WxSl, lazy: true, middleware: false, method: "get" },
   { route: '/api/notifications', handler: _lazy_jIohCW, lazy: true, middleware: false, method: "get" },
   { route: '/api/notifications/read', handler: _lazy_RPIH2G, lazy: true, middleware: false, method: "post" },
+  { route: '/api/notifications/stream', handler: _lazy_P11qqE, lazy: true, middleware: false, method: "get" },
+  { route: '/api/products/:id', handler: _lazy_wrgU9F, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/products/:id', handler: _lazy_w5HYlr, lazy: true, middleware: false, method: "put" },
+  { route: '/api/products/:slug', handler: _lazy_HGXzkB, lazy: true, middleware: false, method: "get" },
+  { route: '/api/products/:slug/content', handler: _lazy_17IMid, lazy: true, middleware: false, method: "get" },
+  { route: '/api/products', handler: _lazy_p6cYPD, lazy: true, middleware: false, method: "get" },
+  { route: '/api/profile', handler: _lazy_hKnS3T, lazy: true, middleware: false, method: "get" },
+  { route: '/api/profile', handler: _lazy_MjHZeY, lazy: true, middleware: false, method: "put" },
   { route: '/api/search', handler: _lazy_Jk2q9O, lazy: true, middleware: false, method: "get" },
   { route: '/api/social/bookmark', handler: _lazy_RZKWJe, lazy: true, middleware: false, method: "post" },
+  { route: '/api/social/bookmarks', handler: _lazy_NrrwiT, lazy: true, middleware: false, method: "get" },
   { route: '/api/social/comments', handler: _lazy_zTkwK8, lazy: true, middleware: false, method: "get" },
   { route: '/api/social/comments', handler: _lazy_j5WvfR, lazy: true, middleware: false, method: "post" },
   { route: '/api/social/comments/:id', handler: _lazy_BFGQGB, lazy: true, middleware: false, method: "delete" },
@@ -2897,14 +2952,22 @@ const handlers = [
   { route: '/api/stats', handler: _lazy_9ZZaRw, lazy: true, middleware: false, method: "get" },
   { route: '/api/users/:username', handler: _lazy_H03rTy, lazy: true, middleware: false, method: "get" },
   { route: '/api/users/:username/content', handler: _lazy_04EajR, lazy: true, middleware: false, method: "get" },
+  { route: '/api/users/:username/feed.xml', handler: _lazy_cfktEX, lazy: true, middleware: false, method: "get" },
+  { route: '/api/users/:username/follow', handler: _lazy_0U6x7e, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/users/:username/follow', handler: _lazy_a9Dse6, lazy: true, middleware: false, method: "post" },
+  { route: '/api/users/:username/followers', handler: _lazy_v_BuVH, lazy: true, middleware: false, method: "get" },
+  { route: '/api/users/:username/following', handler: _lazy_E79g5r, lazy: true, middleware: false, method: "get" },
   { route: '/api/videos/:id', handler: _lazy_41m87_, lazy: true, middleware: false, method: "get" },
   { route: '/api/videos/categories', handler: _lazy_TNPVVm, lazy: true, middleware: false, method: "get" },
   { route: '/api/videos', handler: _lazy_SM0QnG, lazy: true, middleware: false, method: "get" },
   { route: '/api/videos', handler: _lazy_V2m1Rm, lazy: true, middleware: false, method: "post" },
   { route: '/.well-known/nodeinfo', handler: _lazy_UfE1f_, lazy: true, middleware: false, method: undefined },
   { route: '/.well-known/webfinger', handler: _lazy_SYVK3d, lazy: true, middleware: false, method: undefined },
+  { route: '/feed.xml', handler: _lazy_WOZO80, lazy: true, middleware: false, method: undefined },
   { route: '/inbox', handler: _lazy_JOhz5F, lazy: true, middleware: false, method: undefined },
   { route: '/nodeinfo/2.1', handler: _lazy_5I7kwM, lazy: true, middleware: false, method: undefined },
+  { route: '/robots.txt', handler: _lazy_DIF4QD, lazy: true, middleware: false, method: undefined },
+  { route: '/sitemap.xml', handler: _lazy_nTomkI, lazy: true, middleware: false, method: undefined },
   { route: '/users/:username', handler: _lazy_8dZriH, lazy: true, middleware: false, method: undefined },
   { route: '/users/:username/followers', handler: _lazy_iUTKuI, lazy: true, middleware: false, method: undefined },
   { route: '/users/:username/following', handler: _lazy_8IfJxf, lazy: true, middleware: false, method: undefined },
@@ -3287,16 +3350,16 @@ const audit_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: audit_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _id__delete$8 = defineEventHandler(async (event) => {
+const _id__delete$c = defineEventHandler(async (event) => {
   requireAdmin(event);
   const db = useDB();
   const id = getRouterParam(event, "id");
   return removeContent(db, id);
 });
 
-const _id__delete$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__delete$d = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__delete$8
+  default: _id__delete$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const reports_get = defineEventHandler(async (event) => {
@@ -3319,7 +3382,15 @@ const resolve_post = defineEventHandler(async (event) => {
   const db = useDB();
   const id = getRouterParam(event, "id");
   const body = await readBody(event);
-  return resolveReport(db, id, admin.id, body.resolution);
+  const parsed = resolveReportSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return resolveReport(db, id, admin.id, parsed.data.resolution);
 });
 
 const resolve_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3342,7 +3413,15 @@ const settings_put = defineEventHandler(async (event) => {
   requireAdmin(event);
   const db = useDB();
   const body = await readBody(event);
-  return setInstanceSetting(db, body.key, body.value);
+  const parsed = adminSettingSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return setInstanceSetting(db, parsed.data.key, parsed.data.value);
 });
 
 const settings_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3377,16 +3456,16 @@ const users_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: users_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _id__delete$6 = defineEventHandler(async (event) => {
+const _id__delete$a = defineEventHandler(async (event) => {
   requireAdmin(event);
   const db = useDB();
   const id = getRouterParam(event, "id");
   return deleteUser(db, id);
 });
 
-const _id__delete$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__delete$b = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__delete$6
+  default: _id__delete$a
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const role_put = defineEventHandler(async (event) => {
@@ -3394,7 +3473,15 @@ const role_put = defineEventHandler(async (event) => {
   const db = useDB();
   const id = getRouterParam(event, "id");
   const body = await readBody(event);
-  return updateUserRole(db, id, body.role);
+  const parsed = adminUpdateRoleSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return updateUserRole(db, id, parsed.data.role);
 });
 
 const role_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3407,7 +3494,15 @@ const status_put = defineEventHandler(async (event) => {
   const db = useDB();
   const id = getRouterParam(event, "id");
   const body = await readBody(event);
-  return updateUserStatus(db, id, body.status);
+  const parsed = adminUpdateStatusSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return updateUserStatus(db, id, parsed.data.status);
 });
 
 const status_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3415,324 +3510,7 @@ const status_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
   default: status_put
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _slug__get$6 = defineEventHandler(async (event) => {
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const user = getOptionalUser(event);
-  const community = await getCommunityBySlug(db, slug, user == null ? void 0 : user.id);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return community;
-});
-
-const _slug__get$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: _slug__get$6
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const bans_get = defineEventHandler(async (event) => {
-  requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return listBans(db, community.id);
-});
-
-const bans_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: bans_get
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const bans_post = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return banUser(db, user.id, community.id, body.userId, body.reason);
-});
-
-const bans_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: bans_post
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const _userId__delete$2 = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const userId = getRouterParam(event, "userId");
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return unbanUser(db, user.id, community.id, userId);
-});
-
-const _userId__delete$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: _userId__delete$2
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const invites_get = defineEventHandler(async (event) => {
-  requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return listInvites(db, community.id);
-});
-
-const invites_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: invites_get
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const invites_post = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return createInvite(db, user.id, community.id, body.maxUses, body.expiresAt);
-});
-
-const invites_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: invites_post
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const join_post = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return joinCommunity(db, user.id, community.id);
-});
-
-const join_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: join_post
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const leave_post = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return leaveCommunity(db, user.id, community.id);
-});
-
-const leave_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: leave_post
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const members_get = defineEventHandler(async (event) => {
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return listMembers(db, community.id);
-});
-
-const members_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: members_get
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const _userId__delete = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const userId = getRouterParam(event, "userId");
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return kickMember(db, user.id, community.id, userId);
-});
-
-const _userId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: _userId__delete
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const _userId__put = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const userId = getRouterParam(event, "userId");
-  const body = await readBody(event);
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return changeRole(db, user.id, community.id, userId, body.role);
-});
-
-const _userId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: _userId__put
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const _postId__delete = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const postId = getRouterParam(event, "postId");
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return deletePost(db, postId, user.id, community.id);
-});
-
-const _postId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: _postId__delete
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const replies_get = defineEventHandler(async (event) => {
-  const db = useDB();
-  const postId = getRouterParam(event, "postId");
-  return listReplies(db, postId);
-});
-
-const replies_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: replies_get
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const replies_post = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const postId = getRouterParam(event, "postId");
-  const body = await readBody(event);
-  return createReply(db, user.id, { postId, content: body.content, parentId: body.parentId });
-});
-
-const replies_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: replies_post
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const index_get$g = defineEventHandler(async (event) => {
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const query = getQuery$1(event);
-  return listPosts(db, {
-    communityId: slug,
-    type: query.type,
-    limit: query.limit ? Number(query.limit) : void 0,
-    offset: query.offset ? Number(query.offset) : void 0
-  });
-});
-
-const index_get$h = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: index_get$g
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const index_post$e = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  const parsed = createPostSchema.safeParse({ communityId: community.id, ...body });
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createPost(db, user.id, { communityId: community.id, ...body });
-});
-
-const index_post$f = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: index_post$e
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const share_post = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const community = await getCommunityBySlug(db, slug);
-  if (!community) {
-    throw createError({ statusCode: 404, statusMessage: "Community not found" });
-  }
-  return shareContent(db, user.id, community.id, body.contentId);
-});
-
-const share_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: share_post
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const index_get$e = defineEventHandler(async (event) => {
-  const db = useDB();
-  const query = getQuery$1(event);
-  return listCommunities(db, {
-    search: query.search,
-    joinPolicy: query.joinPolicy,
-    limit: query.limit ? Number(query.limit) : void 0,
-    offset: query.offset ? Number(query.offset) : void 0
-  });
-});
-
-const index_get$f = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: index_get$e
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const index_post$c = defineEventHandler(async (event) => {
-  const user = requireAuth(event);
-  const db = useDB();
-  const body = await readBody(event);
-  const parsed = createCommunitySchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createCommunity(db, user.id, body);
-});
-
-const index_post$d = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: index_post$c
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const _id__delete$4 = defineEventHandler(async (event) => {
+const _id__delete$8 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const id = getRouterParam(event, "id");
@@ -3743,12 +3521,12 @@ const _id__delete$4 = defineEventHandler(async (event) => {
   return { success: true };
 });
 
-const _id__delete$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__delete$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__delete$4
+  default: _id__delete$8
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _id__put = defineEventHandler(async (event) => {
+const _id__put$2 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const id = getRouterParam(event, "id");
@@ -3768,9 +3546,86 @@ const _id__put = defineEventHandler(async (event) => {
   return content;
 });
 
-const _id__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__put$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__put
+  default: _id__put$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const products_get$2 = defineEventHandler(async (event) => {
+  const db = useDB();
+  const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
+  }
+  return listContentProducts(db, id);
+});
+
+const products_get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: products_get$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const products_post$2 = defineEventHandler(async (event) => {
+  const db = useDB();
+  requireAuth(event);
+  const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
+  }
+  const body = await readBody(event);
+  const parsed = addContentProductSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
+  }
+  const result = await addContentProduct(db, id, parsed.data);
+  if (!result) {
+    throw createError({ statusCode: 404, statusMessage: "Product not found or already linked" });
+  }
+  return result;
+});
+
+const products_post$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: products_post$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const products_put = defineEventHandler(async (event) => {
+  const db = useDB();
+  requireAuth(event);
+  const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
+  }
+  const body = await readBody(event);
+  if (!Array.isArray(body == null ? void 0 : body.items)) {
+    throw createError({ statusCode: 400, statusMessage: "items array is required" });
+  }
+  return syncContentProducts(db, id, body.items);
+});
+
+const products_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: products_put
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _productId__delete = defineEventHandler(async (event) => {
+  const db = useDB();
+  requireAuth(event);
+  const id = getRouterParam(event, "id");
+  const productId = getRouterParam(event, "productId");
+  if (!id || !productId) {
+    throw createError({ statusCode: 400, statusMessage: "Content ID and Product ID are required" });
+  }
+  const removed = await removeContentProduct(db, id, productId);
+  if (!removed) {
+    throw createError({ statusCode: 404, statusMessage: "Product link not found" });
+  }
+  return { removed: true };
+});
+
+const _productId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _productId__delete
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const publish_post$2 = defineEventHandler(async (event) => {
@@ -3791,6 +3646,40 @@ const publish_post$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
   default: publish_post$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const report_post = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
+  }
+  const body = await readBody(event);
+  const parsed = createReportSchema.safeParse({ ...body, targetId: id });
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
+  }
+  return createReport(db, user.id, parsed.data);
+});
+
+const report_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: report_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const versions_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
+  }
+  return listContentVersions(db, id);
+});
+
+const versions_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: versions_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const view_post = defineEventHandler(async (event) => {
   const db = useDB();
   const id = getRouterParam(event, "id");
@@ -3803,7 +3692,7 @@ const view_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: view_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _slug__get$4 = defineEventHandler(async (event) => {
+const _slug__get$8 = defineEventHandler(async (event) => {
   const db = useDB();
   const slug = getRouterParam(event, "slug");
   const user = getOptionalUser(event);
@@ -3814,12 +3703,12 @@ const _slug__get$4 = defineEventHandler(async (event) => {
   return content;
 });
 
-const _slug__get$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _slug__get$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _slug__get$4
+  default: _slug__get$8
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_get$c = defineEventHandler(async (event) => {
+const index_get$i = defineEventHandler(async (event) => {
   var _a;
   const db = useDB();
   const query = getQuery$1(event);
@@ -3836,12 +3725,12 @@ const index_get$c = defineEventHandler(async (event) => {
   });
 });
 
-const index_get$d = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_get$j = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_get$c
+  default: index_get$i
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_post$a = defineEventHandler(async (event) => {
+const index_post$e = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
@@ -3856,12 +3745,35 @@ const index_post$a = defineEventHandler(async (event) => {
   return createContent(db, user.id, body);
 });
 
-const index_post$b = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_post$f = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_post$a
+  default: index_post$e
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _slug__get$2 = defineEventHandler(async (event) => {
+const _slug__delete$2 = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const slug = getRouterParam(event, "slug");
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: "Contest slug is required" });
+  }
+  const contest = await getContestBySlug(db, slug);
+  if (!contest) {
+    throw createError({ statusCode: 404, statusMessage: "Contest not found" });
+  }
+  const deleted = await deleteContest(db, contest.id, user.id);
+  if (!deleted) {
+    throw createError({ statusCode: 403, statusMessage: "Not authorized to delete this contest" });
+  }
+  return { deleted: true };
+});
+
+const _slug__delete$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _slug__delete$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _slug__get$6 = defineEventHandler(async (event) => {
   const db = useDB();
   const slug = getRouterParam(event, "slug");
   if (!slug) throw createError({ statusCode: 400, message: "Slug required" });
@@ -3870,18 +3782,28 @@ const _slug__get$2 = defineEventHandler(async (event) => {
   return contest;
 });
 
-const _slug__get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _slug__get$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _slug__get$2
+  default: _slug__get$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const _slug__put$2 = defineEventHandler(async (event) => {
-  requireAuth(event);
+  const user = requireAuth(event);
   const db = useDB();
   const slug = getRouterParam(event, "slug");
-  if (!slug) throw createError({ statusCode: 400, message: "Slug required" });
+  if (!slug) throw createError({ statusCode: 400, statusMessage: "Slug required" });
   const body = await readBody(event);
-  return updateContest(db, slug, body);
+  const parsed = updateContestSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  const result = await updateContest(db, slug, user.id, parsed.data);
+  if (!result) throw createError({ statusCode: 403, statusMessage: "Not authorized or contest not found" });
+  return result;
 });
 
 const _slug__put$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3903,15 +3825,26 @@ const entries_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
   default: entries_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const submitEntrySchema = z.object({
+  contentId: z.string().uuid()
+});
 const entries_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const slug = getRouterParam(event, "slug");
-  if (!slug) throw createError({ statusCode: 400, message: "Slug required" });
+  if (!slug) throw createError({ statusCode: 400, statusMessage: "Slug required" });
   const contest = await getContestBySlug(db, slug);
-  if (!contest) throw createError({ statusCode: 404, message: "Contest not found" });
+  if (!contest) throw createError({ statusCode: 404, statusMessage: "Contest not found" });
   const body = await readBody(event);
-  return submitContestEntry(db, contest.id, body.contentId, user.id);
+  const parsed = submitEntrySchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return submitContestEntry(db, contest.id, parsed.data.contentId, user.id);
 });
 
 const entries_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3920,10 +3853,18 @@ const entries_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const judge_post = defineEventHandler(async (event) => {
-  requireAuth(event);
+  const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  await judgeContestEntry(db, body.entryId, body.score, body.judgeId);
+  const parsed = judgeEntrySchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  await judgeContestEntry(db, parsed.data.entryId, parsed.data.score, user.id);
   return { success: true };
 });
 
@@ -3932,7 +3873,35 @@ const judge_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
   default: judge_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_get$a = defineEventHandler(async (event) => {
+const transition_post = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const slug = getRouterParam(event, "slug");
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: "Contest slug is required" });
+  }
+  const body = await readBody(event);
+  const parsed = contestTransitionSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
+  }
+  const contest = await getContestBySlug(db, slug);
+  if (!contest) {
+    throw createError({ statusCode: 404, statusMessage: "Contest not found" });
+  }
+  const result = await transitionContestStatus(db, contest.id, user.id, parsed.data.status);
+  if (!result.transitioned) {
+    throw createError({ statusCode: 400, statusMessage: result.error || "Transition failed" });
+  }
+  return { transitioned: true, newStatus: parsed.data.status };
+});
+
+const transition_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: transition_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const index_get$g = defineEventHandler(async (event) => {
   const db = useDB();
   const query = getQuery$1(event);
   return listContests(db, {
@@ -3942,21 +3911,29 @@ const index_get$a = defineEventHandler(async (event) => {
   });
 });
 
-const index_get$b = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_get$h = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_get$a
+  default: index_get$g
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_post$8 = defineEventHandler(async (event) => {
+const index_post$c = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  return createContest(db, { ...body, createdBy: user.id });
+  const parsed = createContestSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createContest(db, { ...parsed.data, createdBy: user.id });
 });
 
-const index_post$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_post$d = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_post$8
+  default: index_post$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const _siteSlug__delete = defineEventHandler(async (event) => {
@@ -3995,11 +3972,19 @@ const _siteSlug__put = defineEventHandler(async (event) => {
   const db = useDB();
   const siteSlug = getRouterParam(event, "siteSlug");
   const body = await readBody(event);
+  const parsed = updateDocsSiteSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
   }
-  return updateDocsSite(db, result.site.id, user.id, body);
+  return updateDocsSite(db, result.site.id, user.id, parsed.data);
 });
 
 const _siteSlug__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4049,7 +4034,16 @@ const pages_post = defineEventHandler(async (event) => {
   const db = useDB();
   const siteSlug = getRouterParam(event, "siteSlug");
   const body = await readBody(event);
-  if (!body.versionId) {
+  const parsed = createDocsPageSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  const data = { ...parsed.data };
+  if (!data.versionId) {
     const result = await getDocsSiteBySlug(db, siteSlug);
     if (!result) {
       throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
@@ -4058,9 +4052,9 @@ const pages_post = defineEventHandler(async (event) => {
     if (!defaultVersion) {
       throw createError({ statusCode: 404, statusMessage: "No version found for docs site" });
     }
-    body.versionId = defaultVersion.id;
+    data.versionId = defaultVersion.id;
   }
-  return createDocsPage(db, user.id, body);
+  return createDocsPage(db, user.id, data);
 });
 
 const pages_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4073,7 +4067,15 @@ const _pageId__put = defineEventHandler(async (event) => {
   const db = useDB();
   const pageId = getRouterParam(event, "pageId");
   const body = await readBody(event);
-  return updateDocsPage(db, pageId, user.id, body);
+  const parsed = updateDocsPageSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return updateDocsPage(db, pageId, user.id, parsed.data);
 });
 
 const _pageId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4099,7 +4101,15 @@ const versions_post = defineEventHandler(async (event) => {
   const db = useDB();
   const siteSlug = getRouterParam(event, "siteSlug");
   const body = await readBody(event);
-  return createDocsVersion(db, siteSlug, user.id, body);
+  const parsed = createDocsVersionSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createDocsVersion(db, siteSlug, user.id, parsed.data);
 });
 
 const versions_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4107,26 +4117,161 @@ const versions_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePro
   default: versions_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_get$8 = defineEventHandler(async (event) => {
+const index_get$e = defineEventHandler(async (event) => {
   const db = useDB();
   return listDocsSites(db);
 });
 
-const index_get$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_get$f = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_get$8
+  default: index_get$e
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_post$6 = defineEventHandler(async (event) => {
+const index_post$a = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  return createDocsSite(db, user.id, body);
+  const parsed = createDocsSiteSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createDocsSite(db, user.id, parsed.data);
 });
 
-const index_post$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_post$b = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_post$6
+  default: index_post$a
+}, Symbol.toStringTag, { value: 'Module' }));
+
+let storage$1 = null;
+function getStorage$1() {
+  if (!storage$1) storage$1 = createStorageFromEnv();
+  return storage$1;
+}
+const _id__delete$6 = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: "File ID is required" });
+  }
+  const result = await db.delete(files).where(and(eq(files.id, id), eq(files.uploaderId, user.id))).returning({ id: files.id, storageKey: files.storageKey });
+  if (result.length === 0) {
+    throw createError({ statusCode: 404, statusMessage: "File not found or not owned by you" });
+  }
+  try {
+    const adapter = getStorage$1();
+    await adapter.delete(result[0].storageKey);
+  } catch {
+    console.warn(`[files] Failed to delete storage key: ${result[0].storageKey}`);
+  }
+  return { deleted: true };
+});
+
+const _id__delete$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__delete$6
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const mine_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const query = getQuery$1(event);
+  const rows = await db.select().from(files).where(eq(files.uploaderId, user.id)).orderBy(desc(files.createdAt)).limit(query.limit ? Number(query.limit) : 50);
+  return rows.map((f) => ({
+    id: f.id,
+    filename: f.filename,
+    originalName: f.originalName,
+    mimeType: f.mimeType,
+    sizeBytes: f.sizeBytes,
+    url: f.publicUrl,
+    purpose: f.purpose,
+    createdAt: f.createdAt
+  }));
+});
+
+const mine_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: mine_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+let storage = null;
+function getStorage() {
+  if (!storage) storage = createStorageFromEnv();
+  return storage;
+}
+const upload_post = defineEventHandler(async (event) => {
+  var _a, _b;
+  const db = useDB();
+  const user = requireAuth(event);
+  const formData = await readMultipartFormData(event);
+  if (!formData || formData.length === 0) {
+    throw createError({ statusCode: 400, statusMessage: "No file uploaded" });
+  }
+  const file = formData[0];
+  const filename = file.filename || `upload-${Date.now()}`;
+  const mimeType = file.type || "application/octet-stream";
+  const sizeBytes = file.data.length;
+  const purpose = ((_a = formData.find((f) => f.name === "purpose")) == null ? void 0 : _a.data.toString()) || "content";
+  const validation = validateUpload(mimeType, sizeBytes, purpose);
+  if (!validation.valid) {
+    throw createError({ statusCode: 400, statusMessage: (_b = validation.error) != null ? _b : "Invalid upload" });
+  }
+  const adapter = getStorage();
+  let publicUrl;
+  let storageKey;
+  let width = null;
+  let height = null;
+  let variants = null;
+  if (isProcessableImage(mimeType)) {
+    const processed = await processImage(file.data, filename, purpose, adapter);
+    publicUrl = processed.originalUrl;
+    storageKey = processed.originalKey;
+    width = processed.width;
+    height = processed.height;
+    if (processed.variants.length > 0) {
+      variants = {};
+      for (const v of processed.variants) {
+        variants[v.name] = v.url;
+      }
+    }
+  } else {
+    storageKey = generateStorageKey(filename, purpose);
+    publicUrl = await adapter.upload(storageKey, file.data, mimeType);
+  }
+  const [row] = await db.insert(files).values({
+    uploaderId: user.id,
+    filename: storageKey,
+    originalName: filename,
+    mimeType,
+    sizeBytes,
+    storageKey,
+    publicUrl,
+    purpose,
+    width,
+    height
+  }).returning();
+  return {
+    id: row.id,
+    filename: row.filename,
+    originalName: filename,
+    mimeType: row.mimeType,
+    sizeBytes: row.sizeBytes,
+    url: publicUrl,
+    width,
+    height,
+    variants,
+    purpose: row.purpose
+  };
+});
+
+const upload_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: upload_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const health_get = defineEventHandler(() => ({
@@ -4137,6 +4282,504 @@ const health_get = defineEventHandler(() => ({
 const health_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: health_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _slug__get$4 = defineEventHandler(async (event) => {
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const user = getOptionalUser(event);
+  const community = await getHubBySlug(db, slug, user == null ? void 0 : user.id);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return community;
+});
+
+const _slug__get$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _slug__get$4
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const bans_get = defineEventHandler(async (event) => {
+  requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return listBans(db, community.id);
+});
+
+const bans_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: bans_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const bans_post = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const body = await readBody(event);
+  const parsed = banUserSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  const hub = await getHubBySlug(db, slug);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  return banUser(
+    db,
+    user.id,
+    hub.id,
+    parsed.data.userId,
+    parsed.data.reason,
+    parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : void 0
+  );
+});
+
+const bans_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: bans_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _userId__delete$2 = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const userId = getRouterParam(event, "userId");
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return unbanUser(db, user.id, community.id, userId);
+});
+
+const _userId__delete$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _userId__delete$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function escapeXml$3(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+const feed_xml_get$2 = defineEventHandler(async (event) => {
+  var _a, _b;
+  const db = useDB();
+  const config = useRuntimeConfig();
+  const siteUrl = config.public.siteUrl;
+  const slug = getRouterParam(event, "slug");
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: "Hub slug required" });
+  }
+  const hub = await getHubBySlug(db, slug);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  const { items } = await listHubGallery(db, hub.id, { limit: 50 });
+  const lastBuildDate = items.length > 0 ? new Date((_a = items[0].publishedAt) != null ? _a : items[0].createdAt).toUTCString() : (/* @__PURE__ */ new Date()).toUTCString();
+  const rssItems = items.map((item) => {
+    var _a2, _b2, _c;
+    const link = `${siteUrl}/${item.type}/${item.slug}`;
+    const pubDate = new Date((_a2 = item.publishedAt) != null ? _a2 : item.createdAt).toUTCString();
+    return `    <item>
+      <title>${escapeXml$3(item.title)}</title>
+      <link>${escapeXml$3(link)}</link>
+      <guid isPermaLink="true">${escapeXml$3(link)}</guid>
+      <pubDate>${pubDate}</pubDate>
+      <description>${escapeXml$3((_b2 = item.description) != null ? _b2 : "")}</description>
+      <author>${escapeXml$3((_c = item.author.displayName) != null ? _c : item.author.username)}</author>
+      <category>${escapeXml$3(item.type)}</category>
+    </item>`;
+  });
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${escapeXml$3(hub.name)} \u2014 CommonPub</title>
+    <link>${escapeXml$3(siteUrl)}/hubs/${escapeXml$3(slug)}</link>
+    <description>${escapeXml$3((_b = hub.description) != null ? _b : `Content from ${hub.name}`)}</description>
+    <language>en</language>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
+    <atom:link href="${escapeXml$3(siteUrl)}/api/hubs/${escapeXml$3(slug)}/feed.xml" rel="self" type="application/rss+xml"/>
+${rssItems.join("\n")}
+  </channel>
+</rss>`;
+  setResponseHeader(event, "Content-Type", "application/rss+xml; charset=utf-8");
+  setResponseHeader(event, "Cache-Control", "public, max-age=600, stale-while-revalidate=300");
+  return xml;
+});
+
+const feed_xml_get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: feed_xml_get$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const gallery_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const query = getQuery$1(event);
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: "Hub slug is required" });
+  }
+  const hub = await getHubBySlug(db, slug);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  return listHubGallery(db, hub.id, {
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const gallery_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: gallery_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const invites_get = defineEventHandler(async (event) => {
+  requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return listInvites(db, community.id);
+});
+
+const invites_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: invites_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const invites_post = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const body = await readBody(event);
+  const parsed = createInviteSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  const hub = await getHubBySlug(db, slug);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  return createInvite(
+    db,
+    user.id,
+    hub.id,
+    parsed.data.maxUses,
+    parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : void 0
+  );
+});
+
+const invites_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: invites_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const join_post = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return joinHub(db, user.id, community.id);
+});
+
+const join_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: join_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const leave_post = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return leaveHub(db, user.id, community.id);
+});
+
+const leave_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: leave_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const members_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return listMembers(db, community.id);
+});
+
+const members_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: members_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _userId__delete = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const userId = getRouterParam(event, "userId");
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return kickMember(db, user.id, community.id, userId);
+});
+
+const _userId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _userId__delete
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _userId__put = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const userId = getRouterParam(event, "userId");
+  const body = await readBody(event);
+  const parsed = changeRoleSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  const hub = await getHubBySlug(db, slug);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  return changeRole(db, user.id, hub.id, userId, parsed.data.role);
+});
+
+const _userId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _userId__put
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _postId__delete = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const postId = getRouterParam(event, "postId");
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  return deletePost(db, postId, user.id, community.id);
+});
+
+const _postId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _postId__delete
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const replies_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const postId = getRouterParam(event, "postId");
+  return listReplies(db, postId);
+});
+
+const replies_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: replies_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const replies_post = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const postId = getRouterParam(event, "postId");
+  const body = await readBody(event);
+  const parsed = createReplySchema.safeParse({ ...body, postId });
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createReply(db, user.id, parsed.data);
+});
+
+const replies_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: replies_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const index_get$c = defineEventHandler(async (event) => {
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const query = getQuery$1(event);
+  return listPosts(db, {
+    hubId: slug,
+    type: query.type,
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const index_get$d = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: index_get$c
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const index_post$8 = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const body = await readBody(event);
+  const community = await getHubBySlug(db, slug);
+  if (!community) {
+    throw createError({ statusCode: 404, statusMessage: "Community not found" });
+  }
+  const parsed = createPostSchema.safeParse({ hubId: community.id, ...body });
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createPost(db, user.id, { hubId: community.id, ...body });
+});
+
+const index_post$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: index_post$8
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const products_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const query = getQuery$1(event);
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: "Hub slug is required" });
+  }
+  const hub = await getHubBySlug(db, slug);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  return listHubProducts(db, hub.id, {
+    search: query.search,
+    category: query.category,
+    status: query.status,
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const products_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: products_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const products_post = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const slug = getRouterParam(event, "slug");
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: "Hub slug is required" });
+  }
+  const hub = await getHubBySlug(db, slug, user.id);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  const body = await readBody(event);
+  const parsed = createProductSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
+  }
+  return createProduct(db, user.id, hub.id, parsed.data);
+});
+
+const products_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: products_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const shareContentSchema = z.object({
+  contentId: z.string().uuid()
+});
+const share_post = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const body = await readBody(event);
+  const parsed = shareContentSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  const hub = await getHubBySlug(db, slug);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  return shareContent(db, user.id, hub.id, parsed.data.contentId);
+});
+
+const share_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: share_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const index_get$a = defineEventHandler(async (event) => {
+  const db = useDB();
+  const query = getQuery$1(event);
+  return listHubs(db, {
+    search: query.search,
+    joinPolicy: query.joinPolicy,
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const index_get$b = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: index_get$a
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const index_post$6 = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const body = await readBody(event);
+  const parsed = createHubSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createHub(db, user.id, body);
+});
+
+const index_post$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: index_post$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const _slug__delete = defineEventHandler(async (event) => {
@@ -4153,7 +4796,7 @@ const _slug__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePro
   default: _slug__delete
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _slug__get = defineEventHandler(async (event) => {
+const _slug__get$2 = defineEventHandler(async (event) => {
   const db = useDB();
   const slug = getRouterParam(event, "slug");
   const user = getOptionalUser(event);
@@ -4164,9 +4807,9 @@ const _slug__get = defineEventHandler(async (event) => {
   return path;
 });
 
-const _slug__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _slug__get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _slug__get
+  default: _slug__get$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const _slug__put = defineEventHandler(async (event) => {
@@ -4174,9 +4817,17 @@ const _slug__put = defineEventHandler(async (event) => {
   const db = useDB();
   const slug = getRouterParam(event, "slug");
   const body = await readBody(event);
+  const parsed = updateLearningPathSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
   const path = await getPathBySlug(db, slug);
-  if (!path) throw createError({ statusCode: 404, message: "Path not found" });
-  return updatePath(db, path.id, user.id, body);
+  if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
+  return updatePath(db, path.id, user.id, parsed.data);
 });
 
 const _slug__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4234,7 +4885,15 @@ const lessons_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  return createLesson(db, user.id, body);
+  const parsed = createLessonSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createLesson(db, user.id, parsed.data);
 });
 
 const lessons_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4247,9 +4906,17 @@ const modules_post = defineEventHandler(async (event) => {
   const db = useDB();
   const slug = getRouterParam(event, "slug");
   const body = await readBody(event);
+  const parsed = createModuleSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
   const path = await getPathBySlug(db, slug);
-  if (!path) throw createError({ statusCode: 404, message: "Path not found" });
-  return createModule(db, user.id, { ...body, pathId: path.id });
+  if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
+  return createModule(db, user.id, { ...parsed.data, pathId: path.id });
 });
 
 const modules_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4262,7 +4929,15 @@ const _moduleId__put = defineEventHandler(async (event) => {
   const db = useDB();
   const moduleId = getRouterParam(event, "moduleId");
   const body = await readBody(event);
-  return updateModule(db, moduleId, user.id, body);
+  const parsed = updateModuleSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return updateModule(db, moduleId, user.id, parsed.data);
 });
 
 const _moduleId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4320,7 +4995,7 @@ const enrollments_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineP
   default: enrollments_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_get$6 = defineEventHandler(async (event) => {
+const index_get$8 = defineEventHandler(async (event) => {
   var _a;
   const db = useDB();
   const query = getQuery$1(event);
@@ -4332,16 +5007,24 @@ const index_get$6 = defineEventHandler(async (event) => {
   });
 });
 
-const index_get$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_get$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_get$6
+  default: index_get$8
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const index_post$4 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  return createPath(db, user.id, body);
+  const parsed = createLearningPathSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createPath(db, user.id, parsed.data);
 });
 
 const index_post$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4365,10 +5048,18 @@ const _conversationId__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.de
 
 const _conversationId__post = defineEventHandler(async (event) => {
   const db = useDB();
-  const user = await requireAuth(event);
+  const user = requireAuth(event);
   const conversationId = getRouterParam(event, "conversationId");
-  const { body } = await readBody(event);
-  return sendMessage(db, conversationId, user.id, body);
+  const body = await readBody(event);
+  const parsed = sendMessageSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return sendMessage(db, conversationId, user.id, parsed.data.body);
 });
 
 const _conversationId__post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4376,22 +5067,30 @@ const _conversationId__post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.d
   default: _conversationId__post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_get$4 = defineEventHandler(async (event) => {
+const index_get$6 = defineEventHandler(async (event) => {
   const db = useDB();
   const user = await requireAuth(event);
   return listConversations(db, user.id);
 });
 
-const index_get$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_get$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_get$4
+  default: index_get$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const index_post$2 = defineEventHandler(async (event) => {
   const db = useDB();
-  const user = await requireAuth(event);
+  const user = requireAuth(event);
   const body = await readBody(event);
-  const participants = body.participants;
+  const parsed = createConversationSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  const participants = parsed.data.participants;
   if (!participants.includes(user.id)) {
     participants.push(user.id);
   }
@@ -4403,7 +5102,7 @@ const index_post$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
   default: index_post$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _id__delete$2 = defineEventHandler(async (event) => {
+const _id__delete$4 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const id = getRouterParam(event, "id");
@@ -4411,9 +5110,9 @@ const _id__delete$2 = defineEventHandler(async (event) => {
   return { success: true };
 });
 
-const _id__delete$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__delete$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__delete$2
+  default: _id__delete$4
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const count_get = defineEventHandler(async (event) => {
@@ -4428,7 +5127,7 @@ const count_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: count_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const index_get$2 = defineEventHandler(async (event) => {
+const index_get$4 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const query = getQuery$1(event);
@@ -4441,9 +5140,9 @@ const index_get$2 = defineEventHandler(async (event) => {
   });
 });
 
-const index_get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const index_get$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: index_get$2
+  default: index_get$4
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const read_post = defineEventHandler(async (event) => {
@@ -4461,6 +5160,200 @@ const read_post = defineEventHandler(async (event) => {
 const read_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: read_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const stream_get = defineEventHandler(async (event) => {
+  const auth = event.context.auth;
+  if (!(auth == null ? void 0 : auth.user)) {
+    throw createError({ statusCode: 401, statusMessage: "Authentication required" });
+  }
+  const userId = auth.user.id;
+  const db = useDB();
+  setResponseHeader(event, "Content-Type", "text/event-stream");
+  setResponseHeader(event, "Cache-Control", "no-cache");
+  setResponseHeader(event, "Connection", "keep-alive");
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const count = await getUnreadCount(db, userId);
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "count", count })}
+
+`));
+      const interval = setInterval(async () => {
+        try {
+          const currentCount = await getUnreadCount(db, userId);
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "count", count: currentCount })}
+
+`));
+        } catch {
+          clearInterval(interval);
+          controller.close();
+        }
+      }, 1e4);
+      const keepalive = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(": keepalive\n\n"));
+        } catch {
+          clearInterval(keepalive);
+          clearInterval(interval);
+        }
+      }, 3e4);
+      event.node.req.on("close", () => {
+        clearInterval(interval);
+        clearInterval(keepalive);
+        controller.close();
+      });
+    }
+  });
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive"
+    }
+  });
+});
+
+const stream_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: stream_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _id__delete$2 = defineEventHandler(async (event) => {
+  const db = useDB();
+  requireAuth(event);
+  const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: "Product ID is required" });
+  }
+  const deleted = await deleteProduct(db, id);
+  if (!deleted) {
+    throw createError({ statusCode: 404, statusMessage: "Product not found" });
+  }
+  return { deleted: true };
+});
+
+const _id__delete$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__delete$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _id__put = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: "Product ID is required" });
+  }
+  const body = await readBody(event);
+  const parsed = updateProductSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
+  }
+  const product = await updateProduct(db, id, user.id, parsed.data);
+  if (!product) {
+    throw createError({ statusCode: 404, statusMessage: "Product not found" });
+  }
+  return product;
+});
+
+const _id__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__put
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _slug__get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: "Slug is required" });
+  }
+  const product = await getProductBySlug(db, slug);
+  if (!product) {
+    throw createError({ statusCode: 404, statusMessage: "Product not found" });
+  }
+  return product;
+});
+
+const _slug__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _slug__get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const content_get$2 = defineEventHandler(async (event) => {
+  const db = useDB();
+  const slug = getRouterParam(event, "slug");
+  const query = getQuery$1(event);
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: "Slug is required" });
+  }
+  const product = await getProductBySlug(db, slug);
+  if (!product) {
+    throw createError({ statusCode: 404, statusMessage: "Product not found" });
+  }
+  return listProductContent(db, product.id, {
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const content_get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: content_get$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const index_get$2 = defineEventHandler(async (event) => {
+  var _a;
+  const db = useDB();
+  const query = getQuery$1(event);
+  return searchProducts(db, {
+    search: (_a = query.q) != null ? _a : query.search,
+    category: query.category,
+    status: query.status,
+    hubId: query.hubId,
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const index_get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: index_get$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const profile_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const profile = await getUserByUsername(db, user.username);
+  if (!profile) {
+    throw createError({ statusCode: 404, statusMessage: "Profile not found" });
+  }
+  return profile;
+});
+
+const profile_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: profile_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const profile_put = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const body = await readBody(event);
+  const parsed = updateProfileSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
+  }
+  const profile = await updateUserProfile(db, user.id, parsed.data);
+  if (!profile) {
+    throw createError({ statusCode: 404, statusMessage: "Profile not found" });
+  }
+  return profile;
+});
+
+const profile_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: profile_put
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const search_get = defineEventHandler(async (event) => {
@@ -4484,23 +5377,43 @@ const search_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
   default: search_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const VALID_TARGET_TYPES$1 = ["project", "article", "blog", "explainer", "learning_path"];
+const toggleBookmarkSchema = z.object({
+  targetType: z.enum(["project", "article", "blog", "explainer", "learning_path"]),
+  targetId: z.string().uuid()
+});
 const bookmark_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  if (!(body == null ? void 0 : body.targetType) || !VALID_TARGET_TYPES$1.includes(body.targetType)) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid target type" });
+  const parsed = toggleBookmarkSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
   }
-  if (!(body == null ? void 0 : body.targetId) || typeof body.targetId !== "string") {
-    throw createError({ statusCode: 400, statusMessage: "Invalid target ID" });
-  }
-  return toggleBookmark(db, user.id, body.targetType, body.targetId);
+  return toggleBookmark(db, user.id, parsed.data.targetType, parsed.data.targetId);
 });
 
 const bookmark_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: bookmark_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const bookmarks_get = defineEventHandler(async (event) => {
+  const user = requireAuth(event);
+  const db = useDB();
+  const query = getQuery$1(event);
+  return listUserBookmarks(db, user.id, {
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const bookmarks_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: bookmarks_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const comments_get = defineEventHandler(async (event) => {
@@ -4563,18 +5476,23 @@ const like_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty
   default: like_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const VALID_TARGET_TYPES = ["project", "article", "blog", "explainer", "comment", "post", "guide"];
+const toggleLikeSchema = z.object({
+  targetType: likeTargetTypeSchema,
+  targetId: z.string().uuid()
+});
 const like_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  if (!(body == null ? void 0 : body.targetType) || !VALID_TARGET_TYPES.includes(body.targetType)) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid target type" });
+  const parsed = toggleLikeSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
   }
-  if (!(body == null ? void 0 : body.targetId) || typeof body.targetId !== "string") {
-    throw createError({ statusCode: 400, statusMessage: "Invalid target ID" });
-  }
-  return toggleLike(db, user.id, body.targetType, body.targetId);
+  return toggleLike(db, user.id, parsed.data.targetType, parsed.data.targetId);
 });
 
 const like_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4624,6 +5542,147 @@ const content_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
   default: content_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
+function escapeXml$2(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+const feed_xml_get = defineEventHandler(async (event) => {
+  var _a, _b;
+  const db = useDB();
+  const config = useRuntimeConfig();
+  const siteUrl = config.public.siteUrl;
+  const username = getRouterParam(event, "username");
+  if (!username) {
+    throw createError({ statusCode: 400, statusMessage: "Username required" });
+  }
+  const user = await getUserByUsername(db, username);
+  if (!user) {
+    throw createError({ statusCode: 404, statusMessage: "User not found" });
+  }
+  const { items } = await listContent(db, {
+    status: "published",
+    authorId: user.id,
+    sort: "recent",
+    limit: 50
+  });
+  const displayName = (_a = user.displayName) != null ? _a : user.username;
+  const lastBuildDate = items.length > 0 ? new Date((_b = items[0].publishedAt) != null ? _b : items[0].createdAt).toUTCString() : (/* @__PURE__ */ new Date()).toUTCString();
+  const rssItems = items.map((item) => {
+    var _a2, _b2;
+    const link = `${siteUrl}/${item.type}/${item.slug}`;
+    const pubDate = new Date((_a2 = item.publishedAt) != null ? _a2 : item.createdAt).toUTCString();
+    return `    <item>
+      <title>${escapeXml$2(item.title)}</title>
+      <link>${escapeXml$2(link)}</link>
+      <guid isPermaLink="true">${escapeXml$2(link)}</guid>
+      <pubDate>${pubDate}</pubDate>
+      <description>${escapeXml$2((_b2 = item.description) != null ? _b2 : "")}</description>
+      <category>${escapeXml$2(item.type)}</category>
+    </item>`;
+  });
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${escapeXml$2(displayName)} \u2014 CommonPub</title>
+    <link>${escapeXml$2(siteUrl)}/profile/${escapeXml$2(username)}</link>
+    <description>Content by ${escapeXml$2(displayName)}</description>
+    <language>en</language>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
+    <atom:link href="${escapeXml$2(siteUrl)}/api/users/${escapeXml$2(username)}/feed.xml" rel="self" type="application/rss+xml"/>
+${rssItems.join("\n")}
+  </channel>
+</rss>`;
+  setResponseHeader(event, "Content-Type", "application/rss+xml; charset=utf-8");
+  setResponseHeader(event, "Cache-Control", "public, max-age=600, stale-while-revalidate=300");
+  return xml;
+});
+
+const feed_xml_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: feed_xml_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const follow_delete = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const username = getRouterParam(event, "username");
+  if (!username) {
+    throw createError({ statusCode: 400, statusMessage: "Username is required" });
+  }
+  const target = await getUserByUsername(db, username);
+  if (!target) {
+    throw createError({ statusCode: 404, statusMessage: "User not found" });
+  }
+  return unfollowUser(db, user.id, target.id);
+});
+
+const follow_delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: follow_delete
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const follow_post = defineEventHandler(async (event) => {
+  const db = useDB();
+  const user = requireAuth(event);
+  const username = getRouterParam(event, "username");
+  if (!username) {
+    throw createError({ statusCode: 400, statusMessage: "Username is required" });
+  }
+  const target = await getUserByUsername(db, username);
+  if (!target) {
+    throw createError({ statusCode: 404, statusMessage: "User not found" });
+  }
+  return followUser(db, user.id, target.id);
+});
+
+const follow_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: follow_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const followers_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const username = getRouterParam(event, "username");
+  const query = getQuery$1(event);
+  if (!username) {
+    throw createError({ statusCode: 400, statusMessage: "Username is required" });
+  }
+  const target = await getUserByUsername(db, username);
+  if (!target) {
+    throw createError({ statusCode: 404, statusMessage: "User not found" });
+  }
+  return listFollowers(db, target.id, {
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const followers_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: followers_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const following_get = defineEventHandler(async (event) => {
+  const db = useDB();
+  const username = getRouterParam(event, "username");
+  const query = getQuery$1(event);
+  if (!username) {
+    throw createError({ statusCode: 400, statusMessage: "Username is required" });
+  }
+  const target = await getUserByUsername(db, username);
+  if (!target) {
+    throw createError({ statusCode: 404, statusMessage: "User not found" });
+  }
+  return listFollowing(db, target.id, {
+    limit: query.limit ? Number(query.limit) : void 0,
+    offset: query.offset ? Number(query.offset) : void 0
+  });
+});
+
+const following_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: following_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const _id__get = defineEventHandler(async (event) => {
   const db = useDB();
   const id = getRouterParam(event, "id");
@@ -4668,7 +5727,15 @@ const index_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  return createVideo(db, { ...body, authorId: user.id });
+  const parsed = createVideoSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return createVideo(db, { ...parsed.data, authorId: user.id });
 });
 
 const index_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4739,6 +5806,58 @@ const webfinger$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: webfinger
 }, Symbol.toStringTag, { value: 'Module' }));
 
+function escapeXml$1(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+const feed_xml = defineEventHandler(async (event) => {
+  var _a;
+  const db = useDB();
+  const config = useRuntimeConfig();
+  const siteUrl = config.public.siteUrl;
+  const siteName = config.public.siteName;
+  const siteDescription = config.public.siteDescription;
+  const { items } = await listContent(db, {
+    status: "published",
+    sort: "recent",
+    limit: 50
+  });
+  const lastBuildDate = items.length > 0 ? new Date((_a = items[0].publishedAt) != null ? _a : items[0].createdAt).toUTCString() : (/* @__PURE__ */ new Date()).toUTCString();
+  const rssItems = items.map((item) => {
+    var _a2, _b, _c;
+    const link = `${siteUrl}/${item.type}/${item.slug}`;
+    const pubDate = new Date((_a2 = item.publishedAt) != null ? _a2 : item.createdAt).toUTCString();
+    return `    <item>
+      <title>${escapeXml$1(item.title)}</title>
+      <link>${escapeXml$1(link)}</link>
+      <guid isPermaLink="true">${escapeXml$1(link)}</guid>
+      <pubDate>${pubDate}</pubDate>
+      <description>${escapeXml$1((_b = item.description) != null ? _b : "")}</description>
+      <author>${escapeXml$1((_c = item.author.displayName) != null ? _c : item.author.username)}</author>
+      <category>${escapeXml$1(item.type)}</category>
+    </item>`;
+  });
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${escapeXml$1(siteName)}</title>
+    <link>${escapeXml$1(siteUrl)}</link>
+    <description>${escapeXml$1(siteDescription)}</description>
+    <language>en</language>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
+    <atom:link href="${escapeXml$1(siteUrl)}/feed.xml" rel="self" type="application/rss+xml"/>
+${rssItems.join("\n")}
+  </channel>
+</rss>`;
+  setResponseHeader(event, "Content-Type", "application/rss+xml; charset=utf-8");
+  setResponseHeader(event, "Cache-Control", "public, max-age=600, stale-while-revalidate=300");
+  return xml;
+});
+
+const feed_xml$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: feed_xml
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const inbox$2 = defineEventHandler(async (event) => {
   const method = getMethod(event);
   if (method !== "POST") {
@@ -4783,6 +5902,101 @@ const _2_1 = defineEventHandler(async () => {
 const _2_1$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: _2_1
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const robots_txt = defineEventHandler((event) => {
+  const config = useRuntimeConfig();
+  const siteUrl = config.public.siteUrl;
+  const content = `User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /messages/
+Disallow: /create/
+
+Sitemap: ${siteUrl}/sitemap.xml
+`;
+  setResponseHeader(event, "Content-Type", "text/plain; charset=utf-8");
+  setResponseHeader(event, "Cache-Control", "public, max-age=86400");
+  return content;
+});
+
+const robots_txt$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: robots_txt
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function escapeXml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+const sitemap_xml = defineEventHandler(async (event) => {
+  const db = useDB();
+  const config = useRuntimeConfig();
+  const siteUrl = config.public.siteUrl;
+  const publishedContent = await db.select({
+    type: contentItems.type,
+    slug: contentItems.slug,
+    updatedAt: contentItems.updatedAt
+  }).from(contentItems).where(eq(contentItems.status, "published"));
+  const publicUsers = await db.select({
+    username: users.username,
+    updatedAt: users.updatedAt
+  }).from(users).where(eq(users.status, "active"));
+  const { items: hubs } = await listHubs(db, { limit: 100 });
+  const { items: paths } = await listPaths(db, { status: "published", limit: 100 });
+  const urls = [];
+  urls.push({ loc: siteUrl, lastmod: (/* @__PURE__ */ new Date()).toISOString(), priority: "1.0", changefreq: "daily" });
+  urls.push({ loc: `${siteUrl}/search`, lastmod: (/* @__PURE__ */ new Date()).toISOString(), priority: "0.5", changefreq: "weekly" });
+  for (const item of publishedContent) {
+    urls.push({
+      loc: `${siteUrl}/${item.type}/${item.slug}`,
+      lastmod: new Date(item.updatedAt).toISOString(),
+      priority: "0.8",
+      changefreq: "weekly"
+    });
+  }
+  for (const user of publicUsers) {
+    urls.push({
+      loc: `${siteUrl}/profile/${user.username}`,
+      lastmod: new Date(user.updatedAt).toISOString(),
+      priority: "0.6",
+      changefreq: "weekly"
+    });
+  }
+  for (const hub of hubs) {
+    urls.push({
+      loc: `${siteUrl}/hubs/${hub.slug}`,
+      lastmod: new Date(hub.createdAt).toISOString(),
+      priority: "0.7",
+      changefreq: "weekly"
+    });
+  }
+  for (const path of paths) {
+    urls.push({
+      loc: `${siteUrl}/learn/${path.slug}`,
+      lastmod: new Date(path.createdAt).toISOString(),
+      priority: "0.7",
+      changefreq: "monthly"
+    });
+  }
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map((u) => `  <url>
+    <loc>${escapeXml(u.loc)}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join("\n")}
+</urlset>`;
+  setResponseHeader(event, "Content-Type", "application/xml; charset=utf-8");
+  setResponseHeader(event, "Cache-Control", "public, max-age=3600, stale-while-revalidate=1800");
+  return xml;
+});
+
+const sitemap_xml$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: sitemap_xml
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const _username_ = defineEventHandler(async (event) => {

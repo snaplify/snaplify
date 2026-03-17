@@ -1,17 +1,19 @@
-import { d as defineEventHandler, u as useDB, a as getRouterParam, c as readBody, ah as updateModule } from '../../../../../nitro/nitro.mjs';
+import { d as defineEventHandler, u as useDB, a as getRouterParam, c as readBody, b0 as updateModuleSchema, f as createError, b1 as updateModule } from '../../../../../nitro/nitro.mjs';
 import { a as requireAuth } from '../../../../../_/auth.mjs';
-import 'drizzle-orm';
 import 'drizzle-orm/pg-core';
+import 'drizzle-orm';
+import 'zod';
 import 'jose';
+import 'node:fs';
+import 'node:fs/promises';
+import 'node:path';
+import 'node:stream/promises';
+import 'node:crypto';
 import 'node:http';
 import 'node:https';
 import 'node:events';
 import 'node:buffer';
-import 'node:fs';
-import 'node:path';
-import 'node:crypto';
 import 'node:url';
-import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';
@@ -23,7 +25,15 @@ const _moduleId__put = defineEventHandler(async (event) => {
   const db = useDB();
   const moduleId = getRouterParam(event, "moduleId");
   const body = await readBody(event);
-  return updateModule(db, moduleId, user.id, body);
+  const parsed = updateModuleSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return updateModule(db, moduleId, user.id, parsed.data);
 });
 
 export { _moduleId__put as default };

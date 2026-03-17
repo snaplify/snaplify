@@ -30,6 +30,14 @@ export default defineNuxtConfig({
   runtimeConfig: {
     databaseUrl: '',
     authSecret: 'dev-secret-change-me',
+    // Storage — set S3_BUCKET to enable S3/DO Spaces/MinIO, otherwise local filesystem
+    s3Bucket: '',
+    s3Region: 'us-east-1',
+    s3Endpoint: '',
+    s3AccessKey: '',
+    s3SecretKey: '',
+    s3PublicUrl: '',
+    uploadDir: './uploads',
     public: {
       siteUrl: 'http://localhost:3000',
       domain: 'localhost:3000',
@@ -42,6 +50,14 @@ export default defineNuxtConfig({
   },
   nitro: {
     preset: 'node-server',
+    // Serve local uploads directory in dev (production uses S3/Spaces)
+    publicAssets: [
+      {
+        dir: '../uploads',
+        baseURL: '/uploads',
+        maxAge: 60 * 60 * 24, // 1 day cache
+      },
+    ],
   },
   vite: {
     server: {

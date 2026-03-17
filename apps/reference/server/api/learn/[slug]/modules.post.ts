@@ -1,4 +1,5 @@
 import { createModule, getPathBySlug } from '@commonpub/server';
+import { createModuleSchema } from '@commonpub/schema';
 
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
@@ -6,8 +7,17 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')!;
   const body = await readBody(event);
 
-  const path = await getPathBySlug(db, slug);
-  if (!path) throw createError({ statusCode: 404, message: 'Path not found' });
+  const parsed = createModuleSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed',
+      data: { errors: parsed.error.flatten().fieldErrors },
+    });
+  }
 
-  return createModule(db, user.id, { ...body, pathId: path.id });
+  const path = await getPathBySlug(db, slug);
+  if (!path) throw createError({ statusCode: 404, statusMessage: 'Path not found' });
+
+  return createModule(db, user.id, { ...parsed.data, pathId: path.id });
 });

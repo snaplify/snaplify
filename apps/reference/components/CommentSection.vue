@@ -1,12 +1,18 @@
 <script setup lang="ts">
 const props = defineProps<{
-  contentId: string;
+  targetType: string;
+  targetId: string;
 }>();
 
 const { user } = useAuth();
 
+const queryParams = computed(() => ({
+  targetType: props.targetType,
+  targetId: props.targetId,
+}));
+
 const { data: comments, refresh } = await useFetch('/api/social/comments', {
-  query: { contentId: props.contentId },
+  query: queryParams,
   lazy: true,
 });
 
@@ -19,7 +25,11 @@ async function submitComment(): Promise<void> {
   try {
     await $fetch('/api/social/comments', {
       method: 'POST',
-      body: { contentId: props.contentId, body: newComment.value },
+      body: {
+        targetType: props.targetType,
+        targetId: props.targetId,
+        content: newComment.value,
+      },
     });
     newComment.value = '';
     await refresh();
@@ -77,9 +87,9 @@ async function deleteComment(id: string): Promise<void> {
               {{ new Date((comment as any).createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
             </time>
           </div>
-          <p class="cpub-comment-text">{{ (comment as any).body }}</p>
+          <p class="cpub-comment-text">{{ (comment as any).content }}</p>
           <button
-            v-if="(user as any)?.id === (comment as any).authorId"
+            v-if="(user as any)?.id === (comment as any).author?.id"
             class="cpub-comment-delete"
             @click="deleteComment((comment as any).id)"
             aria-label="Delete comment"

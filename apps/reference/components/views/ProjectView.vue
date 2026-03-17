@@ -1,37 +1,83 @@
 <script setup lang="ts">
+import type { ContentViewData } from '~/composables/useEngagement';
+
 const props = defineProps<{
-  content: any;
+  content: ContentViewData;
 }>();
 
 const activeTab = ref('overview');
-const tabs = [
+
+// Fetch linked products (BOM) for this content
+const { data: bomProducts } = useFetch(() => `/api/content/${props.content?.id}/products`, {
+  key: `bom-${props.content?.id}`,
+  default: () => [],
+  immediate: !!props.content?.id,
+});
+
+const tabs = computed(() => [
   { value: 'overview', label: 'Overview' },
   { value: 'code', label: 'Code' },
   { value: 'schematics', label: 'Schematics' },
-  { value: 'bom', label: 'BOM' },
+  { value: 'bom', label: 'BOM', count: (props.content?.parts?.length ?? 0) + (bomProducts.value?.length ?? 0) },
   { value: 'files', label: 'Files' },
-  { value: 'comments', label: 'Comments' },
-];
+  { value: 'comments', label: 'Comments', count: props.content?.commentCount ?? 0 },
+]);
 
-const liked = ref(false);
+const contentId = computed(() => props.content?.id);
+const contentType = computed(() => props.content?.type ?? 'project');
+const { liked, bookmarked, likeCount, toggleLike, toggleBookmark, share, setInitialState } = useEngagement(contentId, contentType);
 
-const difficultyLevel = computed(() => props.content?.difficulty || 3);
+onMounted(() => {
+  setInitialState(false, false, props.content?.likeCount ?? 0);
+});
+
+const config = useRuntimeConfig();
+useJsonLd({
+  type: 'howto',
+  title: props.content.title,
+  description: props.content.seoDescription ?? props.content.description ?? '',
+  url: `${config.public.siteUrl}/project/${props.content.slug}`,
+  imageUrl: props.content.coverImageUrl ?? undefined,
+  authorName: props.content.author?.displayName ?? props.content.author?.username ?? '',
+  authorUrl: `${config.public.siteUrl}/u/${props.content.author?.username}`,
+  difficulty: props.content.difficulty ?? undefined,
+  estimatedTime: props.content.buildTime ?? undefined,
+  estimatedCost: props.content.estimatedCost ?? undefined,
+});
+
+const difficultyLevel = computed(() => {
+  const d = props.content?.difficulty;
+  if (d === 'beginner') return 1;
+  if (d === 'intermediate') return 3;
+  if (d === 'advanced') return 5;
+  return 3;
+});
+
+const formattedDate = computed(() => {
+  const date = props.content?.publishedAt || props.content?.createdAt;
+  if (!date) return '';
+  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+});
+
 </script>
 
 <template>
   <div class="cpub-project-view">
     <!-- HERO COVER -->
-    <div class="cpub-hero-cover">
-      <div class="cpub-hero-cover-grid"></div>
-      <div class="cpub-hero-circuit">
-        <div class="cpub-chip-row">
-          <div class="cpub-chip">{{ content.hardwarePrimary || 'MCU' }}</div>
-          <div class="cpub-chip-line"></div>
-          <div class="cpub-chip">{{ content.hardwareSecondary || 'SENSOR' }}</div>
-          <div class="cpub-chip-line"></div>
-          <div class="cpub-chip">{{ content.hardwareTertiary || 'ML MODEL' }}</div>
+    <div class="cpub-hero-cover" :class="{ 'cpub-hero-cover-has-image': content.coverImageUrl }">
+      <img v-if="content.coverImageUrl" :src="content.coverImageUrl" :alt="content.title" class="cpub-hero-cover-img" />
+      <template v-else>
+        <div class="cpub-hero-cover-grid"></div>
+        <div class="cpub-hero-circuit">
+          <div class="cpub-chip-row">
+            <div class="cpub-chip">{{ content.hardwarePrimary || 'MCU' }}</div>
+            <div class="cpub-chip-line"></div>
+            <div class="cpub-chip">{{ content.hardwareSecondary || 'SENSOR' }}</div>
+            <div class="cpub-chip-line"></div>
+            <div class="cpub-chip">{{ content.hardwareTertiary || 'ML MODEL' }}</div>
+          </div>
         </div>
-      </div>
+      </template>
       <div class="cpub-hero-badges">
         <span v-if="content.featured" class="cpub-badge cpub-badge-featured"><i class="fa-solid fa-star"></i> Featured</span>
         <span class="cpub-badge cpub-badge-outline">{{ content.difficultyLabel || 'Intermediate' }}</span>
@@ -61,7 +107,7 @@ const difficultyLevel = computed(() => props.content?.difficulty || 3);
             <div class="cpub-author-name">{{ content.author?.displayName || content.author?.username || 'Author' }}</div>
             <div class="cpub-author-meta-row">
               <span v-if="content.author?.org" class="cpub-author-org">{{ content.author.org }}</span>
-              <span class="cpub-meta-date">Published {{ new Date(content.publishedAt || content.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
+              <span class="cpub-meta-date">Published {{ formattedDate }}</span>
             </div>
           </div>
           <span class="cpub-meta-sep">&bull;</span>
@@ -73,11 +119,11 @@ const difficultyLevel = computed(() => props.content?.difficulty || 3);
 
         <!-- Engagement Row -->
         <div class="cpub-engagement-row">
-          <button class="cpub-engage-btn" :class="{ liked }" @click="liked = !liked">
+          <button class="cpub-engage-btn" :class="{ liked }" @click="toggleLike">
             <i class="fa-solid fa-heart"></i> Like <span class="cpub-count">{{ content.likeCount ?? 0 }}</span>
           </button>
-          <button class="cpub-engage-btn"><i class="fa-regular fa-bookmark"></i> Bookmark</button>
-          <button class="cpub-engage-btn"><i class="fa-solid fa-share-nodes"></i> Share</button>
+          <button class="cpub-engage-btn" :class="{ bookmarked }" @click="toggleBookmark"><i class="fa-regular fa-bookmark"></i> Bookmark</button>
+          <button class="cpub-engage-btn" @click="share"><i class="fa-solid fa-share-nodes"></i> Share</button>
           <div class="cpub-engage-sep"></div>
           <button class="cpub-engage-btn"><i class="fa-solid fa-code-branch"></i> Fork <span class="cpub-count">{{ content.forkCount ?? 0 }}</span></button>
           <button class="cpub-engage-btn cpub-engage-btn-green"><i class="fa-solid fa-hammer"></i> I Built This <span class="cpub-count">{{ content.buildCount ?? 0 }}</span></button>
@@ -96,6 +142,7 @@ const difficultyLevel = computed(() => props.content?.difficulty || 3);
           @click="activeTab = tab.value"
         >
           {{ tab.label }}
+          <span v-if="tab.count" class="cpub-tab-badge">{{ tab.count }}</span>
         </button>
       </div>
     </div>
@@ -120,7 +167,7 @@ const difficultyLevel = computed(() => props.content?.difficulty || 3);
           </div>
 
           <!-- Comments -->
-          <CommentSection :content-id="content.id" />
+          <CommentSection :target-type="content.type" :target-id="content.id" />
         </div>
 
         <!-- RIGHT: SIDEBAR -->
@@ -196,15 +243,30 @@ const difficultyLevel = computed(() => props.content?.difficulty || 3);
           </div>
 
           <!-- BOM Summary -->
-          <div v-if="content.parts?.length" class="cpub-sb-card">
+          <div v-if="content.parts?.length || bomProducts?.length" class="cpub-sb-card">
             <div class="cpub-sb-title">BOM Summary</div>
             <div class="cpub-bom-summary-row">
               <span class="cpub-bom-label">Components</span>
-              <span class="cpub-bom-val">{{ content.parts.length }}</span>
+              <span class="cpub-bom-val">{{ (content.parts?.length ?? 0) + (bomProducts?.length ?? 0) }}</span>
             </div>
             <div class="cpub-bom-summary-row">
               <span class="cpub-bom-label">Total Cost</span>
-              <span class="cpub-bom-val cpub-bom-green">{{ content.estimatedCost || '$45–$65' }}</span>
+              <span class="cpub-bom-val cpub-bom-green">{{ content.estimatedCost || '—' }}</span>
+            </div>
+            <!-- Linked products from catalog -->
+            <template v-if="bomProducts?.length">
+              <div class="cpub-bom-products-header">Linked Products</div>
+              <div v-for="bp in bomProducts" :key="bp.id" class="cpub-bom-product-row">
+                <NuxtLink :to="`/products/${bp.productSlug}`" class="cpub-bom-product-link">
+                  {{ bp.productName }}
+                </NuxtLink>
+                <span class="cpub-bom-qty">×{{ bp.quantity }}</span>
+              </div>
+            </template>
+            <div class="cpub-bom-link-row">
+              <button class="cpub-link-text" @click="activeTab = 'bom'">
+                <i class="fa-solid fa-list"></i> View full BOM
+              </button>
             </div>
           </div>
 
@@ -769,6 +831,67 @@ const difficultyLevel = computed(() => props.content?.difficulty || 3);
 
 .cpub-btn:hover { background: var(--surface2); }
 .cpub-btn-sm { padding: 4px 10px; font-size: 11px; }
+
+/* Tab badge */
+.cpub-tab-badge {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  background: var(--surface3);
+  color: var(--text-faint);
+  padding: 1px 5px;
+  border: 1px solid var(--border2);
+}
+
+/* BOM products in sidebar */
+.cpub-bom-products-header {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border2);
+}
+
+.cpub-bom-product-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 12px;
+}
+
+.cpub-bom-product-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.cpub-bom-product-link:hover { text-decoration: underline; }
+
+.cpub-bom-qty {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.cpub-bom-link-row {
+  padding-top: 10px;
+  text-align: center;
+}
+
+/* Cover image */
+.cpub-hero-cover-has-image {
+  background: var(--border);
+}
+
+.cpub-hero-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {

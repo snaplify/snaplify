@@ -67,13 +67,13 @@ describe('utils', () => {
 
   describe('hasPermission', () => {
     it('should grant owner all permissions', () => {
-      expect(hasPermission('owner', 'editCommunity')).toBe(true);
+      expect(hasPermission('owner', 'editHub')).toBe(true);
       expect(hasPermission('owner', 'banUser')).toBe(true);
       expect(hasPermission('owner', 'manageMembers')).toBe(true);
     });
 
     it('should grant admin admin-level permissions', () => {
-      expect(hasPermission('admin', 'editCommunity')).toBe(true);
+      expect(hasPermission('admin', 'editHub')).toBe(true);
       expect(hasPermission('admin', 'manageMembers')).toBe(true);
       expect(hasPermission('admin', 'banUser')).toBe(true);
     });
@@ -85,12 +85,12 @@ describe('utils', () => {
     });
 
     it('should deny moderator admin-level permissions', () => {
-      expect(hasPermission('moderator', 'editCommunity')).toBe(false);
+      expect(hasPermission('moderator', 'editHub')).toBe(false);
       expect(hasPermission('moderator', 'manageMembers')).toBe(false);
     });
 
     it('should deny member most permissions', () => {
-      expect(hasPermission('member', 'editCommunity')).toBe(false);
+      expect(hasPermission('member', 'editHub')).toBe(false);
       expect(hasPermission('member', 'banUser')).toBe(false);
       expect(hasPermission('member', 'deletePost')).toBe(false);
     });
@@ -144,7 +144,7 @@ describe('utils', () => {
     });
 
     it('should deny unknown role for all known permissions', () => {
-      expect(hasPermission('guest', 'editCommunity')).toBe(false);
+      expect(hasPermission('guest', 'editHub')).toBe(false);
       expect(hasPermission('guest', 'banUser')).toBe(false);
       expect(hasPermission('guest', 'deletePost')).toBe(false);
     });
@@ -158,7 +158,7 @@ describe('utils', () => {
     });
 
     it('should correctly check all admin-level permissions', () => {
-      const adminPermissions = ['editCommunity', 'manageMembers'];
+      const adminPermissions = ['editHub', 'manageMembers'];
       for (const perm of adminPermissions) {
         expect(hasPermission('admin', perm)).toBe(true);
         expect(hasPermission('owner', perm)).toBe(true);

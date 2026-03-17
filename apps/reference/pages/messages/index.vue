@@ -18,12 +18,12 @@ const newMessage = ref('');
 
 async function startConversation(): Promise<void> {
   if (!newRecipient.value.trim()) return;
-  const conv = await $fetch('/api/messages', {
+  const conv = await $fetch<{ id: string }>('/api/messages', {
     method: 'POST',
     body: { participants: [newRecipient.value.trim()] },
   });
   if (newMessage.value.trim()) {
-    await $fetch(`/api/messages/${(conv as any).id}`, {
+    await $fetch(`/api/messages/${conv.id}`, {
       method: 'POST',
       body: { body: newMessage.value.trim() },
     });
@@ -31,17 +31,49 @@ async function startConversation(): Promise<void> {
   showNewDialog.value = false;
   newRecipient.value = '';
   newMessage.value = '';
-  refresh();
-};
+  await navigateTo(`/messages/${conv.id}`);
+}
 </script>
 
 <template>
   <div class="cpub-messages-page">
     <div class="cpub-messages-header">
       <h1 class="cpub-section-title-lg">Messages</h1>
-      <button class="cpub-btn cpub-btn-sm cpub-btn-primary">
+      <button class="cpub-btn cpub-btn-sm cpub-btn-primary" @click="showNewDialog = true">
         <i class="fa-solid fa-pen"></i> New Message
       </button>
+    </div>
+
+    <!-- New conversation dialog -->
+    <div v-if="showNewDialog" class="cpub-new-msg-overlay" @click.self="showNewDialog = false">
+      <div class="cpub-new-msg-dialog" role="dialog" aria-label="New message">
+        <div class="cpub-new-msg-header">
+          <h2 class="cpub-new-msg-title">New Conversation</h2>
+          <button class="cpub-new-msg-close" @click="showNewDialog = false" aria-label="Close">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div class="cpub-new-msg-body">
+          <div class="cpub-new-msg-field">
+            <label class="cpub-new-msg-label">Recipient username</label>
+            <input v-model="newRecipient" type="text" class="cpub-new-msg-input" placeholder="username" />
+          </div>
+          <div class="cpub-new-msg-field">
+            <label class="cpub-new-msg-label">Message (optional)</label>
+            <textarea v-model="newMessage" class="cpub-new-msg-textarea" rows="3" placeholder="Write a message..." />
+          </div>
+        </div>
+        <div class="cpub-new-msg-footer">
+          <button class="cpub-btn cpub-btn-sm" @click="showNewDialog = false">Cancel</button>
+          <button
+            class="cpub-btn cpub-btn-sm cpub-btn-primary"
+            :disabled="!newRecipient.trim()"
+            @click="startConversation"
+          >
+            Start Conversation
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="cpub-conversation-list">
@@ -148,4 +180,110 @@ async function startConversation(): Promise<void> {
   font-family: var(--font-mono);
   flex-shrink: 0;
 }
+
+/* New message dialog */
+.cpub-new-msg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cpub-new-msg-dialog {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 8px 8px 0 var(--border);
+  width: 400px;
+  max-width: 90vw;
+}
+
+.cpub-new-msg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 2px solid var(--border);
+}
+
+.cpub-new-msg-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cpub-new-msg-close {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px;
+}
+
+.cpub-new-msg-close:hover {
+  color: var(--text);
+}
+
+.cpub-new-msg-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cpub-new-msg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cpub-new-msg-label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cpub-new-msg-input,
+.cpub-new-msg-textarea {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+
+.cpub-new-msg-input:focus,
+.cpub-new-msg-textarea:focus {
+  border-color: var(--accent);
+}
+
+.cpub-new-msg-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 2px solid var(--border);
+}
+
+.cpub-btn {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  padding: 6px 14px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.cpub-btn:hover { background: var(--surface2); }
+.cpub-btn-sm { padding: 5px 12px; font-size: 11px; }
+.cpub-btn-primary { background: var(--accent); color: #fff; font-weight: 600; }
+.cpub-btn-primary:hover { opacity: 0.9; }
+.cpub-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

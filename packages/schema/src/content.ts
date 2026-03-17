@@ -58,6 +58,15 @@ export const contentItems = pgTable('content_items', {
       [key: string]: unknown;
     }>
   >(),
+  // Additional metadata
+  licenseType: varchar('license_type', { length: 32 }),
+  series: varchar('series', { length: 128 }),
+  estimatedMinutes: integer('estimated_minutes'),
+  // Federation readiness
+  canonicalUrl: text('canonical_url'),
+  apObjectId: text('ap_object_id'),
+  // Soft delete
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
   // Counters (denormalized for read performance)
   viewCount: integer('view_count').default(0).notNull(),
   likeCount: integer('like_count').default(0).notNull(),
@@ -66,6 +75,21 @@ export const contentItems = pgTable('content_items', {
   publishedAt: timestamp('published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const contentVersions = pgTable('content_versions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  contentId: uuid('content_id')
+    .notNull()
+    .references(() => contentItems.id, { onDelete: 'cascade' }),
+  version: integer('version').notNull(),
+  title: varchar('title', { length: 255 }),
+  content: jsonb('content'),
+  metadata: jsonb('metadata'),
+  createdById: uuid('created_by_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const contentForks = pgTable('content_forks', {
@@ -102,8 +126,20 @@ export const contentTags = pgTable('content_tags', {
 export const contentItemsRelations = relations(contentItems, ({ one, many }) => ({
   author: one(users, { fields: [contentItems.authorId], references: [users.id] }),
   tags: many(contentTags),
+  versions: many(contentVersions),
   forksFrom: many(contentForks, { relationName: 'forkSource' }),
   forksTo: many(contentForks, { relationName: 'forkTarget' }),
+}));
+
+export const contentVersionsRelations = relations(contentVersions, ({ one }) => ({
+  content: one(contentItems, {
+    fields: [contentVersions.contentId],
+    references: [contentItems.id],
+  }),
+  createdBy: one(users, {
+    fields: [contentVersions.createdById],
+    references: [users.id],
+  }),
 }));
 
 export const contentForksRelations = relations(contentForks, ({ one }) => ({

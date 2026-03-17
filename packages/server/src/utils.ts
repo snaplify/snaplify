@@ -40,7 +40,7 @@ export async function ensureUniqueSlug(
   return `${slug}-${Date.now()}`;
 }
 
-// --- Community Permission Helpers ---
+// --- Hub Permission Helpers ---
 
 const ROLE_HIERARCHY: Record<string, number> = {
   owner: 4,
@@ -50,7 +50,7 @@ const ROLE_HIERARCHY: Record<string, number> = {
 };
 
 const PERMISSION_MAP: Record<string, number> = {
-  editCommunity: 3,    // admin+
+  editHub: 3,          // admin+
   manageMembers: 3,    // admin+
   banUser: 2,          // moderator+
   kickMember: 2,       // moderator+

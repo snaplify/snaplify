@@ -1,8 +1,19 @@
 import { createVideo } from '@commonpub/server';
+import { createVideoSchema } from '@commonpub/schema';
 
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
-  return createVideo(db, { ...body, authorId: user.id });
+
+  const parsed = createVideoSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed',
+      data: { errors: parsed.error.flatten().fieldErrors },
+    });
+  }
+
+  return createVideo(db, { ...parsed.data, authorId: user.id });
 });

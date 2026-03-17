@@ -6,14 +6,13 @@ useSeoMeta({
 
 const activeTab = ref('foryou');
 const tabs = [
-  { value: 'foryou', label: 'For You' },
-  { value: 'latest', label: 'Latest' },
-  { value: 'following', label: 'Following' },
-  { value: 'project', label: 'Projects' },
-  { value: 'article', label: 'Articles' },
-  { value: 'explainer', label: 'Explainers' },
-  { value: 'video', label: 'Videos' },
-  { value: 'guide', label: 'Guides' },
+  { value: 'foryou', label: 'For You', icon: 'fa-solid fa-sparkles' },
+  { value: 'latest', label: 'Latest', icon: 'fa-solid fa-clock' },
+  { value: 'following', label: 'Following', icon: 'fa-solid fa-user-group' },
+  { value: 'project', label: 'Projects', icon: 'fa-solid fa-microchip' },
+  { value: 'article', label: 'Articles', icon: 'fa-solid fa-file-lines' },
+  { value: 'blog', label: 'Blog', icon: 'fa-solid fa-pen-nib' },
+  { value: 'explainer', label: 'Explainers', icon: 'fa-solid fa-lightbulb' },
 ];
 
 const contentQuery = computed(() => ({
@@ -34,7 +33,7 @@ const { data: featured } = await useFetch('/api/content', {
 
 const { data: stats } = await useFetch('/api/stats');
 
-const { data: communities } = await useFetch('/api/communities', {
+const { data: communities } = await useFetch('/api/hubs', {
   query: { limit: 4 },
 });
 
@@ -192,16 +191,26 @@ const heroDismissed = ref(false);
 
         <!-- Trending Hubs -->
         <div v-if="communities?.items?.length" class="cpub-sb-card">
-          <div class="cpub-sb-head">Trending Hubs <NuxtLink to="/communities">Browse</NuxtLink></div>
+          <div class="cpub-sb-head">Trending Hubs <NuxtLink to="/hubs">Browse</NuxtLink></div>
           <div v-for="hub in communities.items" :key="hub.id" class="cpub-hub-item">
             <div class="cpub-hub-icon">
               <i class="fa-solid fa-users"></i>
             </div>
             <div class="cpub-hub-info">
-              <NuxtLink :to="`/communities/${hub.slug}`" class="cpub-hub-name">{{ hub.name }}</NuxtLink>
+              <NuxtLink :to="`/hubs/${hub.slug}`" class="cpub-hub-name">{{ hub.name }}</NuxtLink>
               <div class="cpub-hub-members">{{ hub.memberCount ?? 0 }} members</div>
             </div>
             <button class="cpub-btn-join">Join</button>
+          </div>
+        </div>
+
+        <!-- Trending Tags -->
+        <div class="cpub-sb-card">
+          <div class="cpub-sb-head">Trending Tags</div>
+          <div class="cpub-tag-cloud">
+            <NuxtLink v-for="tag in ['edge-ai', 'esp32', 'tinyml', 'robotics', 'iot', '3d-printing', 'fpga', 'rpi', 'arduino', 'mqtt']" :key="tag" :to="`/search?q=${tag}`" class="cpub-trending-tag">
+              #{{ tag }}
+            </NuxtLink>
           </div>
         </div>
 
@@ -212,22 +221,6 @@ const heroDismissed = ref(false);
         </div>
       </aside>
     </div>
-
-    <!-- ═══ FOOTER ═══ -->
-    <footer class="cpub-footer">
-      <div class="cpub-footer-inner">
-        <nav class="cpub-footer-links">
-          <NuxtLink to="/about" class="cpub-footer-link">About</NuxtLink>
-          <span class="cpub-footer-sep">&middot;</span>
-          <NuxtLink to="/docs" class="cpub-footer-link">Docs</NuxtLink>
-          <span class="cpub-footer-sep">&middot;</span>
-          <NuxtLink to="/api" class="cpub-footer-link">API</NuxtLink>
-          <span class="cpub-footer-sep">&middot;</span>
-          <a href="https://github.com" class="cpub-footer-link">GitHub</a>
-        </nav>
-        <span class="cpub-footer-copy">&copy; 2026 CommonPub</span>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -822,43 +815,28 @@ const heroDismissed = ref(false);
 
 .cpub-powered-logo span { color: var(--accent); }
 
-/* ─── FOOTER ─── */
-.cpub-footer {
-  border-top: 2px solid var(--border);
-  padding: 20px 32px;
-  background: var(--surface);
-}
-
-.cpub-footer-inner {
-  max-width: 1280px;
-  margin: 0 auto;
+/* ─── TRENDING TAGS ─── */
+.cpub-tag-cloud {
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.cpub-footer-links {
-  display: flex;
-  gap: 16px;
-}
-
-.cpub-footer-link {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: var(--text-faint);
-  text-decoration: none;
-  transition: color 0.15s;
-}
-
-.cpub-footer-link:hover { color: var(--text); }
-
-.cpub-footer-sep { color: var(--border2); }
-
-.cpub-footer-copy {
-  margin-left: auto;
+.cpub-trending-tag {
   font-size: 10px;
   font-family: var(--font-mono);
-  color: var(--text-faint);
+  padding: 3px 10px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: all 0.12s;
+}
+
+.cpub-trending-tag:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
 }
 
 /* ─── RESPONSIVE ─── */

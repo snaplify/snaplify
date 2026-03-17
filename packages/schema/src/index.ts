@@ -10,8 +10,11 @@ export * from './content.js';
 // Social
 export * from './social.js';
 
-// Community
-export * from './community.js';
+// Hubs
+export * from './hub.js';
+
+// Products
+export * from './product.js';
 
 // Learning
 export * from './learning.js';

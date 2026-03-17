@@ -1,4 +1,5 @@
 import { getPathBySlug, updatePath } from '@commonpub/server';
+import { updateLearningPathSchema } from '@commonpub/schema';
 
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
@@ -6,8 +7,17 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')!;
   const body = await readBody(event);
 
-  const path = await getPathBySlug(db, slug);
-  if (!path) throw createError({ statusCode: 404, message: 'Path not found' });
+  const parsed = updateLearningPathSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed',
+      data: { errors: parsed.error.flatten().fieldErrors },
+    });
+  }
 
-  return updatePath(db, path.id, user.id, body);
+  const path = await getPathBySlug(db, slug);
+  if (!path) throw createError({ statusCode: 404, statusMessage: 'Path not found' });
+
+  return updatePath(db, path.id, user.id, parsed.data);
 });

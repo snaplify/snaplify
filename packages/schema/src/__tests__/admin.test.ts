@@ -6,9 +6,9 @@ import {
   auditLogsRelations,
 } from '../admin';
 import {
-  updateInstanceSettingSchema,
-  updateUserRoleSchema,
-  updateUserStatusSchema,
+  adminSettingSchema,
+  adminUpdateRoleSchema,
+  adminUpdateStatusSchema,
   resolveReportSchema,
 } from '../validators';
 
@@ -46,72 +46,70 @@ describe('admin relations', () => {
   });
 });
 
-describe('updateInstanceSettingSchema', () => {
+describe('adminSettingSchema', () => {
   it('should accept valid setting', () => {
     expect(
-      updateInstanceSettingSchema.safeParse({ key: 'theme.default', value: 'deepwood' }).success,
+      adminSettingSchema.safeParse({ key: 'theme.default', value: 'deepwood' }).success,
     ).toBe(true);
   });
 
   it('should accept any value type', () => {
-    expect(updateInstanceSettingSchema.safeParse({ key: 'some.bool', value: true }).success).toBe(
+    expect(adminSettingSchema.safeParse({ key: 'some.bool', value: true }).success).toBe(
       true,
     );
-    expect(updateInstanceSettingSchema.safeParse({ key: 'some.num', value: 42 }).success).toBe(
+    expect(adminSettingSchema.safeParse({ key: 'some.num', value: 42 }).success).toBe(
       true,
     );
     expect(
-      updateInstanceSettingSchema.safeParse({ key: 'some.obj', value: { nested: true } }).success,
+      adminSettingSchema.safeParse({ key: 'some.obj', value: { nested: true } }).success,
     ).toBe(true);
   });
 
   it('should reject empty key', () => {
-    expect(updateInstanceSettingSchema.safeParse({ key: '', value: 'x' }).success).toBe(false);
+    expect(adminSettingSchema.safeParse({ key: '', value: 'x' }).success).toBe(false);
   });
 
   it('should reject key over 128 chars', () => {
     expect(
-      updateInstanceSettingSchema.safeParse({ key: 'a'.repeat(129), value: 'x' }).success,
+      adminSettingSchema.safeParse({ key: 'a'.repeat(129), value: 'x' }).success,
     ).toBe(false);
   });
 });
 
-describe('updateUserRoleSchema', () => {
+describe('adminUpdateRoleSchema', () => {
   it('should accept valid role change', () => {
-    const result = updateUserRoleSchema.safeParse({
-      userId: '550e8400-e29b-41d4-a716-446655440000',
+    const result = adminUpdateRoleSchema.safeParse({
+      
       role: 'staff',
     });
     expect(result.success).toBe(true);
   });
 
   it('should reject invalid role', () => {
-    const result = updateUserRoleSchema.safeParse({
-      userId: '550e8400-e29b-41d4-a716-446655440000',
+    const result = adminUpdateRoleSchema.safeParse({
+      
       role: 'superadmin',
     });
     expect(result.success).toBe(false);
   });
 
-  it('should reject invalid UUID', () => {
-    expect(updateUserRoleSchema.safeParse({ userId: 'not-a-uuid', role: 'admin' }).success).toBe(
-      false,
-    );
+  it('should reject empty role', () => {
+    expect(adminUpdateRoleSchema.safeParse({}).success).toBe(false);
   });
 });
 
-describe('updateUserStatusSchema', () => {
+describe('adminUpdateStatusSchema', () => {
   it('should accept valid status change', () => {
-    const result = updateUserStatusSchema.safeParse({
-      userId: '550e8400-e29b-41d4-a716-446655440000',
+    const result = adminUpdateStatusSchema.safeParse({
+      
       status: 'suspended',
     });
     expect(result.success).toBe(true);
   });
 
   it('should reject invalid status', () => {
-    const result = updateUserStatusSchema.safeParse({
-      userId: '550e8400-e29b-41d4-a716-446655440000',
+    const result = adminUpdateStatusSchema.safeParse({
+      
       status: 'banned',
     });
     expect(result.success).toBe(false);

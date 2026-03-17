@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { ContentViewData } from '~/composables/useEngagement';
+
 const props = defineProps<{
-  content: any;
+  content: ContentViewData;
 }>();
 
 const sections = computed(() => props.content?.sections || [
@@ -15,7 +17,22 @@ const sections = computed(() => props.content?.sections || [
 
 const activeSection = ref(2); // 0-indexed, default to section 3
 const completedSections = ref<Set<number>>(new Set([0, 1]));
-const bookmarked = ref(false);
+const contentId = computed(() => props.content?.id);
+const contentType = computed(() => props.content?.type ?? 'explainer');
+const { bookmarked, toggleBookmark, share } = useEngagement(contentId, contentType);
+
+const runtimeConfig = useRuntimeConfig();
+useJsonLd({
+  type: 'article',
+  title: props.content.title,
+  description: props.content.seoDescription ?? props.content.description ?? '',
+  url: `${runtimeConfig.public.siteUrl}/explainer/${props.content.slug}`,
+  imageUrl: props.content.coverImageUrl ?? undefined,
+  authorName: props.content.author?.displayName ?? props.content.author?.username ?? '',
+  authorUrl: `${runtimeConfig.public.siteUrl}/u/${props.content.author?.username}`,
+  publishedAt: props.content.publishedAt ?? props.content.createdAt,
+  updatedAt: props.content.updatedAt,
+});
 
 const totalSections = computed(() => sections.value.length);
 const progressPct = computed(() => ((activeSection.value + 1) / totalSections.value) * 100);
@@ -90,10 +107,10 @@ function selectQuizOption(isCorrect: boolean): void {
         </button>
       </div>
       <div class="cpub-topbar-divider"></div>
-      <button class="cpub-icon-btn" :class="{ active: bookmarked }" title="Bookmark" @click="bookmarked = !bookmarked">
+      <button class="cpub-icon-btn" :class="{ active: bookmarked }" title="Bookmark" @click="toggleBookmark">
         <i :class="bookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'"></i>
       </button>
-      <button class="cpub-icon-btn" title="Share">
+      <button class="cpub-icon-btn" title="Share" @click="share">
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
       </button>
       <button class="cpub-icon-btn" title="Fullscreen">

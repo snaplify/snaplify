@@ -1,16 +1,18 @@
-import { d as defineEventHandler, u as useDB, a as getRouterParam, o as createError, T as getContestBySlug } from '../../../nitro/nitro.mjs';
-import 'drizzle-orm';
+import { d as defineEventHandler, u as useDB, a as getRouterParam, f as createError, O as getContestBySlug } from '../../../nitro/nitro.mjs';
 import 'drizzle-orm/pg-core';
+import 'drizzle-orm';
+import 'zod';
 import 'jose';
+import 'node:fs';
+import 'node:fs/promises';
+import 'node:path';
+import 'node:stream/promises';
+import 'node:crypto';
 import 'node:http';
 import 'node:https';
 import 'node:events';
 import 'node:buffer';
-import 'node:fs';
-import 'node:path';
-import 'node:crypto';
 import 'node:url';
-import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';
@@ -18,10 +20,10 @@ import 'better-auth/adapters/drizzle';
 import 'better-auth/plugins';
 
 const _slug__get = defineEventHandler(async (event) => {
-  useDB();
+  const db = useDB();
   const slug = getRouterParam(event, "slug");
   if (!slug) throw createError({ statusCode: 400, message: "Slug required" });
-  const contest = await getContestBySlug();
+  const contest = await getContestBySlug(db, slug);
   if (!contest) throw createError({ statusCode: 404, message: "Contest not found" });
   return contest;
 });

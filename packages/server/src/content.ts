@@ -1,5 +1,5 @@
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { contentItems, tags, contentTags, users } from '@commonpub/schema';
+import { contentItems, contentVersions, tags, contentTags, users } from '@commonpub/schema';
 import type { CommonPubConfig } from '@commonpub/config';
 import type {
   DB,
@@ -11,6 +11,38 @@ import type {
 } from './types.js';
 import { generateSlug, ensureUniqueSlug } from './utils.js';
 import { federateContent, federateUpdate, federateDelete } from './federation.js';
+
+/** Sanitize HTML strings within block content to prevent XSS */
+/** Sanitize HTML strings within block content to prevent XSS */
+async function sanitizeBlockContent(content: unknown): Promise<unknown> {
+  if (!Array.isArray(content)) return content;
+
+  // Check if any block has HTML that needs sanitizing
+  const blocks = content as [string, Record<string, unknown>][];
+  const hasHtml = blocks.some(([, data]) => typeof data.html === 'string' && data.html);
+  if (!hasHtml) return content;
+
+  let sanitize: (html: string) => string;
+  try {
+    const mod = await import('isomorphic-dompurify');
+    const DOMPurify = mod.default ?? mod;
+    sanitize = (html: string) => DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'u', 's', 'code', 'a', 'ul', 'ol', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'span', 'sub', 'sup'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+    });
+  } catch {
+    // DOMPurify not available — pass through
+    return content;
+  }
+
+  return blocks.map(([type, data]) => {
+    const sanitized = { ...data };
+    if (typeof sanitized.html === 'string' && sanitized.html) {
+      sanitized.html = sanitize(sanitized.html);
+    }
+    return [type, sanitized];
+  });
+}
 
 function mapToListItem(
   row: Record<string, unknown>,
@@ -51,7 +83,7 @@ export async function listContent(
   }
   if (filters.type) {
     conditions.push(
-      eq(contentItems.type, filters.type as 'project' | 'article' | 'guide' | 'blog' | 'explainer'),
+      eq(contentItems.type, filters.type as 'project' | 'article' | 'blog' | 'explainer'),
     );
   }
   if (filters.authorId) {
@@ -190,12 +222,12 @@ export async function createContent(
     .insert(contentItems)
     .values({
       authorId,
-      type: input.type as 'project' | 'article' | 'guide' | 'blog' | 'explainer',
+      type: input.type as 'project' | 'article' | 'blog' | 'explainer',
       title: input.title,
       slug,
       subtitle: input.subtitle ?? null,
       description: input.description ?? null,
-      content: input.content ?? null,
+      content: (await sanitizeBlockContent(input.content)) ?? null,
       coverImageUrl: input.coverImageUrl ?? null,
       category: input.category ?? null,
       difficulty: (input.difficulty as 'beginner' | 'intermediate' | 'advanced') ?? null,
@@ -244,7 +276,7 @@ export async function updateContent(
   }
   if (input.subtitle !== undefined) updates.subtitle = input.subtitle;
   if (input.description !== undefined) updates.description = input.description;
-  if (input.content !== undefined) updates.content = input.content;
+  if (input.content !== undefined) updates.content = await sanitizeBlockContent(input.content);
   if (input.coverImageUrl !== undefined) updates.coverImageUrl = input.coverImageUrl;
   if (input.category !== undefined) updates.category = input.category;
   if (input.difficulty !== undefined) updates.difficulty = input.difficulty;
@@ -285,7 +317,96 @@ export async function publishContent(
   contentId: string,
   authorId: string,
 ): Promise<ContentDetail | null> {
+  // Create a version snapshot before publishing
+  await createContentVersion(db, contentId, authorId);
   return updateContent(db, contentId, authorId, { status: 'published' });
+}
+
+// --- Content Versioning ---
+
+export async function createContentVersion(
+  db: DB,
+  contentId: string,
+  userId: string,
+): Promise<{ id: string; version: number }> {
+  const content = await db
+    .select()
+    .from(contentItems)
+    .where(eq(contentItems.id, contentId))
+    .limit(1);
+
+  if (content.length === 0) throw new Error('Content not found');
+
+  const item = content[0]!;
+
+  // Get next version number
+  const [lastVersion] = await db
+    .select({ version: contentVersions.version })
+    .from(contentVersions)
+    .where(eq(contentVersions.contentId, contentId))
+    .orderBy(desc(contentVersions.version))
+    .limit(1);
+
+  const nextVersion = (lastVersion?.version ?? 0) + 1;
+
+  const [row] = await db
+    .insert(contentVersions)
+    .values({
+      contentId,
+      version: nextVersion,
+      title: item.title,
+      content: item.content,
+      metadata: {
+        subtitle: item.subtitle,
+        description: item.description,
+        category: item.category,
+        difficulty: item.difficulty,
+        buildTime: item.buildTime,
+        estimatedCost: item.estimatedCost,
+        coverImageUrl: item.coverImageUrl,
+        parts: item.parts,
+        sections: item.sections,
+      },
+      createdById: userId,
+    })
+    .returning({ id: contentVersions.id, version: contentVersions.version });
+
+  return { id: row!.id, version: row!.version };
+}
+
+export interface ContentVersionItem {
+  id: string;
+  version: number;
+  title: string | null;
+  createdAt: Date;
+  createdBy: { id: string; username: string; displayName: string | null };
+}
+
+export async function listContentVersions(
+  db: DB,
+  contentId: string,
+): Promise<ContentVersionItem[]> {
+  const rows = await db
+    .select({
+      version: contentVersions,
+      user: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+      },
+    })
+    .from(contentVersions)
+    .innerJoin(users, eq(contentVersions.createdById, users.id))
+    .where(eq(contentVersions.contentId, contentId))
+    .orderBy(desc(contentVersions.version));
+
+  return rows.map((row) => ({
+    id: row.version.id,
+    version: row.version.version,
+    title: row.version.title,
+    createdAt: row.version.createdAt,
+    createdBy: row.user,
+  }));
 }
 
 export async function incrementViewCount(db: DB, contentId: string): Promise<void> {

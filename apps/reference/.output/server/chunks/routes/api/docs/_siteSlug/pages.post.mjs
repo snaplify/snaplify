@@ -1,17 +1,19 @@
-import { d as defineEventHandler, u as useDB, a as getRouterParam, c as readBody, _ as getDocsSiteBySlug, o as createError, a3 as createDocsPage } from '../../../../nitro/nitro.mjs';
+import { d as defineEventHandler, u as useDB, a as getRouterParam, c as readBody, a5 as createDocsPageSchema, f as createError, $ as getDocsSiteBySlug, a6 as createDocsPage } from '../../../../nitro/nitro.mjs';
 import { a as requireAuth } from '../../../../_/auth.mjs';
-import 'drizzle-orm';
 import 'drizzle-orm/pg-core';
+import 'drizzle-orm';
+import 'zod';
 import 'jose';
+import 'node:fs';
+import 'node:fs/promises';
+import 'node:path';
+import 'node:stream/promises';
+import 'node:crypto';
 import 'node:http';
 import 'node:https';
 import 'node:events';
 import 'node:buffer';
-import 'node:fs';
-import 'node:path';
-import 'node:crypto';
 import 'node:url';
-import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';
@@ -24,7 +26,16 @@ const pages_post = defineEventHandler(async (event) => {
   const db = useDB();
   const siteSlug = getRouterParam(event, "siteSlug");
   const body = await readBody(event);
-  if (!body.versionId) {
+  const parsed = createDocsPageSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  const data = { ...parsed.data };
+  if (!data.versionId) {
     const result = await getDocsSiteBySlug(db, siteSlug);
     if (!result) {
       throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
@@ -33,9 +44,9 @@ const pages_post = defineEventHandler(async (event) => {
     if (!defaultVersion) {
       throw createError({ statusCode: 404, statusMessage: "No version found for docs site" });
     }
-    body.versionId = defaultVersion.id;
+    data.versionId = defaultVersion.id;
   }
-  return createDocsPage(db, user.id, body);
+  return createDocsPage(db, user.id, data);
 });
 
 export { pages_post as default };

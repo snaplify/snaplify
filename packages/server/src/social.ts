@@ -3,8 +3,9 @@ import {
   likes,
   comments,
   bookmarks,
+  follows,
   contentItems,
-  communityPosts,
+  hubPosts,
   users,
 } from '@commonpub/schema';
 import type { CommonPubConfig } from '@commonpub/config';
@@ -25,8 +26,7 @@ export async function toggleLike(
     | 'blog'
     | 'explainer'
     | 'comment'
-    | 'post'
-    | 'guide';
+    | 'post';
 
   return db.transaction(async (tx) => {
     const existing = await tx
@@ -73,14 +73,14 @@ async function updateLikeCount(
       break;
     case 'post':
       await tx
-        .update(communityPosts)
+        .update(hubPosts)
         .set({
           likeCount:
             delta > 0
-              ? sql`${communityPosts.likeCount} + 1`
-              : sql`GREATEST(${communityPosts.likeCount} - 1, 0)`,
+              ? sql`${hubPosts.likeCount} + 1`
+              : sql`GREATEST(${hubPosts.likeCount} - 1, 0)`,
         })
-        .where(eq(communityPosts.id, targetId));
+        .where(eq(hubPosts.id, targetId));
       break;
     default:
       await tx
@@ -207,9 +207,9 @@ export async function createComment(
   // Update denormalized count
   if (input.targetType === 'post') {
     await db
-      .update(communityPosts)
-      .set({ replyCount: sql`${communityPosts.replyCount} + 1` })
-      .where(eq(communityPosts.id, input.targetId));
+      .update(hubPosts)
+      .set({ replyCount: sql`${hubPosts.replyCount} + 1` })
+      .where(eq(hubPosts.id, input.targetId));
   } else {
     await db
       .update(contentItems)
@@ -257,9 +257,9 @@ export async function deleteComment(
   // Update denormalized count
   if (existing[0]!.targetType === 'post') {
     await db
-      .update(communityPosts)
-      .set({ replyCount: sql`GREATEST(${communityPosts.replyCount} - 1, 0)` })
-      .where(eq(communityPosts.id, existing[0]!.targetId));
+      .update(hubPosts)
+      .set({ replyCount: sql`GREATEST(${hubPosts.replyCount} - 1, 0)` })
+      .where(eq(hubPosts.id, existing[0]!.targetId));
   } else {
     await db
       .update(contentItems)
@@ -306,6 +306,84 @@ export async function toggleBookmark(
   });
 }
 
+// --- Bookmark Listing ---
+
+export interface BookmarkItem {
+  id: string;
+  targetType: string;
+  targetId: string;
+  createdAt: Date;
+  content: {
+    id: string;
+    title: string;
+    slug: string;
+    type: string;
+    coverImageUrl: string | null;
+    author: { id: string; username: string; displayName: string | null; avatarUrl: string | null };
+  } | null;
+}
+
+export async function listUserBookmarks(
+  db: DB,
+  userId: string,
+  opts: { limit?: number; offset?: number } = {},
+): Promise<{ items: BookmarkItem[]; total: number }> {
+  const limit = Math.min(opts.limit ?? 20, 100);
+  const offset = opts.offset ?? 0;
+
+  const where = eq(bookmarks.userId, userId);
+
+  const [rows, countResult] = await Promise.all([
+    db
+      .select({
+        bookmark: bookmarks,
+        content: {
+          id: contentItems.id,
+          title: contentItems.title,
+          slug: contentItems.slug,
+          type: contentItems.type,
+          coverImageUrl: contentItems.coverImageUrl,
+        },
+        author: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl,
+        },
+      })
+      .from(bookmarks)
+      .leftJoin(contentItems, eq(bookmarks.targetId, contentItems.id))
+      .leftJoin(users, eq(contentItems.authorId, users.id))
+      .where(where)
+      .orderBy(desc(bookmarks.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(bookmarks)
+      .where(where),
+  ]);
+
+  const items: BookmarkItem[] = rows.map((row) => ({
+    id: row.bookmark.id,
+    targetType: row.bookmark.targetType,
+    targetId: row.bookmark.targetId,
+    createdAt: row.bookmark.createdAt,
+    content: row.content?.id
+      ? {
+          id: row.content.id,
+          title: row.content.title,
+          slug: row.content.slug,
+          type: row.content.type,
+          coverImageUrl: row.content.coverImageUrl,
+          author: row.author ?? { id: '', username: '', displayName: null, avatarUrl: null },
+        }
+      : null,
+  }));
+
+  return { items, total: countResult[0]?.count ?? 0 };
+}
+
 // --- Federation Hook ---
 
 export async function onContentLiked(
@@ -318,4 +396,172 @@ export async function onContentLiked(
   await federateLike(db, userId, contentUri, config.instance.domain).catch((err: unknown) => {
     console.error('[federation]', err);
   });
+}
+
+// --- Follow System ---
+
+export async function followUser(
+  db: DB,
+  followerId: string,
+  followingId: string,
+): Promise<{ followed: boolean }> {
+  if (followerId === followingId) return { followed: false };
+
+  const [result] = await db
+    .insert(follows)
+    .values({ followerId, followingId })
+    .onConflictDoNothing()
+    .returning();
+
+  return { followed: !!result };
+}
+
+export async function unfollowUser(
+  db: DB,
+  followerId: string,
+  followingId: string,
+): Promise<{ unfollowed: boolean }> {
+  const result = await db
+    .delete(follows)
+    .where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)))
+    .returning({ id: follows.id });
+  return { unfollowed: result.length > 0 };
+}
+
+export async function isFollowing(
+  db: DB,
+  followerId: string,
+  followingId: string,
+): Promise<boolean> {
+  const rows = await db
+    .select({ id: follows.id })
+    .from(follows)
+    .where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)))
+    .limit(1);
+  return rows.length > 0;
+}
+
+export interface FollowUserItem {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  followedAt: Date;
+}
+
+export async function listFollowers(
+  db: DB,
+  userId: string,
+  opts: { limit?: number; offset?: number } = {},
+): Promise<{ items: FollowUserItem[]; total: number }> {
+  const limit = Math.min(opts.limit ?? 20, 100);
+  const offset = opts.offset ?? 0;
+
+  const where = eq(follows.followingId, userId);
+
+  const [rows, countResult] = await Promise.all([
+    db
+      .select({
+        user: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl,
+          bio: users.bio,
+        },
+        followedAt: follows.createdAt,
+      })
+      .from(follows)
+      .innerJoin(users, eq(follows.followerId, users.id))
+      .where(where)
+      .orderBy(desc(follows.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(follows)
+      .where(where),
+  ]);
+
+  return {
+    items: rows.map((row) => ({
+      ...row.user,
+      bio: row.user.bio ?? null,
+      followedAt: row.followedAt,
+    })),
+    total: countResult[0]?.count ?? 0,
+  };
+}
+
+export async function listFollowing(
+  db: DB,
+  userId: string,
+  opts: { limit?: number; offset?: number } = {},
+): Promise<{ items: FollowUserItem[]; total: number }> {
+  const limit = Math.min(opts.limit ?? 20, 100);
+  const offset = opts.offset ?? 0;
+
+  const where = eq(follows.followerId, userId);
+
+  const [rows, countResult] = await Promise.all([
+    db
+      .select({
+        user: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl,
+          bio: users.bio,
+        },
+        followedAt: follows.createdAt,
+      })
+      .from(follows)
+      .innerJoin(users, eq(follows.followingId, users.id))
+      .where(where)
+      .orderBy(desc(follows.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(follows)
+      .where(where),
+  ]);
+
+  return {
+    items: rows.map((row) => ({
+      ...row.user,
+      bio: row.user.bio ?? null,
+      followedAt: row.followedAt,
+    })),
+    total: countResult[0]?.count ?? 0,
+  };
+}
+
+// --- Reports ---
+
+export async function createReport(
+  db: DB,
+  reporterId: string,
+  input: {
+    targetType: string;
+    targetId: string;
+    reason: string;
+    description?: string;
+  },
+): Promise<{ id: string }> {
+  const { reports } = await import('@commonpub/schema');
+
+  const [report] = await db
+    .insert(reports)
+    .values({
+      reporterId,
+      targetType: input.targetType as 'project' | 'article' | 'blog' | 'post' | 'comment' | 'user' | 'explainer',
+      targetId: input.targetId,
+      reason: input.reason as 'spam' | 'harassment' | 'inappropriate' | 'copyright' | 'other',
+      description: input.description ?? null,
+    })
+    .returning({ id: reports.id });
+
+  return { id: report!.id };
 }

@@ -1,18 +1,25 @@
 import { toggleLike } from '@commonpub/server';
+import { likeTargetTypeSchema } from '@commonpub/schema';
+import { z } from 'zod';
 
-const VALID_TARGET_TYPES = ['project', 'article', 'blog', 'explainer', 'comment', 'post', 'guide'];
+const toggleLikeSchema = z.object({
+  targetType: likeTargetTypeSchema,
+  targetId: z.string().uuid(),
+});
 
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
 
-  if (!body?.targetType || !VALID_TARGET_TYPES.includes(body.targetType)) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid target type' });
-  }
-  if (!body?.targetId || typeof body.targetId !== 'string') {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid target ID' });
+  const parsed = toggleLikeSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed',
+      data: { errors: parsed.error.flatten().fieldErrors },
+    });
   }
 
-  return toggleLike(db, user.id, body.targetType, body.targetId);
+  return toggleLike(db, user.id, parsed.data.targetType, parsed.data.targetId);
 });

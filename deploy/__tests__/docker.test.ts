@@ -11,8 +11,8 @@ describe('Docker configuration', () => {
     const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf-8');
     expect(dockerfile).toContain('FROM node:22-alpine AS deps');
     expect(dockerfile).toContain('FROM deps AS build');
-    expect(dockerfile).toContain('FROM deps AS prod-deps');
     expect(dockerfile).toContain('FROM node:22-alpine AS runtime');
+    expect(dockerfile).toContain('.output/server/index.mjs');
   });
 
   it('app service has health check and depends on all infra', () => {

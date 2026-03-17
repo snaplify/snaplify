@@ -1,4 +1,5 @@
 import { updateUserStatus } from '@commonpub/server';
+import { adminUpdateStatusSchema } from '@commonpub/schema';
 
 export default defineEventHandler(async (event) => {
   requireAdmin(event);
@@ -6,5 +7,14 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!;
   const body = await readBody(event);
 
-  return updateUserStatus(db, id, body.status);
+  const parsed = adminUpdateStatusSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed',
+      data: { errors: parsed.error.flatten().fieldErrors },
+    });
+  }
+
+  return updateUserStatus(db, id, parsed.data.status);
 });

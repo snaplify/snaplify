@@ -1,4 +1,5 @@
 import { getDocsSiteBySlug, createDocsPage } from '@commonpub/server';
+import { createDocsPageSchema } from '@commonpub/schema';
 
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
@@ -6,8 +7,19 @@ export default defineEventHandler(async (event) => {
   const siteSlug = getRouterParam(event, 'siteSlug')!;
   const body = await readBody(event);
 
-  // If body doesn't include versionId, resolve it from the site's default version
-  if (!body.versionId) {
+  const parsed = createDocsPageSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed',
+      data: { errors: parsed.error.flatten().fieldErrors },
+    });
+  }
+
+  const data = { ...parsed.data };
+
+  // If no versionId provided, resolve from the site's default version
+  if (!data.versionId) {
     const result = await getDocsSiteBySlug(db, siteSlug);
     if (!result) {
       throw createError({ statusCode: 404, statusMessage: 'Docs site not found' });
@@ -18,8 +30,8 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'No version found for docs site' });
     }
 
-    body.versionId = defaultVersion.id;
+    data.versionId = defaultVersion.id;
   }
 
-  return createDocsPage(db, user.id, body);
+  return createDocsPage(db, user.id, data);
 });

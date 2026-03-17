@@ -3,9 +3,9 @@ import { alias } from 'drizzle-orm/pg-core';
 import {
   users,
   contentItems,
-  communities,
-  communityMembers,
-  communityPosts,
+  hubs,
+  hubMembers,
+  hubPosts,
   comments,
   likes,
   enrollments,
@@ -55,7 +55,7 @@ export interface AuditFilters {
 export interface PlatformStats {
   users: { total: number; byRole: Record<string, number>; byStatus: Record<string, number> };
   content: { total: number; byType: Record<string, number>; byStatus: Record<string, number> };
-  communities: { total: number };
+  hubs: { total: number };
   reports: { pending: number; total: number };
 }
 
@@ -178,7 +178,7 @@ export async function getPlatformStats(db: DB): Promise<PlatformStats> {
     usersByStatus,
     contentByType,
     contentByStatus,
-    communityCount,
+    hubCount,
     pendingReports,
     totalReports,
   ] = await Promise.all([
@@ -198,7 +198,7 @@ export async function getPlatformStats(db: DB): Promise<PlatformStats> {
       .select({ status: contentItems.status, count: sql<number>`count(*)::int` })
       .from(contentItems)
       .groupBy(contentItems.status),
-    db.select({ count: sql<number>`count(*)::int` }).from(communities),
+    db.select({ count: sql<number>`count(*)::int` }).from(hubs),
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(reports)
@@ -233,7 +233,7 @@ export async function getPlatformStats(db: DB): Promise<PlatformStats> {
   return {
     users: { total: totalUsers, byRole, byStatus },
     content: { total: totalContent, byType, byStatus: byContentStatus },
-    communities: { total: communityCount[0]?.count ?? 0 },
+    hubs: { total: hubCount[0]?.count ?? 0 },
     reports: {
       pending: pendingReports[0]?.count ?? 0,
       total: totalReports[0]?.count ?? 0,
@@ -533,9 +533,9 @@ export async function deleteUser(
           break;
         case 'post':
           await tx
-            .update(communityPosts)
-            .set({ likeCount: sql`GREATEST(${communityPosts.likeCount} - 1, 0)` })
-            .where(eq(communityPosts.id, like.targetId));
+            .update(hubPosts)
+            .set({ likeCount: sql`GREATEST(${hubPosts.likeCount} - 1, 0)` })
+            .where(eq(hubPosts.id, like.targetId));
           break;
         default:
           await tx
@@ -554,9 +554,9 @@ export async function deleteUser(
     for (const comment of userComments) {
       if (comment.targetType === 'post') {
         await tx
-          .update(communityPosts)
-          .set({ replyCount: sql`GREATEST(${communityPosts.replyCount} - 1, 0)` })
-          .where(eq(communityPosts.id, comment.targetId));
+          .update(hubPosts)
+          .set({ replyCount: sql`GREATEST(${hubPosts.replyCount} - 1, 0)` })
+          .where(eq(hubPosts.id, comment.targetId));
       } else {
         await tx
           .update(contentItems)
@@ -566,15 +566,15 @@ export async function deleteUser(
     }
 
     const memberships = await tx
-      .select({ communityId: communityMembers.communityId })
-      .from(communityMembers)
-      .where(eq(communityMembers.userId, userId));
+      .select({ hubId: hubMembers.hubId })
+      .from(hubMembers)
+      .where(eq(hubMembers.userId, userId));
 
     for (const m of memberships) {
       await tx
-        .update(communities)
-        .set({ memberCount: sql`GREATEST(${communities.memberCount} - 1, 0)` })
-        .where(eq(communities.id, m.communityId));
+        .update(hubs)
+        .set({ memberCount: sql`GREATEST(${hubs.memberCount} - 1, 0)` })
+        .where(eq(hubs.id, m.hubId));
     }
 
     const userEnrollments = await tx

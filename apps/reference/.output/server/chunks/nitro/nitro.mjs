@@ -1,15 +1,17 @@
-import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { relations, eq, and, sql, desc, inArray, ilike, asc } from 'drizzle-orm';
-import { pgEnum, pgTable, timestamp, varchar, jsonb, text, boolean, uuid, integer, unique, primaryKey, numeric, alias } from 'drizzle-orm/pg-core';
+import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { pgEnum, pgTable, timestamp, jsonb, varchar, text, boolean, uuid, integer, unique, primaryKey, uniqueIndex, numeric, alias } from 'drizzle-orm/pg-core';
+import { relations, eq, and, desc, sql, inArray, ilike, asc, isNull } from 'drizzle-orm';
+import { z } from 'zod';
 import { generateKeyPair, exportSPKI, exportPKCS8 } from 'jose';
+import { promises, existsSync, createWriteStream } from 'node:fs';
+import { mkdir, unlink as unlink$1 } from 'node:fs/promises';
+import { resolve as resolve$1, dirname as dirname$1, join } from 'node:path';
+import { pipeline } from 'node:stream/promises';
+import { createHash, randomUUID } from 'node:crypto';
 import http, { Server as Server$1 } from 'node:http';
 import https, { Server } from 'node:https';
 import { EventEmitter } from 'node:events';
 import { Buffer as Buffer$1 } from 'node:buffer';
-import { promises, existsSync } from 'node:fs';
-import { resolve as resolve$1, dirname as dirname$1, join } from 'node:path';
-import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { z } from 'zod';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { betterAuth } from 'better-auth';
@@ -799,6 +801,84 @@ function isError(input) {
   return input?.constructor?.__h3_error__ === true;
 }
 
+function parse(multipartBodyBuffer, boundary) {
+  let lastline = "";
+  let state = 0 /* INIT */;
+  let buffer = [];
+  const allParts = [];
+  let currentPartHeaders = [];
+  for (let i = 0; i < multipartBodyBuffer.length; i++) {
+    const prevByte = i > 0 ? multipartBodyBuffer[i - 1] : null;
+    const currByte = multipartBodyBuffer[i];
+    const newLineChar = currByte === 10 || currByte === 13;
+    if (!newLineChar) {
+      lastline += String.fromCodePoint(currByte);
+    }
+    const newLineDetected = currByte === 10 && prevByte === 13;
+    if (0 /* INIT */ === state && newLineDetected) {
+      if ("--" + boundary === lastline) {
+        state = 1 /* READING_HEADERS */;
+      }
+      lastline = "";
+    } else if (1 /* READING_HEADERS */ === state && newLineDetected) {
+      if (lastline.length > 0) {
+        const i2 = lastline.indexOf(":");
+        if (i2 > 0) {
+          const name = lastline.slice(0, i2).toLowerCase();
+          const value = lastline.slice(i2 + 1).trim();
+          currentPartHeaders.push([name, value]);
+        }
+      } else {
+        state = 2 /* READING_DATA */;
+        buffer = [];
+      }
+      lastline = "";
+    } else if (2 /* READING_DATA */ === state) {
+      if (lastline.length > boundary.length + 4) {
+        lastline = "";
+      }
+      if ("--" + boundary === lastline) {
+        const j = buffer.length - lastline.length;
+        const part = buffer.slice(0, j - 1);
+        allParts.push(process$1(part, currentPartHeaders));
+        buffer = [];
+        currentPartHeaders = [];
+        lastline = "";
+        state = 3 /* READING_PART_SEPARATOR */;
+      } else {
+        buffer.push(currByte);
+      }
+      if (newLineDetected) {
+        lastline = "";
+      }
+    } else if (3 /* READING_PART_SEPARATOR */ === state && newLineDetected) {
+      state = 1 /* READING_HEADERS */;
+    }
+  }
+  return allParts;
+}
+function process$1(data, headers) {
+  const dataObj = {};
+  const contentDispositionHeader = headers.find((h) => h[0] === "content-disposition")?.[1] || "";
+  for (const i of contentDispositionHeader.split(";")) {
+    const s = i.split("=");
+    if (s.length !== 2) {
+      continue;
+    }
+    const key = (s[0] || "").trim();
+    if (key === "name" || key === "filename") {
+      const _value = (s[1] || "").trim().replace(/"/g, "");
+      dataObj[key] = Buffer.from(_value, "latin1").toString("utf8");
+    }
+  }
+  const contentType = headers.find((h) => h[0] === "content-type")?.[1] || "";
+  if (contentType) {
+    dataObj.type = contentType;
+  }
+  dataObj.data = Buffer.from(data);
+  return dataObj;
+}
+
 function getQuery(event) {
   return getQuery$1(event.path || "");
 }
@@ -975,6 +1055,21 @@ async function readBody(event, options = {}) {
   }
   request[ParsedBodySymbol] = parsed;
   return parsed;
+}
+async function readMultipartFormData(event) {
+  const contentType = getRequestHeader(event, "content-type");
+  if (!contentType || !contentType.startsWith("multipart/form-data")) {
+    return;
+  }
+  const boundary = contentType.match(/boundary=([^;]*)(;|$)/i)?.[1];
+  if (!boundary) {
+    return;
+  }
+  const body = await readRawBody(event, false);
+  if (!body) {
+    return;
+  }
+  return parse(body, boundary);
 }
 function getRequestWebStream(event) {
   if (!PayloadMethods$1.includes(event.method)) {
@@ -4112,7 +4207,7 @@ function _expandFromEnv(value) {
 const _inlineRuntimeConfig = {
   "app": {
     "baseURL": "/",
-    "buildId": "ef64b3d4-71b1-419b-867b-13f1dd42a9e1",
+    "buildId": "5e6f94b7-a892-4834-b620-90985898abb8",
     "buildAssetsDir": "/_nuxt/",
     "cdnURL": ""
   },
@@ -4135,6 +4230,11 @@ const _inlineRuntimeConfig = {
           "cache-control": "public, max-age=1, immutable"
         }
       },
+      "/uploads/**": {
+        "headers": {
+          "cache-control": "public, max-age=86400, immutable"
+        }
+      },
       "/_nuxt/**": {
         "headers": {
           "cache-control": "public, max-age=31536000, immutable"
@@ -4149,7 +4249,14 @@ const _inlineRuntimeConfig = {
     "siteDescription": "A CommonPub instance"
   },
   "databaseUrl": "",
-  "authSecret": "dev-secret-change-me"
+  "authSecret": "dev-secret-change-me",
+  "s3Bucket": "",
+  "s3Region": "us-east-1",
+  "s3Endpoint": "",
+  "s3AccessKey": "",
+  "s3SecretKey": "",
+  "s3PublicUrl": "",
+  "uploadDir": "./uploads"
 };
 const envOptions = {
   prefix: "NITRO_",
@@ -4581,803 +4688,831 @@ const plugins = [
 ];
 
 const assets = {
-  "/_nuxt/2nQKRi61.js": {
+  "/_nuxt/0nZLj254.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"15ef-FcuCBf+0GWBpwP2mM/WAVGzXvOs\"",
-    "mtime": "2026-03-12T06:01:18.310Z",
-    "size": 5615,
-    "path": "../public/_nuxt/2nQKRi61.js"
+    "etag": "\"673a-aZnw0BBuOybJVTMu4znbJhGRaNE\"",
+    "mtime": "2026-03-17T01:06:33.189Z",
+    "size": 26426,
+    "path": "../public/_nuxt/0nZLj254.js"
   },
-  "/_nuxt/7eJxfQzf.js": {
+  "/_nuxt/3TxN43Dd.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"4167-Q6lkvGHGv3amXuiuWXl687Dy96Y\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 16743,
-    "path": "../public/_nuxt/7eJxfQzf.js"
+    "etag": "\"651-hPslhY90Yxh6CXCWmPE6yH0A5Os\"",
+    "mtime": "2026-03-17T01:06:33.189Z",
+    "size": 1617,
+    "path": "../public/_nuxt/3TxN43Dd.js"
+  },
+  "/_nuxt/649-MnWj.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"2ce6-CqTpGCvOU8Rs2juPdoQYvEkALLw\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 11494,
+    "path": "../public/_nuxt/649-MnWj.js"
+  },
+  "/_nuxt/7T9MTvJl.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"2368-PGwAP6K+jGB3jQYyjinMkV6zA+U\"",
+    "mtime": "2026-03-17T01:06:33.189Z",
+    "size": 9064,
+    "path": "../public/_nuxt/7T9MTvJl.js"
+  },
+  "/_nuxt/B5hte0iG.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"4a0-q169kSUPfU9ZqE8IBhJXNKztTvw\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 1184,
+    "path": "../public/_nuxt/B5hte0iG.js"
   },
   "/_nuxt/AuthorRow.DVy7lpqz.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"39f-+srd0KHDhfamSkh3N4EOSdmT1UE\"",
-    "mtime": "2026-03-12T06:01:18.310Z",
+    "mtime": "2026-03-17T01:06:33.189Z",
     "size": 927,
     "path": "../public/_nuxt/AuthorRow.DVy7lpqz.css"
   },
-  "/_nuxt/B33FXpuM.js": {
+  "/_nuxt/3irZ9f-E.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"8e8-NeOQ+O2hPIqhJMbM7Z3n2AaUbCw\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 2280,
-    "path": "../public/_nuxt/B33FXpuM.js"
+    "etag": "\"487-2nldtMdVITSX9uBXzaFULElgWiM\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 1159,
+    "path": "../public/_nuxt/3irZ9f-E.js"
   },
-  "/_nuxt/B4jSEzev.js": {
+  "/_nuxt/B9Cb1CWK.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"b5c-zUtV7AEUhhk5B8Y8ngjh+PeeK8k\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 2908,
-    "path": "../public/_nuxt/B4jSEzev.js"
+    "etag": "\"7e8-f+Rv7jp98dn7PC8PHP2cFlbN664\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 2024,
+    "path": "../public/_nuxt/B9Cb1CWK.js"
   },
-  "/_nuxt/B4lBZria.js": {
+  "/_nuxt/BKFtYS1a.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"929-eyNQbuv8DuTc4JoE8LRINRFkxaM\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 2345,
-    "path": "../public/_nuxt/B4lBZria.js"
+    "etag": "\"8c5-YIoP9VOUHcyQa3epiwd0ZvG1w5s\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 2245,
+    "path": "../public/_nuxt/BKFtYS1a.js"
   },
-  "/_nuxt/BCeZqJOP.js": {
+  "/_nuxt/B7fG6Py_.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"412-qT+AKEwxu/1TsDloJjKfgfSlQkU\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 1042,
-    "path": "../public/_nuxt/BCeZqJOP.js"
+    "etag": "\"70f-3GLHfV/+urIH9BhvkB4lPuo9N9Y\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 1807,
+    "path": "../public/_nuxt/B7fG6Py_.js"
   },
-  "/_nuxt/B-uIAh7X.js": {
+  "/_nuxt/BN4x66X2.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"6070f-sI9oSRYFSKiAP+z01AlHLSIvX2c\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 395023,
-    "path": "../public/_nuxt/B-uIAh7X.js"
+    "etag": "\"ddf-mhg4Szb323zTH8Or/csGFmZviPo\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 3551,
+    "path": "../public/_nuxt/BN4x66X2.js"
   },
-  "/_nuxt/BDcv5D8y.js": {
+  "/_nuxt/B6hQM_Rh.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"5c7-upyYx8SEAGd4KsUNQ8slTTz+KDw\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 1479,
-    "path": "../public/_nuxt/BDcv5D8y.js"
+    "etag": "\"eba-s+Az4mAOYslPme/YMShvFWDRvMU\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 3770,
+    "path": "../public/_nuxt/B6hQM_Rh.js"
   },
-  "/_nuxt/BNq2te6y.js": {
+  "/_nuxt/BQcwZwAD.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"697-V+B/dO0d7CJ4OTwnNFQZwzXpmcA\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 1687,
-    "path": "../public/_nuxt/BNq2te6y.js"
+    "etag": "\"9a6-kXQbfMlyLAcN8KSozsTXWzFHSCw\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 2470,
+    "path": "../public/_nuxt/BQcwZwAD.js"
   },
-  "/_nuxt/BDcdlfpG.js": {
+  "/_nuxt/BSfz9W2m.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"2d2-uBsKhT1QQOGP+gAEENBP6eDjrv4\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 722,
-    "path": "../public/_nuxt/BDcdlfpG.js"
+    "etag": "\"23c-YmEBMw007uRsUcpoyIU8ZOII9cs\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 572,
+    "path": "../public/_nuxt/BSfz9W2m.js"
   },
-  "/_nuxt/BC3osajv.js": {
+  "/_nuxt/BGbUnJXD.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"4a2-LaTMiOa+tzbOJwBLRk9VvQ+x+Q4\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 1186,
-    "path": "../public/_nuxt/BC3osajv.js"
+    "etag": "\"3f2-wQa6evR6FUD5zusYpHEdo3IsQ7c\"",
+    "mtime": "2026-03-17T01:06:33.190Z",
+    "size": 1010,
+    "path": "../public/_nuxt/BGbUnJXD.js"
   },
-  "/_nuxt/BWmqFvgs.js": {
+  "/_nuxt/BwEj5XH2.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"22f5-R933pUsGpgu++fpKKVhKmYdpXaQ\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 8949,
-    "path": "../public/_nuxt/BWmqFvgs.js"
+    "etag": "\"645-rntnNDjWxB4+m0qIwx/ABj4V8Mk\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 1605,
+    "path": "../public/_nuxt/BwEj5XH2.js"
   },
-  "/_nuxt/BXLUcA0y.js": {
+  "/_nuxt/BwMx1zL-.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"542-wO2WVxdfLqXZeBGGZc4EyASCARA\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 1346,
-    "path": "../public/_nuxt/BXLUcA0y.js"
+    "etag": "\"47a-5JT2dzT60/qYqHJobMofk+YTKjA\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 1146,
+    "path": "../public/_nuxt/BwMx1zL-.js"
   },
-  "/_nuxt/BenvXfOm.js": {
+  "/_nuxt/BwAxrsux.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"7fe-OFKfF/YXgOqkULtq31kB97/Obi0\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 2046,
-    "path": "../public/_nuxt/BenvXfOm.js"
-  },
-  "/_nuxt/Bf6diVj5.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"3af-ObeCyyiTgg5ZaC9mzsloRd9P7Gk\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 943,
-    "path": "../public/_nuxt/Bf6diVj5.js"
-  },
-  "/_nuxt/BoJKfH9-.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"50b-a9p4F0fcn8nYqKgnu+9zHbwlNCU\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
+    "etag": "\"50b-+fcB3+4pDQIYN01MuY2PH08ri/4\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
     "size": 1291,
-    "path": "../public/_nuxt/BoJKfH9-.js"
+    "path": "../public/_nuxt/BwAxrsux.js"
   },
-  "/_nuxt/BqXtwS--.js": {
+  "/_nuxt/ByTP0UKk.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"331-zNl+yCahFh5hWiQFKBzjg7Zf0xc\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 817,
-    "path": "../public/_nuxt/BqXtwS--.js"
+    "etag": "\"1fb7-KCwlNMPnZ3jqZppHfwPWvNXEq1s\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 8119,
+    "path": "../public/_nuxt/ByTP0UKk.js"
   },
-  "/_nuxt/BqYizsjG.js": {
+  "/_nuxt/C6X6yuyz.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"8b2-QupVMd1TtLh9MPVnMR3UBKKoEl0\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 2226,
-    "path": "../public/_nuxt/BqYizsjG.js"
+    "etag": "\"4be-taDVxcVqPry4tJp+bsTQ+KOKGwA\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 1214,
+    "path": "../public/_nuxt/C6X6yuyz.js"
   },
-  "/_nuxt/Bs73BYdx.js": {
+  "/_nuxt/Bz-k9J-C.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"1aa4-CNbye2uMPIp7k6nLqo6AiNAi7S8\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 6820,
-    "path": "../public/_nuxt/Bs73BYdx.js"
+    "etag": "\"f6f9-Bb8mkbxQX1rQD20476mLSj4W7lQ\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 63225,
+    "path": "../public/_nuxt/Bz-k9J-C.js"
   },
-  "/_nuxt/ByG_fJlE.js": {
+  "/_nuxt/C7JFutp5.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"eb2-FAhiZ3zTeexhq3Nfx2lsZpdQsoo\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 3762,
-    "path": "../public/_nuxt/ByG_fJlE.js"
+    "etag": "\"444-bTbhIOarQNoAWXrkdB0HJKxVcKc\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 1092,
+    "path": "../public/_nuxt/C7JFutp5.js"
   },
-  "/_nuxt/CAZ2vixL.js": {
+  "/_nuxt/BsvYozGq.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"6b0-/EaHD+k5WLYLGurjxCDU1N+l8/A\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 1712,
-    "path": "../public/_nuxt/CAZ2vixL.js"
+    "etag": "\"ae1-LoQrXnCPNS/m8+75QpmGQyLNz4Q\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 2785,
+    "path": "../public/_nuxt/BsvYozGq.js"
   },
-  "/_nuxt/CBoepuli.js": {
+  "/_nuxt/BmCBOWyz.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"1f44-zOdPMrQxVLQXG0/P9liTJWxt7WE\"",
-    "mtime": "2026-03-12T06:01:18.311Z",
-    "size": 8004,
-    "path": "../public/_nuxt/CBoepuli.js"
+    "etag": "\"4df-lOhqqE9IF0aQSSn3xN/Z+9bC1g4\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 1247,
+    "path": "../public/_nuxt/BmCBOWyz.js"
   },
-  "/_nuxt/C3V03R0M.js": {
+  "/_nuxt/C-cKcvIK.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"2f2f1-/RQpsslqk5bOyB/y1Uo1bzA8rKM\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 193265,
-    "path": "../public/_nuxt/C3V03R0M.js"
+    "etag": "\"17e8-OGNozZ822/kNqG0Tc6eeietA8H4\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 6120,
+    "path": "../public/_nuxt/C-cKcvIK.js"
   },
-  "/_nuxt/CEwGaPLI.js": {
+  "/_nuxt/CAQ4hrtI.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"2c30-L28bzoYbOQqxvJ21/6qhRnukXNE\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 11312,
-    "path": "../public/_nuxt/CEwGaPLI.js"
+    "etag": "\"63d-JyhPfLBv0SoT5PVpwMbd6uLYQPM\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 1597,
+    "path": "../public/_nuxt/CAQ4hrtI.js"
   },
-  "/_nuxt/CHEQa_uu.js": {
+  "/_nuxt/CCDBz9bE.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"92d-EgVnPU6o87FRRp3EGXzQVsP3rXo\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 2349,
-    "path": "../public/_nuxt/CHEQa_uu.js"
+    "etag": "\"65e-lcresxTVakkoEOlrSP5FKognSCI\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 1630,
+    "path": "../public/_nuxt/CCDBz9bE.js"
   },
-  "/_nuxt/CL-KdkJi.js": {
+  "/_nuxt/CCFIxflC.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"4d6-yO07AeQguFl7oZhpg7ftGCZ8UA4\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 1238,
-    "path": "../public/_nuxt/CL-KdkJi.js"
+    "etag": "\"b7-K8QUza1q6ZDmZTlxRw0CFNlWXpE\"",
+    "mtime": "2026-03-17T01:06:33.191Z",
+    "size": 183,
+    "path": "../public/_nuxt/CCFIxflC.js"
   },
-  "/_nuxt/CQ2Rmfnh.js": {
+  "/_nuxt/CHewbaZh.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"d40-Fc1MfUl9CsXB34sIHViQRg7CVD0\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 3392,
-    "path": "../public/_nuxt/CQ2Rmfnh.js"
+    "etag": "\"6c3-CncvQxh/HAPAFgScAAfquJ3mf4A\"",
+    "mtime": "2026-03-17T01:06:33.195Z",
+    "size": 1731,
+    "path": "../public/_nuxt/CHewbaZh.js"
   },
-  "/_nuxt/CW2tPTRg.js": {
+  "/_nuxt/CS5eAVc-.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"6ab-hsO4S5nL77gv2NTNOaBq0+dT6pk\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 1707,
-    "path": "../public/_nuxt/CW2tPTRg.js"
+    "etag": "\"8fa-hYBam9sG3L5dEDxx+5MdxouHX6Q\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 2298,
+    "path": "../public/_nuxt/CS5eAVc-.js"
   },
-  "/_nuxt/CH3iLkpi.js": {
+  "/_nuxt/CalBx2xy.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"45f-y+9BfP2jrEJ34xp0wtPH4vs+7TQ\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 1119,
-    "path": "../public/_nuxt/CH3iLkpi.js"
+    "etag": "\"3b35-vpI7Am7UHOy6KxgjlnLBMW+026k\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 15157,
+    "path": "../public/_nuxt/CalBx2xy.js"
   },
-  "/_nuxt/CaLDfC6C.js": {
+  "/_nuxt/Cds5aMts.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"46b-1RCrKauolhraGpyARu2wToxkGTE\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 1131,
-    "path": "../public/_nuxt/CaLDfC6C.js"
+    "etag": "\"5b7-NTi6lp5iddfuNVGVVkTG+IwbK0M\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 1463,
+    "path": "../public/_nuxt/Cds5aMts.js"
   },
-  "/_nuxt/CkKO7rXX.js": {
+  "/_nuxt/CdSr9RoI.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"60a-LtYAfwfcOgqYq4M4lVkPkcnhXGw\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 1546,
-    "path": "../public/_nuxt/CkKO7rXX.js"
+    "etag": "\"40-2o73pKU+H/2OgWXuCJmOCOQW+e8\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 64,
+    "path": "../public/_nuxt/CdSr9RoI.js"
   },
-  "/_nuxt/ContentCard.BVfwt2Qh.css": {
+  "/_nuxt/Ce_rAVSc.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"d9d-gqjOGG/x+p/7krb4zFpVuqN3MiM\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 3485,
+    "path": "../public/_nuxt/Ce_rAVSc.js"
+  },
+  "/_nuxt/Cf0l1k6x.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"bba-4hGxM/YDHM9hzxiHF5JQdMvc9IY\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 3002,
+    "path": "../public/_nuxt/Cf0l1k6x.js"
+  },
+  "/_nuxt/ContentCard.Bd7Xc4Nw.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"7ee-Wa+VAdNZrxKmQq+GQBCQ4OVGtEk\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 2030,
-    "path": "../public/_nuxt/ContentCard.BVfwt2Qh.css"
+    "etag": "\"c56-AFEGYtriYkvJs+tOUe6x+g2V/6g\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 3158,
+    "path": "../public/_nuxt/ContentCard.Bd7Xc4Nw.css"
   },
-  "/_nuxt/ContentTypeBadge.CSqY8iai.css": {
+  "/_nuxt/ContentTypeBadge.Dnr759Nm.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"2fe-QzODW+GuWTEyR00xxZEJh4f2RlY\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 766,
-    "path": "../public/_nuxt/ContentTypeBadge.CSqY8iai.css"
+    "etag": "\"31d-HajBbyIPLIzvGA1c1JGWdtfKYss\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 797,
+    "path": "../public/_nuxt/ContentTypeBadge.Dnr759Nm.css"
   },
-  "/_nuxt/CwgZ6lTY.js": {
+  "/_nuxt/CpX4mz_D.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"510-LTSYnBvTO9Bl0MZt9YHEjbUI+d8\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 1296,
-    "path": "../public/_nuxt/CwgZ6lTY.js"
+    "etag": "\"435-Ikq8miPV5l2oyreXJL7hVxrOIxA\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 1077,
+    "path": "../public/_nuxt/CpX4mz_D.js"
   },
-  "/_nuxt/CpubEditor.BUSmeT_j.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"146-NGI4TF7VZ+rCBd9+UJfuWnPIPBs\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 326,
-    "path": "../public/_nuxt/CpubEditor.BUSmeT_j.css"
-  },
-  "/_nuxt/CxBEyJix.js": {
+  "/_nuxt/CqDf8m5T.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"745-e82wDxzgcudZWU16enSTAM9wcyc\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 1861,
-    "path": "../public/_nuxt/CxBEyJix.js"
-  },
-  "/_nuxt/D46hf1bl.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"649-V9XNyeNZisVAzxIO4FqsG7/qZnE\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
-    "size": 1609,
-    "path": "../public/_nuxt/D46hf1bl.js"
-  },
-  "/_nuxt/DAGbzMqs.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"65f-cEOlGyuPgEU3AOCA4K5JJR0lKV8\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 1631,
-    "path": "../public/_nuxt/DAGbzMqs.js"
-  },
-  "/_nuxt/DDUI71Yc.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"28d-iy25Bc0u/YmCjdXTQ9OsjpBO1Dk\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 653,
-    "path": "../public/_nuxt/DDUI71Yc.js"
-  },
-  "/_nuxt/D6txvjaN.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"4d24-u9v8GbZFgEnS0YFxrlcYesC3JAs\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 19748,
-    "path": "../public/_nuxt/D6txvjaN.js"
-  },
-  "/_nuxt/DKXRcqye.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"92e-QKQ9SqOfVVLZ6QaTkl0DVJLgzbA\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 2350,
-    "path": "../public/_nuxt/DKXRcqye.js"
+    "etag": "\"1280-1ivWYY3hQOdbOo0pM3r6kbdFIX4\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 4736,
+    "path": "../public/_nuxt/CqDf8m5T.js"
   },
   "/_nuxt/CountdownTimer.BJmhrNPV.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"243-RHyp3Ssm+/Ha/l6J7xP790U4ZCU\"",
-    "mtime": "2026-03-12T06:01:18.312Z",
+    "mtime": "2026-03-17T01:06:33.193Z",
     "size": 579,
     "path": "../public/_nuxt/CountdownTimer.BJmhrNPV.css"
   },
-  "/_nuxt/DKEZqQVC.js": {
+  "/_nuxt/CuUJitgF.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"14b-tHKj9/fMuvRfpAPS2mYpSzdOV8A\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 331,
-    "path": "../public/_nuxt/DKEZqQVC.js"
+    "etag": "\"1f9-gv9tD/k8vNY1frpcPwdYY3tizzo\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 505,
+    "path": "../public/_nuxt/CuUJitgF.js"
   },
-  "/_nuxt/DLUey8Xw.js": {
+  "/_nuxt/Cvw3IWzp.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"8f6-SKUd6aULgpy9RUDvxkjBCHlz3fs\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 2294,
-    "path": "../public/_nuxt/DLUey8Xw.js"
+    "etag": "\"1576-ZO0foysiRhjLCv8gX24o6VOnfMI\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 5494,
+    "path": "../public/_nuxt/Cvw3IWzp.js"
   },
-  "/_nuxt/DOeW_8q7.js": {
+  "/_nuxt/D5A3qFmK.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"1496-t893hQ77sgcawlZUW2z3F2LTS+w\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 5270,
-    "path": "../public/_nuxt/DOeW_8q7.js"
+    "etag": "\"5d9-XNNoBx8KAQiBRghTKwLpQ+7ayXY\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 1497,
+    "path": "../public/_nuxt/D5A3qFmK.js"
   },
-  "/_nuxt/DZnlJRF2.js": {
+  "/_nuxt/CxCVFf5h.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"385-Pj+z5wwxm1abJKGUgB9GU57XfLg\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 901,
-    "path": "../public/_nuxt/DZnlJRF2.js"
+    "etag": "\"596-9RcmJNrJN5S0Vk/NtCZE0nPqnGY\"",
+    "mtime": "2026-03-17T01:06:33.192Z",
+    "size": 1430,
+    "path": "../public/_nuxt/CxCVFf5h.js"
   },
-  "/_nuxt/DUOH_Fwn.js": {
+  "/_nuxt/D6ffFxsk.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"5f6-8z9ojXfU24tK5IS8IiVUmnjUuJw\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 1526,
-    "path": "../public/_nuxt/DUOH_Fwn.js"
+    "etag": "\"624-4pPWLqDWBC+G5UhzRv75kSaGmMQ\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 1572,
+    "path": "../public/_nuxt/D6ffFxsk.js"
   },
-  "/_nuxt/DZmJnAfL.js": {
+  "/_nuxt/D94TNBhn.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"6fe-tE9pkvAtjV1bSP/W0+5oVoOGejM\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 1790,
-    "path": "../public/_nuxt/DZmJnAfL.js"
+    "etag": "\"462a-pKR4WEuRNhkGUcSGh15QJ7rT9OI\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 17962,
+    "path": "../public/_nuxt/D94TNBhn.js"
   },
-  "/_nuxt/DMDHADIQ.js": {
+  "/_nuxt/DMWTC_Jy.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"ddf-AGX71wbLiAszfPw5X7j2NvMGPy4\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 3551,
-    "path": "../public/_nuxt/DMDHADIQ.js"
+    "etag": "\"38a-6CKb3eMrSFV5pqaMtY1RzDfskgA\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 906,
+    "path": "../public/_nuxt/DMWTC_Jy.js"
   },
-  "/_nuxt/Ddfa-e9a.js": {
+  "/_nuxt/DNelkc89.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"12bb-MoRV14S1LIxPuuGgJb1hH7q9qr0\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 4795,
-    "path": "../public/_nuxt/Ddfa-e9a.js"
+    "etag": "\"5c5-GX35xvOBTO/7LKbAKj+IuUtwylc\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 1477,
+    "path": "../public/_nuxt/DNelkc89.js"
   },
-  "/_nuxt/Dh-HOVM6.js": {
+  "/_nuxt/DJ6oCnyc.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"4f06-V09UqVs4+BcO6kohzrNQ9jyZTyI\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 20230,
-    "path": "../public/_nuxt/Dh-HOVM6.js"
+    "etag": "\"351-hSSOUutg4E5+pIaOREsJ9OA5Qe4\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 849,
+    "path": "../public/_nuxt/DJ6oCnyc.js"
   },
-  "/_nuxt/D_I1OVbF.js": {
+  "/_nuxt/Dd7-BVun.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"7fe-smGfWRiOaxyvLyviNOtzIeX78VU\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 2046,
-    "path": "../public/_nuxt/D_I1OVbF.js"
+    "etag": "\"645-WjC9MrfxE+3SbAGLy96BfwwAoCM\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 1605,
+    "path": "../public/_nuxt/Dd7-BVun.js"
   },
-  "/_nuxt/DtUdOCwg.js": {
+  "/_nuxt/DfVxRiHC.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"523-ZCnF5tai8VZhpDVzWPJqyR77oBI\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 1315,
-    "path": "../public/_nuxt/DtUdOCwg.js"
+    "etag": "\"b2b-9r0hz7435AXPaqBuk73b+KvAAXQ\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 2859,
+    "path": "../public/_nuxt/DfVxRiHC.js"
   },
-  "/_nuxt/Dy0BstXc.js": {
+  "/_nuxt/Dhni0xnI.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"40-AtZBq7OUm7UzHYXgB7jPMcRP3kA\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 64,
-    "path": "../public/_nuxt/Dy0BstXc.js"
+    "etag": "\"67a-MxqZy/JpdscCK3jpC4WgEoidNFk\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 1658,
+    "path": "../public/_nuxt/Dhni0xnI.js"
   },
-  "/_nuxt/DyBo7Vpe.js": {
+  "/_nuxt/DjpBJX_F.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"4b5-72UCq9IzxKo448KT26+bHQOVCw0\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 1205,
-    "path": "../public/_nuxt/DyBo7Vpe.js"
+    "etag": "\"38f-DJijnBGxJq+pL31M+nwFQKPlQSg\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 911,
+    "path": "../public/_nuxt/DjpBJX_F.js"
   },
-  "/_nuxt/Dz728biY.js": {
+  "/_nuxt/DvHtCCwM.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"680-QCcTSotXPCXSdi8tsWtYjnOrjxw\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 1664,
-    "path": "../public/_nuxt/Dz728biY.js"
+    "etag": "\"2d1-Iqxk39CeBGmJEUCCG0U3uJwBbCc\"",
+    "mtime": "2026-03-17T01:06:33.193Z",
+    "size": 721,
+    "path": "../public/_nuxt/DvHtCCwM.js"
   },
-  "/_nuxt/Pu1ORon8.js": {
+  "/_nuxt/DnaUTjdC.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"347-PqpTWp3332w3Uji1m85liP7g2RI\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 839,
-    "path": "../public/_nuxt/Pu1ORon8.js"
+    "etag": "\"49ed8-JMCk5VWKDT0G2vlZkTGA/Mdy2oc\"",
+    "mtime": "2026-03-17T01:06:33.195Z",
+    "size": 302808,
+    "path": "../public/_nuxt/DnaUTjdC.js"
   },
-  "/_nuxt/ZEh1OAT6.js": {
+  "/_nuxt/E9AWlkv-.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"23c-eOmVvNxw3BSdydcazKGKvH4fEyE\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
-    "size": 572,
-    "path": "../public/_nuxt/ZEh1OAT6.js"
+    "etag": "\"1844-NAhYqn03CanpFGZ7imR5uUajFrk\"",
+    "mtime": "2026-03-17T01:06:33.194Z",
+    "size": 6212,
+    "path": "../public/_nuxt/E9AWlkv-.js"
+  },
+  "/_nuxt/Jy0N6rdm.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"2222b-5vA1Z1N9AP1cI5fMLGcDxk9QMQc\"",
+    "mtime": "2026-03-17T01:06:33.194Z",
+    "size": 139819,
+    "path": "../public/_nuxt/Jy0N6rdm.js"
+  },
+  "/_nuxt/LoKutHwD.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"87c-9AsS9ua7Sf7aVDmvzqfha499wCg\"",
+    "mtime": "2026-03-17T01:06:33.194Z",
+    "size": 2172,
+    "path": "../public/_nuxt/LoKutHwD.js"
+  },
+  "/_nuxt/TtheQqdY.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"2c15-l4tARQCGV3JTT7E8giYYui7l0Z0\"",
+    "mtime": "2026-03-17T01:06:33.195Z",
+    "size": 11285,
+    "path": "../public/_nuxt/TtheQqdY.js"
   },
   "/_nuxt/_...rowgppBy.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"4d2-zEfMf60eU4uskfVuW79GHUrY3HA\"",
-    "mtime": "2026-03-12T06:01:18.313Z",
+    "mtime": "2026-03-17T01:06:33.195Z",
     "size": 1234,
     "path": "../public/_nuxt/_...rowgppBy.css"
   },
-  "/_nuxt/_WNPJl9L.js": {
+  "/_nuxt/PK5F2pgU.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"3b45-hfTpMTHIOiEQyS2xnTJaW7OZt1I\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 15173,
-    "path": "../public/_nuxt/_WNPJl9L.js"
+    "etag": "\"2430-7XLQPZfy7xvkjR7CIdSEGP7+p2w\"",
+    "mtime": "2026-03-17T01:06:33.194Z",
+    "size": 9264,
+    "path": "../public/_nuxt/PK5F2pgU.js"
   },
   "/_nuxt/_conversationId_.Cue1zSd7.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"4ee-qRayqWb/mUTYP11HKYBDgsyW6H0\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.195Z",
     "size": 1262,
     "path": "../public/_nuxt/_conversationId_.Cue1zSd7.css"
+  },
+  "/_nuxt/_id_.dLfbr99O.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"723-h4hvqrTt8MKH4c51KuaGTuFrJ5Y\"",
+    "mtime": "2026-03-17T01:06:33.195Z",
+    "size": 1827,
+    "path": "../public/_nuxt/_id_.dLfbr99O.css"
+  },
+  "/_nuxt/Zsimz59O.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"2e89-MTZ1z59vnm/EROeofxliNjaEjgg\"",
+    "mtime": "2026-03-17T01:06:33.194Z",
+    "size": 11913,
+    "path": "../public/_nuxt/Zsimz59O.js"
   },
   "/_nuxt/_lessonSlug_.Df8Q7mWW.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"5ea-UNZJDPjiJ6+wxjv8Crv44Zxolr0\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.195Z",
     "size": 1514,
     "path": "../public/_nuxt/_lessonSlug_.Df8Q7mWW.css"
+  },
+  "/_nuxt/_slug_.BTm7ZvMm.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"13ff-w9/95fmZ/ziVBB5HpwDevz/uqE0\"",
+    "mtime": "2026-03-17T01:06:33.195Z",
+    "size": 5119,
+    "path": "../public/_nuxt/_slug_.BTm7ZvMm.css"
   },
   "/_nuxt/_siteSlug_.ClBZoUND.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"57f-xrG/4tDiU+Swqu/DmerEmbg0JA8\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.195Z",
     "size": 1407,
     "path": "../public/_nuxt/_siteSlug_.ClBZoUND.css"
   },
-  "/_nuxt/_slug_.Cu7YxbOH.css": {
+  "/_nuxt/_slug_.B-89eBBv.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"1fe-iHO/OXVWzwNXpePCCzETfUuHA10\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 510,
-    "path": "../public/_nuxt/_slug_.Cu7YxbOH.css"
+    "etag": "\"43e3-fVK7HX69TTQ6o0r0gz40djPtiWc\"",
+    "mtime": "2026-03-17T01:06:33.195Z",
+    "size": 17379,
+    "path": "../public/_nuxt/_slug_.B-89eBBv.css"
   },
-  "/_nuxt/_slug_.BXwg8Gbl.css": {
+  "/_nuxt/_username_.BMyI1L3b.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"3fd1-FZewSjNM6k33sujg6l/5eT6NVpc\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 16337,
-    "path": "../public/_nuxt/_slug_.BXwg8Gbl.css"
+    "etag": "\"2fe1-cyLdzo0yBQ25o7LB1cLVGpdekfE\"",
+    "mtime": "2026-03-17T01:06:33.196Z",
+    "size": 12257,
+    "path": "../public/_nuxt/_username_.BMyI1L3b.css"
   },
-  "/_nuxt/_slug_.JryqOQ-T.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"13ea-xBFCfskM3+niM3m1hTMkqe02szo\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 5098,
-    "path": "../public/_nuxt/_slug_.JryqOQ-T.css"
+  "/_nuxt/LxWzLAAw.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"3155a-THTIGkAPwekPMOxqXcXuB65PbsY\"",
+    "mtime": "2026-03-17T01:06:33.194Z",
+    "size": 202074,
+    "path": "../public/_nuxt/LxWzLAAw.js"
   },
-  "/_nuxt/_username_.jkenUXsE.css": {
+  "/_nuxt/_slug_.DpOwm734.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"1cec-rF/WoT0ZWyyqEKWNZxFfba9yCLs\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 7404,
-    "path": "../public/_nuxt/_username_.jkenUXsE.css"
+    "etag": "\"506b-YwrDTziPO4N9OIESepRkHhxGX78\"",
+    "mtime": "2026-03-17T01:06:33.195Z",
+    "size": 20587,
+    "path": "../public/_nuxt/_slug_.DpOwm734.css"
   },
-  "/_nuxt/admin.CuEkSsjd.css": {
+  "/_nuxt/_slug_.DtQsT-Oh.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"6c7-JyCbDSjbRN+h1Po/NXTXZWFI54I\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 1735,
-    "path": "../public/_nuxt/admin.CuEkSsjd.css"
+    "etag": "\"400-mDPYQjsTjaBH/NAbZuN7dWbawZ4\"",
+    "mtime": "2026-03-17T01:06:33.195Z",
+    "size": 1024,
+    "path": "../public/_nuxt/_slug_.DtQsT-Oh.css"
+  },
+  "/_nuxt/about.BvQ-nOCE.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"a65-uutln33vylj856yyLcv2TlyqcoE\"",
+    "mtime": "2026-03-17T01:06:33.196Z",
+    "size": 2661,
+    "path": "../public/_nuxt/about.BvQ-nOCE.css"
   },
   "/_nuxt/appearance.C7Vo_EPg.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"2a0-mLKp9Gohe8A0nkPiEaMcbZeLcNI\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.196Z",
     "size": 672,
     "path": "../public/_nuxt/appearance.C7Vo_EPg.css"
+  },
+  "/_nuxt/admin.CuEkSsjd.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"6c7-JyCbDSjbRN+h1Po/NXTXZWFI54I\"",
+    "mtime": "2026-03-17T01:06:33.196Z",
+    "size": 1735,
+    "path": "../public/_nuxt/admin.CuEkSsjd.css"
   },
   "/_nuxt/audit.Bk7zyCmM.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"319-kkLOhkmeCDxnBw+cnMtXneq9QEo\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.196Z",
     "size": 793,
     "path": "../public/_nuxt/audit.Bk7zyCmM.css"
   },
   "/_nuxt/auth.guVz6xFX.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"291-gcFo/HmDY2sL+eUQt+ZQLaNOB4I\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.196Z",
     "size": 657,
     "path": "../public/_nuxt/auth.guVz6xFX.css"
-  },
-  "/_nuxt/create.D-lxqzpL.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"5e5-K/xq2ry1EJgQ5pXlxvSF8O0W1KY\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 1509,
-    "path": "../public/_nuxt/create.D-lxqzpL.css"
   },
   "/_nuxt/content.Beth3trZ.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"53f-TjawyIhQP/+4Sdz1SYf7PaQZCdQ\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.196Z",
     "size": 1343,
     "path": "../public/_nuxt/content.Beth3trZ.css"
   },
   "/_nuxt/create.DKW_DWhv.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"1d5-iwQnFoDNcc52H9jqhPNxL/yAwcc\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.196Z",
     "size": 469,
     "path": "../public/_nuxt/create.DKW_DWhv.css"
+  },
+  "/_nuxt/create.DxRKk7pK.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"5e5-lzhgTLfTDfyCxD4GU6P773MQtdQ\"",
+    "mtime": "2026-03-17T01:06:33.196Z",
+    "size": 1509,
+    "path": "../public/_nuxt/create.DxRKk7pK.css"
   },
   "/_nuxt/create.we9jrt5g.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"61d-B0BVQgFalzQDBXUAba3+FWPW9ug\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.196Z",
     "size": 1565,
     "path": "../public/_nuxt/create.we9jrt5g.css"
   },
-  "/_nuxt/dashboard.DVO7Jo0W.css": {
+  "/_nuxt/dashboard.7uI5_O7e.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"83f-zaBp7mv3tGidsRi4lPQQ0t5yRdI\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 2111,
-    "path": "../public/_nuxt/dashboard.DVO7Jo0W.css"
+    "etag": "\"ee5-nUkLk6jmtAUiLWSESyhrgrojXyU\"",
+    "mtime": "2026-03-17T01:06:33.196Z",
+    "size": 3813,
+    "path": "../public/_nuxt/dashboard.7uI5_O7e.css"
   },
-  "/_nuxt/default.fus33jRK.css": {
+  "/_nuxt/default.2VxVmKJ0.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"23ae-7Dy8ozWO9f1QV8ftgqCbsQiJwpc\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 9134,
-    "path": "../public/_nuxt/default.fus33jRK.css"
-  },
-  "/_nuxt/eaQWyDPc.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"687-/CczA/gjruF8yDts4Ux9DsshTXo\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 1671,
-    "path": "../public/_nuxt/eaQWyDPc.js"
+    "etag": "\"1c09-Jxe2dNUOSVv9N/Q/i4b/S053N5A\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
+    "size": 7177,
+    "path": "../public/_nuxt/default.2VxVmKJ0.css"
   },
   "/_nuxt/edit.Dni-JbNW.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"3e0-9G8Z8ysSenRFiDoFQGuF9hpOrOQ\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.196Z",
     "size": 992,
     "path": "../public/_nuxt/edit.Dni-JbNW.css"
   },
-  "/_nuxt/edit.KviDnmGq.css": {
+  "/_nuxt/edit.LWfxZQ5z.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"233e-EiuO1QbpiYU94aLgsq1WBuyCMqA\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 9022,
-    "path": "../public/_nuxt/edit.KviDnmGq.css"
+    "etag": "\"a09a-aMNIi4EtX1n8yA2eg/GT2uXkbgY\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
+    "size": 41114,
+    "path": "../public/_nuxt/edit.LWfxZQ5z.css"
   },
   "/_nuxt/edit.mYWswRXL.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"2da-N+3PtBzIawrj4DC5V8CtUmVJjHs\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
+    "mtime": "2026-03-17T01:06:33.196Z",
     "size": 730,
     "path": "../public/_nuxt/edit.mYWswRXL.css"
   },
-  "/_nuxt/editor.CqYnHnxn.css": {
+  "/_nuxt/entry.Bz2xTzR-.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"631-DpoInIT6/lQDDA2XEzLeuXKx+8c\"",
-    "mtime": "2026-03-12T06:01:18.314Z",
-    "size": 1585,
-    "path": "../public/_nuxt/editor.CqYnHnxn.css"
-  },
-  "/_nuxt/error-404.Cfia30in.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"dca-qVA6jDkxNzFS6WhjbDwPFtguCI0\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 3530,
-    "path": "../public/_nuxt/error-404.Cfia30in.css"
-  },
-  "/_nuxt/error-500.DI2rlNCt.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"75a-ZlSQRiXO5L0F9hrUZbpl6FD2OwM\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 1882,
-    "path": "../public/_nuxt/error-500.DI2rlNCt.css"
+    "etag": "\"67f-l9VQNGhq9Eebrt1ZLWSnvDryD7M\"",
+    "mtime": "2026-03-17T01:06:33.196Z",
+    "size": 1663,
+    "path": "../public/_nuxt/entry.Bz2xTzR-.css"
   },
   "/_nuxt/feed.An90og1t.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"6a6-MNRGOQEgf9eOLe6dCOqULAdyBQU\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
+    "mtime": "2026-03-17T01:06:33.198Z",
     "size": 1702,
     "path": "../public/_nuxt/feed.An90og1t.css"
   },
-  "/_nuxt/g9o6qSou.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"608-0NOk9CZqPklg6ihdAuFzbSofQF0\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 1544,
-    "path": "../public/_nuxt/g9o6qSou.js"
-  },
-  "/_nuxt/index.6zPRBpDg.css": {
+  "/_nuxt/index.3vsaMfli.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"320-W0z30Yjke8c3cXaJcaUHadvjGTE\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 800,
-    "path": "../public/_nuxt/index.6zPRBpDg.css"
+    "etag": "\"387d-mREsuchP2yoSub35SjwmeARgpuo\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
+    "size": 14461,
+    "path": "../public/_nuxt/index.3vsaMfli.css"
   },
-  "/_nuxt/index.B9DSdNva.css": {
+  "/_nuxt/editor.CqYnHnxn.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"175f-qACj5NkZGyYCmo9lW5cCh/bOK9c\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 5983,
-    "path": "../public/_nuxt/index.B9DSdNva.css"
+    "etag": "\"631-DpoInIT6/lQDDA2XEzLeuXKx+8c\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
+    "size": 1585,
+    "path": "../public/_nuxt/editor.CqYnHnxn.css"
   },
-  "/_nuxt/index.BxSLOL3B.css": {
+  "/_nuxt/explore.CzPWMK-U.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"e31-YcFoOmjV+L/4Zjrq6RhRX5jsGDg\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 3633,
-    "path": "../public/_nuxt/index.BxSLOL3B.css"
+    "etag": "\"11fd-lOMHH/3fZ6OfwRsFMCXD+ex/NUI\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
+    "size": 4605,
+    "path": "../public/_nuxt/explore.CzPWMK-U.css"
+  },
+  "/_nuxt/index.BntvDV3G.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"d08-A/FBAqatZcKL0vY9FzsL7d/ziMM\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
+    "size": 3336,
+    "path": "../public/_nuxt/index.BntvDV3G.css"
+  },
+  "/_nuxt/index.BvmqA84i.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"506-0NcjayD6M9lfS49feUz6YgSRfM8\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
+    "size": 1286,
+    "path": "../public/_nuxt/index.BvmqA84i.css"
   },
   "/_nuxt/index.C0NE2bxQ.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"706-X/qPiaeTDpdjqjEGVxr6VeFji6g\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
+    "mtime": "2026-03-17T01:06:33.197Z",
     "size": 1798,
     "path": "../public/_nuxt/index.C0NE2bxQ.css"
   },
-  "/_nuxt/hHxv-s9a.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"b7-ul00PhxXnc6XODdlyxgN4SvtDm8\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 183,
-    "path": "../public/_nuxt/hHxv-s9a.js"
-  },
-  "/_nuxt/index.CsJHg7eP.css": {
+  "/_nuxt/index.CKhn6mEM.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"355c-0mbgv/3YgvRx7GYl5zzL3ykCs0M\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 13660,
-    "path": "../public/_nuxt/index.CsJHg7eP.css"
-  },
-  "/_nuxt/index.DEoFmmNO.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"515-TTv//yxYBAuWlXn3sB9ntu5KsaY\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 1301,
-    "path": "../public/_nuxt/index.DEoFmmNO.css"
-  },
-  "/_nuxt/index.DaoE6VT7.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"608-250F1rxmmikixpjB1N9i6N1+mQc\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
+    "etag": "\"608-jjjdtIPGtJuyH7dkf8/XZZHJBvI\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
     "size": 1544,
-    "path": "../public/_nuxt/index.DaoE6VT7.css"
+    "path": "../public/_nuxt/index.CKhn6mEM.css"
+  },
+  "/_nuxt/index.DPf9kR2m.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"406e-LHCxplkrYUWKGL4vRzCgeh+uPps\"",
+    "mtime": "2026-03-17T01:06:33.198Z",
+    "size": 16494,
+    "path": "../public/_nuxt/index.DPf9kR2m.css"
+  },
+  "/_nuxt/index.CoTM5NHI.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"ca87-h9TeY/QZyhngvh6w1zm3CvsyF7o\"",
+    "mtime": "2026-03-17T01:06:33.198Z",
+    "size": 51847,
+    "path": "../public/_nuxt/index.CoTM5NHI.css"
   },
   "/_nuxt/index.DdHirfDW.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"2a2-RrRp87p823c1Zkfu6uBO4gdSd/s\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
+    "mtime": "2026-03-17T01:06:33.197Z",
     "size": 674,
     "path": "../public/_nuxt/index.DdHirfDW.css"
   },
   "/_nuxt/index.Do7PK3MZ.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"3dc-Z4RjcOUYrf94zCwqkXXpl7JhNyo\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
+    "mtime": "2026-03-17T01:06:33.197Z",
     "size": 988,
     "path": "../public/_nuxt/index.Do7PK3MZ.css"
   },
-  "/_nuxt/index.Dxc5V1lP.css": {
+  "/_nuxt/index.VG5_BPUx.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"4f1-4Z/6E3HK5/FepLbJJb47pQNN4xA\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 1265,
-    "path": "../public/_nuxt/index.Dxc5V1lP.css"
+    "etag": "\"2c4f-kC5fGupM+kXq5h6sj7vmhY+8QcA\"",
+    "mtime": "2026-03-17T01:06:33.198Z",
+    "size": 11343,
+    "path": "../public/_nuxt/index.VG5_BPUx.css"
   },
-  "/_nuxt/login.DQsrzZbu.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"761-S+l+8eSHybHa7Ythcmn4MUlVOEw\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 1889,
-    "path": "../public/_nuxt/login.DQsrzZbu.css"
+  "/_nuxt/kSVbNX7J.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"512-lIU3Xo4Pus05CCuTGQXsrL6hwlw\"",
+    "mtime": "2026-03-17T01:06:33.198Z",
+    "size": 1298,
+    "path": "../public/_nuxt/kSVbNX7J.js"
   },
-  "/_nuxt/members.DxAm20jG.css": {
+  "/_nuxt/login.DzZFCbkB.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"45f-j4X6B5HO6ccDz/PC8h668UkRaYo\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
+    "etag": "\"776-y/I8DpTgwFwnQ0c1lZBg2gHGMfI\"",
+    "mtime": "2026-03-17T01:06:33.197Z",
+    "size": 1910,
+    "path": "../public/_nuxt/login.DzZFCbkB.css"
+  },
+  "/_nuxt/members.CCXckPZV.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"45f-jC0KiAlRAbWdIWxUZg7l3I1zQWY\"",
+    "mtime": "2026-03-17T01:06:33.198Z",
     "size": 1119,
-    "path": "../public/_nuxt/members.DxAm20jG.css"
+    "path": "../public/_nuxt/members.CCXckPZV.css"
   },
   "/_nuxt/notifications.C1jB8uR1.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"4e2-cK5XtnqeZIjfbD+MgWS99yCFMM0\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
+    "mtime": "2026-03-17T01:06:33.198Z",
     "size": 1250,
     "path": "../public/_nuxt/notifications.C1jB8uR1.css"
   },
-  "/_nuxt/nbkjpGSn.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"9fc-i8J6qag9ELX/tovrACjTgq9tXvg\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 2556,
-    "path": "../public/_nuxt/nbkjpGSn.js"
-  },
-  "/_nuxt/qhm3wBQ4.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"20a-DteT36GyLN5X4DTb/IcU+2hFQWs\"",
-    "mtime": "2026-03-12T06:01:18.315Z",
-    "size": 522,
-    "path": "../public/_nuxt/qhm3wBQ4.js"
-  },
-  "/_nuxt/profile.0L-M9R6I.css": {
+  "/_nuxt/register.CEKp0JcX.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"16ce-zBGJqJNF4oggBXIJfCW6MdFOloc\"",
-    "mtime": "2026-03-12T06:01:18.316Z",
-    "size": 5838,
-    "path": "../public/_nuxt/profile.0L-M9R6I.css"
+    "etag": "\"788-8aeQ7Vo4JZibZ9MLg59unMfyzFg\"",
+    "mtime": "2026-03-17T01:06:33.198Z",
+    "size": 1928,
+    "path": "../public/_nuxt/register.CEKp0JcX.css"
   },
-  "/_nuxt/register.BlzpiHHQ.css": {
+  "/_nuxt/profile.qMcFPClZ.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"773-OQ873KXNO0cqvxGiA2DRHuVnir0\"",
-    "mtime": "2026-03-12T06:01:18.316Z",
-    "size": 1907,
-    "path": "../public/_nuxt/register.BlzpiHHQ.css"
-  },
-  "/_nuxt/search.CmUvoNDZ.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"d68-hOb2/G62rfJ1eGpylVB2AtcYSsU\"",
-    "mtime": "2026-03-12T06:01:18.316Z",
-    "size": 3432,
-    "path": "../public/_nuxt/search.CmUvoNDZ.css"
+    "etag": "\"170b-A9pQKxshlsRF9HJ6EB6RoFW8+3g\"",
+    "mtime": "2026-03-17T01:06:33.198Z",
+    "size": 5899,
+    "path": "../public/_nuxt/profile.qMcFPClZ.css"
   },
   "/_nuxt/reports.7qO4ZVq3.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"408-go50jMdB94fb6dGVUKambxFaVA0\"",
-    "mtime": "2026-03-12T06:01:18.316Z",
+    "mtime": "2026-03-17T01:06:33.198Z",
     "size": 1032,
     "path": "../public/_nuxt/reports.7qO4ZVq3.css"
+  },
+  "/_nuxt/search.BRfXAEwU.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"358f-4SW9jrAHMDGsT3tw5kok/r57xzs\"",
+    "mtime": "2026-03-17T01:06:33.199Z",
+    "size": 13711,
+    "path": "../public/_nuxt/search.BRfXAEwU.css"
   },
   "/_nuxt/settings.BAvBI8kz.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"269-qqCEX5OhatifVUzbcYgzsZAbe4I\"",
-    "mtime": "2026-03-12T06:01:18.316Z",
+    "mtime": "2026-03-17T01:06:33.199Z",
     "size": 617,
     "path": "../public/_nuxt/settings.BAvBI8kz.css"
   },
-  "/_nuxt/settings.MEM4tz90.css": {
+  "/_nuxt/settings.BNJwDBuX.css": {
     "type": "text/css; charset=utf-8",
-    "etag": "\"2ea-1n3+Cx102coTTZdcxkKE4o/lY7Q\"",
-    "mtime": "2026-03-12T06:01:18.316Z",
+    "etag": "\"2ea-PM8fnVIgK4I3PpbxDeN4nQz0CGQ\"",
+    "mtime": "2026-03-17T01:06:33.198Z",
     "size": 746,
-    "path": "../public/_nuxt/settings.MEM4tz90.css"
+    "path": "../public/_nuxt/settings.BNJwDBuX.css"
   },
   "/_nuxt/users.BRqV5crv.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"4df-LIllyk7qxvgV1oJNgri3zW4lvBs\"",
-    "mtime": "2026-03-12T06:01:18.316Z",
+    "mtime": "2026-03-17T01:06:33.198Z",
     "size": 1247,
     "path": "../public/_nuxt/users.BRqV5crv.css"
   },
-  "/_nuxt/tl2AeCR2.js": {
+  "/_nuxt/wdS1wqQ3.js": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"6ca-VdjAdJ+mUP6RR2NTL8wL3Oq0wpY\"",
-    "mtime": "2026-03-12T06:01:18.316Z",
-    "size": 1738,
-    "path": "../public/_nuxt/tl2AeCR2.js"
+    "etag": "\"311-GKizSvLgG9aoHc7jRY+8hiBrPgg\"",
+    "mtime": "2026-03-17T01:06:33.199Z",
+    "size": 785,
+    "path": "../public/_nuxt/wdS1wqQ3.js"
   },
   "/_nuxt/builds/latest.json": {
     "type": "application/json",
-    "etag": "\"47-cWSmbJeBGSUhkemmc01+KNn+K+Y\"",
-    "mtime": "2026-03-12T06:01:18.297Z",
+    "etag": "\"47-PFhHpww+4OAhVoOz9sk25Ucxn5g\"",
+    "mtime": "2026-03-17T01:06:33.152Z",
     "size": 71,
     "path": "../public/_nuxt/builds/latest.json"
   },
+  "/uploads/content/variants/9a31accc-c7e5-4301-badc-582d77da8b88.webp": {
+    "type": "image/webp",
+    "etag": "\"12ec-57QRNisOlmm5IQtlonQICjkWNF0\"",
+    "mtime": "2026-03-17T01:06:33.158Z",
+    "size": 4844,
+    "path": "../public/uploads/content/variants/9a31accc-c7e5-4301-badc-582d77da8b88.webp"
+  },
+  "/uploads/content/7c519b80-8912-4466-9caa-effe38d82f07.png": {
+    "type": "image/png",
+    "etag": "\"957b-Sa5FkC26jBXpyeqyQ7epHXCfrm0\"",
+    "mtime": "2026-03-17T01:06:33.158Z",
+    "size": 38267,
+    "path": "../public/uploads/content/7c519b80-8912-4466-9caa-effe38d82f07.png"
+  },
+  "/uploads/content/variants/c6249783-7a95-4f11-b313-266563abfcd1.webp": {
+    "type": "image/webp",
+    "etag": "\"916-k+XQhAJ+t9We9jLBsO4y8Y5aGFU\"",
+    "mtime": "2026-03-17T01:06:33.158Z",
+    "size": 2326,
+    "path": "../public/uploads/content/variants/c6249783-7a95-4f11-b313-266563abfcd1.webp"
+  },
+  "/_nuxt/builds/meta/5e6f94b7-a892-4834-b620-90985898abb8.json": {
+    "type": "application/json",
+    "etag": "\"58-vYwm/1vN+M8jdEnFahf41+oVwz8\"",
+    "mtime": "2026-03-17T01:06:33.146Z",
+    "size": 88,
+    "path": "../public/_nuxt/builds/meta/5e6f94b7-a892-4834-b620-90985898abb8.json"
+  },
   "/_nuxt/builds/meta/dev.json": {
     "type": "application/json",
-    "etag": "\"37-0XPoEBBG5bhLvqfFxzf0I8H4DMI\"",
-    "mtime": "2026-03-12T06:01:18.292Z",
+    "etag": "\"37-iZHsJcA/1PMxZhujuD7P5GivipA\"",
+    "mtime": "2026-03-17T01:06:33.146Z",
     "size": 55,
     "path": "../public/_nuxt/builds/meta/dev.json"
-  },
-  "/_nuxt/builds/meta/ef64b3d4-71b1-419b-867b-13f1dd42a9e1.json": {
-    "type": "application/json",
-    "etag": "\"58-4Fq8k6R2WO2Tmc+lfDZP410L2yE\"",
-    "mtime": "2026-03-12T06:01:18.292Z",
-    "size": 88,
-    "path": "../public/_nuxt/builds/meta/ef64b3d4-71b1-419b-867b-13f1dd42a9e1.json"
   }
 };
 
@@ -5489,7 +5624,7 @@ function readAsset (id) {
   return promises.readFile(resolve(serverDir, assets[id].path))
 }
 
-const publicAssetBases = {"/_nuxt/builds/meta/":{"maxAge":31536000},"/_nuxt/builds/":{"maxAge":1},"/_nuxt/":{"maxAge":31536000}};
+const publicAssetBases = {"/_nuxt/builds/meta/":{"maxAge":31536000},"/_nuxt/builds/":{"maxAge":1},"/uploads/":{"maxAge":86400},"/_nuxt/":{"maxAge":31536000}};
 
 function isPublicAssetURL(id = '') {
   if (assets[id]) {
@@ -5672,7 +5807,6 @@ const contentStatusEnum = pgEnum("content_status", ["draft", "published", "archi
 const contentTypeEnum = pgEnum("content_type", [
   "project",
   "article",
-  "guide",
   "blog",
   "explainer"
 ]);
@@ -5684,8 +5818,7 @@ const likeTargetTypeEnum = pgEnum("like_target_type", [
   "blog",
   "explainer",
   "comment",
-  "post",
-  "guide"
+  "post"
 ]);
 const commentTargetTypeEnum = pgEnum("comment_target_type", [
   "project",
@@ -5731,21 +5864,38 @@ const notificationTypeEnum = pgEnum("notification_type", [
   "mention",
   "contest",
   "certificate",
-  "community",
+  "hub",
   "system"
 ]);
-const communityRoleEnum = pgEnum("community_role", [
+const hubTypeEnum = pgEnum("hub_type", ["community", "product", "company"]);
+const hubPrivacyEnum = pgEnum("hub_privacy", ["public", "unlisted", "private"]);
+const hubRoleEnum = pgEnum("hub_role", [
   "owner",
   "admin",
   "moderator",
   "member"
 ]);
-const communityJoinPolicyEnum = pgEnum("community_join_policy", [
+const hubJoinPolicyEnum = pgEnum("hub_join_policy", [
   "open",
   "approval",
   "invite"
 ]);
+const hubMemberStatusEnum = pgEnum("hub_member_status", ["pending", "active"]);
 const postTypeEnum = pgEnum("post_type", ["text", "link", "share", "poll"]);
+const productStatusEnum = pgEnum("product_status", ["active", "discontinued", "preview"]);
+const productCategoryEnum = pgEnum("product_category", [
+  "microcontroller",
+  "sbc",
+  "sensor",
+  "actuator",
+  "display",
+  "communication",
+  "power",
+  "mechanical",
+  "software",
+  "tool",
+  "other"
+]);
 const lessonTypeEnum = pgEnum("lesson_type", [
   "article",
   "video",
@@ -5753,14 +5903,14 @@ const lessonTypeEnum = pgEnum("lesson_type", [
   "project",
   "explainer"
 ]);
-pgEnum("contest_status", [
+const contestStatusEnum = pgEnum("contest_status", [
   "upcoming",
   "active",
   "judging",
   "completed"
 ]);
-pgEnum("video_platform", ["youtube", "vimeo", "other"]);
-pgEnum("file_purpose", [
+const videoPlatformEnum = pgEnum("video_platform", ["youtube", "vimeo", "other"]);
+const filePurposeEnum = pgEnum("file_purpose", [
   "cover",
   "content",
   "avatar",
@@ -5806,6 +5956,10 @@ const users = pgTable("users", {
   profileVisibility: profileVisibilityEnum("profile_visibility").default("public").notNull(),
   skills: jsonb("skills").$type(),
   theme: varchar("theme", { length: 64 }),
+  pronouns: varchar("pronouns", { length: 32 }),
+  timezone: varchar("timezone", { length: 64 }),
+  emailNotifications: jsonb("email_notifications").$type(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
 });
@@ -5930,6 +6084,15 @@ const contentItems = pgTable("content_items", {
   parts: jsonb("parts").$type(),
   // Explainer sections — validated at runtime via @commonpub/explainer schemas
   sections: jsonb("sections").$type(),
+  // Additional metadata
+  licenseType: varchar("license_type", { length: 32 }),
+  series: varchar("series", { length: 128 }),
+  estimatedMinutes: integer("estimated_minutes"),
+  // Federation readiness
+  canonicalUrl: text("canonical_url"),
+  apObjectId: text("ap_object_id"),
+  // Soft delete
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   // Counters (denormalized for read performance)
   viewCount: integer("view_count").default(0).notNull(),
   likeCount: integer("like_count").default(0).notNull(),
@@ -5938,6 +6101,16 @@ const contentItems = pgTable("content_items", {
   publishedAt: timestamp("published_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
+});
+const contentVersions = pgTable("content_versions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  contentId: uuid("content_id").notNull().references(() => contentItems.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  title: varchar("title", { length: 255 }),
+  content: jsonb("content"),
+  metadata: jsonb("metadata"),
+  createdById: uuid("created_by_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
 });
 const contentForks = pgTable("content_forks", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -5960,8 +6133,19 @@ const contentTags = pgTable("content_tags", {
 relations(contentItems, ({ one, many }) => ({
   author: one(users, { fields: [contentItems.authorId], references: [users.id] }),
   tags: many(contentTags),
+  versions: many(contentVersions),
   forksFrom: many(contentForks, { relationName: "forkSource" }),
   forksTo: many(contentForks, { relationName: "forkTarget" })
+}));
+relations(contentVersions, ({ one }) => ({
+  content: one(contentItems, {
+    fields: [contentVersions.contentId],
+    references: [contentItems.id]
+  }),
+  createdBy: one(users, {
+    fields: [contentVersions.createdById],
+    references: [users.id]
+  })
 }));
 relations(contentForks, ({ one }) => ({
   source: one(contentItems, {
@@ -6099,7 +6283,7 @@ relations(messages, ({ one }) => ({
   sender: one(users, { fields: [messages.senderId], references: [users.id] })
 }));
 
-const communities = pgTable("communities", {
+const hubs = pgTable("hubs", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 128 }).notNull(),
   slug: varchar("slug", { length: 128 }).notNull().unique(),
@@ -6107,23 +6291,31 @@ const communities = pgTable("communities", {
   rules: text("rules"),
   iconUrl: text("icon_url"),
   bannerUrl: text("banner_url"),
-  joinPolicy: communityJoinPolicyEnum("join_policy").default("open").notNull(),
+  hubType: hubTypeEnum("hub_type").default("community").notNull(),
+  privacy: hubPrivacyEnum("privacy").default("public").notNull(),
+  joinPolicy: hubJoinPolicyEnum("join_policy").default("open").notNull(),
+  parentHubId: uuid("parent_hub_id"),
+  website: varchar("website", { length: 512 }),
+  categories: jsonb("categories").$type(),
   createdById: uuid("created_by_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   isOfficial: boolean("is_official").default(false).notNull(),
   memberCount: integer("member_count").default(0).notNull(),
   postCount: integer("post_count").default(0).notNull(),
+  apActorId: text("ap_actor_id"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
 });
-const communityMembers = pgTable("community_members", {
-  communityId: uuid("community_id").notNull().references(() => communities.id, { onDelete: "cascade" }),
+const hubMembers = pgTable("hub_members", {
+  hubId: uuid("hub_id").notNull().references(() => hubs.id, { onDelete: "cascade" }),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  role: communityRoleEnum("role").default("member").notNull(),
+  role: hubRoleEnum("role").default("member").notNull(),
+  status: hubMemberStatusEnum("status").default("active").notNull(),
   joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull()
-}, (t) => [primaryKey({ columns: [t.communityId, t.userId] })]);
-const communityPosts = pgTable("community_posts", {
+}, (t) => [primaryKey({ columns: [t.hubId, t.userId] })]);
+const hubPosts = pgTable("hub_posts", {
   id: uuid("id").defaultRandom().primaryKey(),
-  communityId: uuid("community_id").notNull().references(() => communities.id, { onDelete: "cascade" }),
+  hubId: uuid("hub_id").notNull().references(() => hubs.id, { onDelete: "cascade" }),
   authorId: uuid("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   type: postTypeEnum("type").default("text").notNull(),
   content: text("content").notNull(),
@@ -6131,12 +6323,13 @@ const communityPosts = pgTable("community_posts", {
   isLocked: boolean("is_locked").default(false).notNull(),
   likeCount: integer("like_count").default(0).notNull(),
   replyCount: integer("reply_count").default(0).notNull(),
+  lastEditedAt: timestamp("last_edited_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
 });
-const communityPostReplies = pgTable("community_post_replies", {
+const hubPostReplies = pgTable("hub_post_replies", {
   id: uuid("id").defaultRandom().primaryKey(),
-  postId: uuid("post_id").notNull().references(() => communityPosts.id, { onDelete: "cascade" }),
+  postId: uuid("post_id").notNull().references(() => hubPosts.id, { onDelete: "cascade" }),
   authorId: uuid("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   parentId: uuid("parent_id"),
   content: text("content").notNull(),
@@ -6144,18 +6337,18 @@ const communityPostReplies = pgTable("community_post_replies", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
 });
-const communityBans = pgTable("community_bans", {
+const hubBans = pgTable("hub_bans", {
   id: uuid("id").defaultRandom().primaryKey(),
-  communityId: uuid("community_id").notNull().references(() => communities.id, { onDelete: "cascade" }),
+  hubId: uuid("hub_id").notNull().references(() => hubs.id, { onDelete: "cascade" }),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   bannedById: uuid("banned_by_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   reason: text("reason"),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
 });
-const communityInvites = pgTable("community_invites", {
+const hubInvites = pgTable("hub_invites", {
   id: uuid("id").defaultRandom().primaryKey(),
-  communityId: uuid("community_id").notNull().references(() => communities.id, { onDelete: "cascade" }),
+  hubId: uuid("hub_id").notNull().references(() => hubs.id, { onDelete: "cascade" }),
   createdById: uuid("created_by_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   token: varchar("token", { length: 64 }).notNull().unique(),
   maxUses: integer("max_uses"),
@@ -6163,74 +6356,125 @@ const communityInvites = pgTable("community_invites", {
   expiresAt: timestamp("expires_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
 });
-const communityShares = pgTable("community_shares", {
+const hubShares = pgTable("hub_shares", {
   id: uuid("id").defaultRandom().primaryKey(),
-  communityId: uuid("community_id").notNull().references(() => communities.id, { onDelete: "cascade" }),
+  hubId: uuid("hub_id").notNull().references(() => hubs.id, { onDelete: "cascade" }),
   contentId: uuid("content_id").notNull().references(() => contentItems.id, { onDelete: "cascade" }),
   sharedById: uuid("shared_by_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
 });
-relations(communities, ({ one, many }) => ({
-  createdBy: one(users, { fields: [communities.createdById], references: [users.id] }),
-  members: many(communityMembers),
-  posts: many(communityPosts),
-  bans: many(communityBans),
-  invites: many(communityInvites),
-  shares: many(communityShares)
-}));
-relations(communityMembers, ({ one }) => ({
-  community: one(communities, {
-    fields: [communityMembers.communityId],
-    references: [communities.id]
+relations(hubs, ({ one, many }) => ({
+  createdBy: one(users, { fields: [hubs.createdById], references: [users.id] }),
+  parentHub: one(hubs, {
+    fields: [hubs.parentHubId],
+    references: [hubs.id],
+    relationName: "hubHierarchy"
   }),
-  user: one(users, { fields: [communityMembers.userId], references: [users.id] })
+  childHubs: many(hubs, { relationName: "hubHierarchy" }),
+  members: many(hubMembers),
+  posts: many(hubPosts),
+  bans: many(hubBans),
+  invites: many(hubInvites),
+  shares: many(hubShares)
 }));
-relations(communityPosts, ({ one, many }) => ({
-  community: one(communities, {
-    fields: [communityPosts.communityId],
-    references: [communities.id]
+relations(hubMembers, ({ one }) => ({
+  hub: one(hubs, {
+    fields: [hubMembers.hubId],
+    references: [hubs.id]
   }),
-  author: one(users, { fields: [communityPosts.authorId], references: [users.id] }),
-  replies: many(communityPostReplies)
+  user: one(users, { fields: [hubMembers.userId], references: [users.id] })
 }));
-relations(communityPostReplies, ({ one, many }) => ({
-  post: one(communityPosts, {
-    fields: [communityPostReplies.postId],
-    references: [communityPosts.id]
+relations(hubPosts, ({ one, many }) => ({
+  hub: one(hubs, {
+    fields: [hubPosts.hubId],
+    references: [hubs.id]
   }),
-  author: one(users, { fields: [communityPostReplies.authorId], references: [users.id] }),
-  parent: one(communityPostReplies, {
-    fields: [communityPostReplies.parentId],
-    references: [communityPostReplies.id],
+  author: one(users, { fields: [hubPosts.authorId], references: [users.id] }),
+  replies: many(hubPostReplies)
+}));
+relations(hubPostReplies, ({ one, many }) => ({
+  post: one(hubPosts, {
+    fields: [hubPostReplies.postId],
+    references: [hubPosts.id]
+  }),
+  author: one(users, { fields: [hubPostReplies.authorId], references: [users.id] }),
+  parent: one(hubPostReplies, {
+    fields: [hubPostReplies.parentId],
+    references: [hubPostReplies.id],
     relationName: "replyThread"
   }),
-  children: many(communityPostReplies, { relationName: "replyThread" })
+  children: many(hubPostReplies, { relationName: "replyThread" })
 }));
-relations(communityBans, ({ one }) => ({
-  community: one(communities, {
-    fields: [communityBans.communityId],
-    references: [communities.id]
+relations(hubBans, ({ one }) => ({
+  hub: one(hubs, {
+    fields: [hubBans.hubId],
+    references: [hubs.id]
   }),
-  user: one(users, { fields: [communityBans.userId], references: [users.id] }),
-  bannedBy: one(users, { fields: [communityBans.bannedById], references: [users.id] })
+  user: one(users, { fields: [hubBans.userId], references: [users.id] }),
+  bannedBy: one(users, { fields: [hubBans.bannedById], references: [users.id] })
 }));
-relations(communityInvites, ({ one }) => ({
-  community: one(communities, {
-    fields: [communityInvites.communityId],
-    references: [communities.id]
+relations(hubInvites, ({ one }) => ({
+  hub: one(hubs, {
+    fields: [hubInvites.hubId],
+    references: [hubs.id]
   }),
-  createdBy: one(users, { fields: [communityInvites.createdById], references: [users.id] })
+  createdBy: one(users, { fields: [hubInvites.createdById], references: [users.id] })
 }));
-relations(communityShares, ({ one }) => ({
-  community: one(communities, {
-    fields: [communityShares.communityId],
-    references: [communities.id]
+relations(hubShares, ({ one }) => ({
+  hub: one(hubs, {
+    fields: [hubShares.hubId],
+    references: [hubs.id]
   }),
   content: one(contentItems, {
-    fields: [communityShares.contentId],
+    fields: [hubShares.contentId],
     references: [contentItems.id]
   }),
-  sharedBy: one(users, { fields: [communityShares.sharedById], references: [users.id] })
+  sharedBy: one(users, { fields: [hubShares.sharedById], references: [users.id] })
+}));
+
+const products = pgTable("products", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  hubId: uuid("hub_id").notNull().references(() => hubs.id, { onDelete: "cascade" }),
+  category: productCategoryEnum("category"),
+  specs: jsonb("specs").$type(),
+  imageUrl: text("image_url"),
+  purchaseUrl: text("purchase_url"),
+  datasheetUrl: text("datasheet_url"),
+  alternatives: jsonb("alternatives").$type(),
+  pricing: jsonb("pricing").$type(),
+  status: productStatusEnum("status").default("active").notNull(),
+  createdById: uuid("created_by_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
+});
+const contentProducts = pgTable("content_products", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  contentId: uuid("content_id").notNull().references(() => contentItems.id, { onDelete: "cascade" }),
+  productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  quantity: integer("quantity").default(1).notNull(),
+  role: varchar("role", { length: 64 }),
+  notes: text("notes"),
+  required: boolean("required").default(true).notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
+}, (t) => [uniqueIndex("idx_content_product_unique").on(t.contentId, t.productId)]);
+relations(products, ({ one, many }) => ({
+  hub: one(hubs, { fields: [products.hubId], references: [hubs.id] }),
+  createdBy: one(users, { fields: [products.createdById], references: [users.id] }),
+  contentProducts: many(contentProducts)
+}));
+relations(contentProducts, ({ one }) => ({
+  content: one(contentItems, {
+    fields: [contentProducts.contentId],
+    references: [contentItems.id]
+  }),
+  product: one(products, {
+    fields: [contentProducts.productId],
+    references: [products.id]
+  })
 }));
 
 const learningPaths = pgTable("learning_paths", {
@@ -6385,6 +6629,96 @@ relations(docsNav, ({ one }) => ({
   version: one(docsVersions, { fields: [docsNav.versionId], references: [docsVersions.id] })
 }));
 
+const videos = pgTable("videos", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  authorId: uuid("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  url: text("url").notNull(),
+  embedUrl: text("embed_url"),
+  platform: videoPlatformEnum("platform").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
+  duration: varchar("duration", { length: 16 }),
+  viewCount: integer("view_count").default(0).notNull(),
+  likeCount: integer("like_count").default(0).notNull(),
+  commentCount: integer("comment_count").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
+});
+const videoCategories = pgTable("video_categories", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 64 }).notNull().unique(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  description: text("description"),
+  sortOrder: integer("sort_order").default(0).notNull()
+});
+relations(videos, ({ one }) => ({
+  author: one(users, { fields: [videos.authorId], references: [users.id] })
+}));
+
+const contests = pgTable("contests", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  rules: text("rules"),
+  bannerUrl: text("banner_url"),
+  status: contestStatusEnum("status").default("upcoming").notNull(),
+  startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+  endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+  judgingEndDate: timestamp("judging_end_date", { withTimezone: true }),
+  prizes: jsonb("prizes").$type(),
+  judges: jsonb("judges").$type(),
+  createdById: uuid("created_by_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  entryCount: integer("entry_count").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
+});
+const contestEntries = pgTable("contest_entries", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  contestId: uuid("contest_id").notNull().references(() => contests.id, { onDelete: "cascade" }),
+  contentId: uuid("content_id").notNull().references(() => contentItems.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  score: integer("score"),
+  rank: integer("rank"),
+  judgeScores: jsonb("judge_scores").$type(),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }).defaultNow().notNull()
+});
+relations(contests, ({ one, many }) => ({
+  createdBy: one(users, { fields: [contests.createdById], references: [users.id] }),
+  entries: many(contestEntries)
+}));
+relations(contestEntries, ({ one }) => ({
+  contest: one(contests, { fields: [contestEntries.contestId], references: [contests.id] }),
+  content: one(contentItems, {
+    fields: [contestEntries.contentId],
+    references: [contentItems.id]
+  }),
+  user: one(users, { fields: [contestEntries.userId], references: [users.id] })
+}));
+
+const files = pgTable("files", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  uploaderId: uuid("uploader_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  filename: varchar("filename", { length: 255 }).notNull(),
+  originalName: varchar("original_name", { length: 255 }),
+  mimeType: varchar("mime_type", { length: 128 }).notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  storageKey: text("storage_key").notNull(),
+  publicUrl: text("public_url"),
+  purpose: filePurposeEnum("purpose").default("attachment").notNull(),
+  contentId: uuid("content_id").references(() => contentItems.id, { onDelete: "set null" }),
+  hubId: uuid("hub_id").references(() => hubs.id, { onDelete: "set null" }),
+  width: integer("width"),
+  height: integer("height"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
+});
+relations(files, ({ one }) => ({
+  uploader: one(users, { fields: [files.uploaderId], references: [users.id] }),
+  content: one(contentItems, { fields: [files.contentId], references: [contentItems.id] }),
+  hub: one(hubs, { fields: [files.hubId], references: [hubs.id] })
+}));
+
 pgTable("remote_actors", {
   id: uuid("id").defaultRandom().primaryKey(),
   actorUri: text("actor_uri").notNull().unique(),
@@ -6453,6 +6787,422 @@ relations(instanceSettings, ({ one }) => ({
 relations(auditLogs, ({ one }) => ({
   user: one(users, { fields: [auditLogs.userId], references: [users.id] })
 }));
+
+const usernameSchema = z.string().min(3).max(64).regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, hyphens, and underscores");
+const emailSchema = z.string().email().max(255);
+const displayNameSchema = z.string().min(1).max(128);
+const bioSchema = z.string().max(2e3).optional();
+const socialLinksSchema = z.object({
+  github: z.string().url().optional(),
+  twitter: z.string().url().optional(),
+  linkedin: z.string().url().optional(),
+  youtube: z.string().url().optional(),
+  instagram: z.string().url().optional(),
+  mastodon: z.string().url().optional(),
+  discord: z.string().optional()
+}).optional();
+z.object({
+  email: emailSchema,
+  username: usernameSchema,
+  displayName: displayNameSchema.optional()
+});
+const updateProfileSchema = z.object({
+  displayName: displayNameSchema.optional(),
+  bio: bioSchema,
+  headline: z.string().max(255).optional(),
+  location: z.string().max(128).optional(),
+  website: z.string().url().max(512).optional(),
+  socialLinks: socialLinksSchema,
+  skills: z.array(z.string().max(64)).max(50).optional(),
+  pronouns: z.string().max(32).optional(),
+  timezone: z.string().max(64).optional(),
+  emailNotifications: z.object({
+    digest: z.enum(["daily", "weekly", "none"]).optional(),
+    likes: z.boolean().optional(),
+    comments: z.boolean().optional(),
+    follows: z.boolean().optional(),
+    mentions: z.boolean().optional()
+  }).optional()
+});
+z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase alphanumeric with hyphens");
+const contentTypeSchema = z.enum(["project", "article", "blog", "explainer"]);
+z.enum(["draft", "published", "archived"]);
+const difficultySchema = z.enum(["beginner", "intermediate", "advanced"]);
+const createContentSchema = z.object({
+  type: contentTypeSchema,
+  title: z.string().min(1).max(255),
+  subtitle: z.string().max(255).optional(),
+  description: z.string().max(2e3).optional(),
+  content: z.unknown().optional(),
+  coverImageUrl: z.string().url().optional(),
+  category: z.string().max(64).optional(),
+  difficulty: difficultySchema.optional(),
+  buildTime: z.string().max(64).optional(),
+  estimatedCost: z.string().max(64).optional(),
+  estimatedMinutes: z.number().int().positive().optional(),
+  visibility: z.enum(["public", "members", "private"]).optional(),
+  seoDescription: z.string().max(320).optional(),
+  licenseType: z.string().max(32).optional(),
+  series: z.string().max(128).optional(),
+  sections: z.unknown().optional(),
+  tags: z.array(z.string().max(64)).max(20).optional()
+});
+const updateContentSchema = createContentSchema.partial().omit({ type: true });
+const likeTargetTypeSchema = z.enum([
+  "project",
+  "article",
+  "blog",
+  "comment",
+  "post",
+  "explainer"
+]);
+const commentTargetTypeSchema = z.enum([
+  "project",
+  "article",
+  "blog",
+  "explainer",
+  "post",
+  "lesson"
+]);
+const createCommentSchema = z.object({
+  targetType: commentTargetTypeSchema,
+  targetId: z.string().uuid(),
+  parentId: z.string().uuid().optional(),
+  content: z.string().min(1).max(1e4)
+});
+const hubTypeSchema = z.enum(["community", "product", "company"]);
+const createHubSchema = z.object({
+  name: z.string().min(1).max(128),
+  description: z.string().max(2e3).optional(),
+  rules: z.string().max(1e4).optional(),
+  hubType: hubTypeSchema.default("community"),
+  joinPolicy: z.enum(["open", "approval", "invite"]).default("open"),
+  privacy: z.enum(["public", "unlisted", "private"]).default("public"),
+  website: z.string().url().max(512).optional(),
+  categories: z.array(z.string().max(64)).max(20).optional(),
+  parentHubId: z.string().uuid().optional()
+});
+createHubSchema.partial();
+const createPostSchema = z.object({
+  hubId: z.string().uuid(),
+  type: z.enum(["text", "link", "share", "poll"]).default("text"),
+  content: z.string().min(1).max(1e4),
+  sharedContentId: z.string().uuid().optional(),
+  pollOptions: z.array(z.string().min(1).max(200)).min(2).max(10).optional(),
+  pollMultiSelect: z.boolean().optional()
+});
+const createReplySchema = z.object({
+  postId: z.string().uuid(),
+  content: z.string().min(1).max(1e4),
+  parentId: z.string().uuid().optional()
+});
+const createInviteSchema = z.object({
+  maxUses: z.number().int().positive().optional(),
+  expiresAt: z.string().datetime().optional()
+});
+const banUserSchema = z.object({
+  userId: z.string().uuid(),
+  reason: z.string().max(2e3).optional(),
+  expiresAt: z.string().datetime().optional()
+});
+const changeRoleSchema = z.object({
+  role: z.enum(["admin", "moderator", "member"])
+});
+const createProductSchema = z.object({
+  name: z.string().min(1).max(255),
+  description: z.string().max(5e3).optional(),
+  category: z.enum([
+    "microcontroller",
+    "sbc",
+    "sensor",
+    "actuator",
+    "display",
+    "communication",
+    "power",
+    "mechanical",
+    "software",
+    "tool",
+    "other"
+  ]).optional(),
+  specs: z.record(z.string(), z.string()).optional(),
+  imageUrl: z.string().url().optional(),
+  purchaseUrl: z.string().url().optional(),
+  datasheetUrl: z.string().url().optional(),
+  pricing: z.object({
+    min: z.number().optional(),
+    max: z.number().optional(),
+    currency: z.string().max(3).optional()
+  }).optional(),
+  status: z.enum(["active", "discontinued", "preview"]).default("active")
+});
+const updateProductSchema = createProductSchema.partial();
+const addContentProductSchema = z.object({
+  productId: z.string().uuid(),
+  quantity: z.number().int().positive().default(1),
+  role: z.string().max(64).optional(),
+  notes: z.string().max(500).optional(),
+  required: z.boolean().default(true)
+});
+const createContestSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().max(1e4).optional(),
+  rules: z.string().max(1e4).optional(),
+  bannerUrl: z.string().url().optional(),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime(),
+  judgingEndDate: z.string().datetime().optional(),
+  prizes: z.array(z.object({
+    place: z.number().int().positive(),
+    title: z.string().max(255),
+    description: z.string().max(1e3).optional(),
+    value: z.string().max(128).optional()
+  })).optional(),
+  judges: z.array(z.string().uuid()).optional()
+});
+const updateContestSchema = createContestSchema.partial();
+const judgeEntrySchema = z.object({
+  entryId: z.string().uuid(),
+  score: z.number().int().min(0).max(100),
+  feedback: z.string().max(2e3).optional()
+});
+const contestTransitionSchema = z.object({
+  status: z.enum(["upcoming", "active", "judging", "completed"])
+});
+const createVideoSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().max(5e3).optional(),
+  url: z.string().url(),
+  embedUrl: z.string().url().optional(),
+  platform: z.enum(["youtube", "vimeo", "other"]).default("other"),
+  thumbnailUrl: z.string().url().optional(),
+  duration: z.string().max(16).optional()
+});
+z.object({
+  name: z.string().min(1).max(64),
+  description: z.string().max(500).optional(),
+  sortOrder: z.number().int().min(0).optional()
+});
+const createLearningPathSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().max(2e3).optional(),
+  difficulty: difficultySchema.optional(),
+  estimatedHours: z.number().positive().max(9999).optional(),
+  coverImageUrl: z.string().url().optional()
+});
+const updateLearningPathSchema = createLearningPathSchema.partial();
+const createModuleSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().max(2e3).optional()
+});
+const updateModuleSchema = createModuleSchema.partial();
+const lessonTypeSchema = z.enum(["article", "video", "quiz", "project", "explainer"]);
+const createLessonSchema = z.object({
+  moduleId: z.string().uuid(),
+  title: z.string().min(1).max(255),
+  type: lessonTypeSchema,
+  content: z.unknown().optional(),
+  duration: z.number().int().positive().max(9999).optional()
+});
+createLessonSchema.partial().omit({ moduleId: true });
+const createConversationSchema = z.object({
+  participants: z.array(z.string().uuid()).min(1).max(50)
+});
+const sendMessageSchema = z.object({
+  body: z.string().min(1).max(1e4)
+});
+const createDocsSiteSchema = z.object({
+  name: z.string().min(1).max(128),
+  description: z.string().max(2e3).optional()
+});
+const updateDocsSiteSchema = createDocsSiteSchema.partial();
+const createDocsPageSchema = z.object({
+  versionId: z.string().uuid().optional(),
+  title: z.string().min(1).max(255),
+  content: z.string(),
+  sortOrder: z.number().int().min(0).optional(),
+  parentId: z.string().uuid().optional()
+});
+const updateDocsPageSchema = createDocsPageSchema.partial();
+const createDocsVersionSchema = z.object({
+  version: z.string().min(1).max(32),
+  isDefault: z.boolean().optional(),
+  copyFromVersionId: z.string().uuid().optional()
+});
+const createReportSchema = z.object({
+  targetType: z.enum(["project", "article", "blog", "post", "comment", "user", "explainer"]),
+  targetId: z.string().uuid(),
+  reason: z.enum(["spam", "harassment", "inappropriate", "copyright", "other"]),
+  description: z.string().max(2e3).optional()
+});
+const adminSettingSchema = z.object({
+  key: z.string().min(1).max(128),
+  value: z.unknown()
+});
+const adminUpdateRoleSchema = z.object({
+  role: z.enum(["member", "pro", "verified", "staff", "admin"])
+});
+const adminUpdateStatusSchema = z.object({
+  status: z.enum(["active", "suspended", "deleted"])
+});
+const resolveReportSchema = z.object({
+  status: z.enum(["resolved", "dismissed"]),
+  resolution: z.string().min(1).max(2e3)
+});
+const actorUriSchema = z.string().url().max(2048);
+const activityDirectionSchema = z.enum(["inbound", "outbound"]);
+z.enum(["pending", "delivered", "failed", "processed"]);
+z.enum(["pending", "accepted", "rejected"]);
+z.object({
+  actorUri: actorUriSchema,
+  inbox: z.string().url(),
+  outbox: z.string().url().optional(),
+  publicKeyPem: z.string().optional(),
+  preferredUsername: z.string().max(64).optional(),
+  displayName: z.string().max(128).optional(),
+  avatarUrl: z.string().url().optional(),
+  instanceDomain: z.string().min(1).max(255)
+});
+z.object({
+  type: z.string().min(1).max(64),
+  actorUri: actorUriSchema,
+  objectUri: actorUriSchema.optional(),
+  payload: z.record(z.string(), z.unknown()),
+  direction: activityDirectionSchema
+});
+z.object({
+  followerActorUri: actorUriSchema,
+  followingActorUri: actorUriSchema
+});
+
+const index = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  accounts: accounts,
+  activities: activities,
+  activityDirectionEnum: activityDirectionEnum,
+  activityDirectionSchema: activityDirectionSchema,
+  activityStatusEnum: activityStatusEnum,
+  actorKeypairs: actorKeypairs,
+  actorUriSchema: actorUriSchema,
+  addContentProductSchema: addContentProductSchema,
+  adminSettingSchema: adminSettingSchema,
+  adminUpdateRoleSchema: adminUpdateRoleSchema,
+  adminUpdateStatusSchema: adminUpdateStatusSchema,
+  auditLogs: auditLogs,
+  banUserSchema: banUserSchema,
+  bioSchema: bioSchema,
+  bookmarkTargetTypeEnum: bookmarkTargetTypeEnum,
+  bookmarks: bookmarks,
+  certificates: certificates,
+  changeRoleSchema: changeRoleSchema,
+  commentTargetTypeEnum: commentTargetTypeEnum,
+  commentTargetTypeSchema: commentTargetTypeSchema,
+  comments: comments,
+  contentForks: contentForks,
+  contentItems: contentItems,
+  contentProducts: contentProducts,
+  contentStatusEnum: contentStatusEnum,
+  contentTags: contentTags,
+  contentTypeEnum: contentTypeEnum,
+  contentTypeSchema: contentTypeSchema,
+  contentVersions: contentVersions,
+  contentVisibilityEnum: contentVisibilityEnum,
+  contestEntries: contestEntries,
+  contestStatusEnum: contestStatusEnum,
+  contestTransitionSchema: contestTransitionSchema,
+  contests: contests,
+  conversations: conversations,
+  createCommentSchema: createCommentSchema,
+  createContentSchema: createContentSchema,
+  createContestSchema: createContestSchema,
+  createConversationSchema: createConversationSchema,
+  createDocsPageSchema: createDocsPageSchema,
+  createDocsSiteSchema: createDocsSiteSchema,
+  createDocsVersionSchema: createDocsVersionSchema,
+  createHubSchema: createHubSchema,
+  createInviteSchema: createInviteSchema,
+  createLearningPathSchema: createLearningPathSchema,
+  createLessonSchema: createLessonSchema,
+  createModuleSchema: createModuleSchema,
+  createPostSchema: createPostSchema,
+  createProductSchema: createProductSchema,
+  createReplySchema: createReplySchema,
+  createReportSchema: createReportSchema,
+  createVideoSchema: createVideoSchema,
+  difficultyEnum: difficultyEnum,
+  difficultySchema: difficultySchema,
+  displayNameSchema: displayNameSchema,
+  docsNav: docsNav,
+  docsPages: docsPages,
+  docsSites: docsSites,
+  docsVersions: docsVersions,
+  emailSchema: emailSchema,
+  enrollments: enrollments,
+  federatedAccounts: federatedAccounts,
+  filePurposeEnum: filePurposeEnum,
+  files: files,
+  followRelationshipStatusEnum: followRelationshipStatusEnum,
+  followRelationships: followRelationships,
+  follows: follows,
+  hubBans: hubBans,
+  hubInvites: hubInvites,
+  hubJoinPolicyEnum: hubJoinPolicyEnum,
+  hubMemberStatusEnum: hubMemberStatusEnum,
+  hubMembers: hubMembers,
+  hubPostReplies: hubPostReplies,
+  hubPosts: hubPosts,
+  hubPrivacyEnum: hubPrivacyEnum,
+  hubRoleEnum: hubRoleEnum,
+  hubShares: hubShares,
+  hubTypeEnum: hubTypeEnum,
+  hubTypeSchema: hubTypeSchema,
+  hubs: hubs,
+  instanceSettings: instanceSettings,
+  judgeEntrySchema: judgeEntrySchema,
+  learningLessons: learningLessons,
+  learningModules: learningModules,
+  learningPaths: learningPaths,
+  lessonProgress: lessonProgress,
+  lessonTypeEnum: lessonTypeEnum,
+  lessonTypeSchema: lessonTypeSchema,
+  likeTargetTypeEnum: likeTargetTypeEnum,
+  likeTargetTypeSchema: likeTargetTypeSchema,
+  likes: likes,
+  members: members,
+  messages: messages,
+  notificationTypeEnum: notificationTypeEnum,
+  notifications: notifications,
+  organizations: organizations,
+  postTypeEnum: postTypeEnum,
+  productCategoryEnum: productCategoryEnum,
+  productStatusEnum: productStatusEnum,
+  products: products,
+  profileVisibilityEnum: profileVisibilityEnum,
+  reportReasonEnum: reportReasonEnum,
+  reportStatusEnum: reportStatusEnum,
+  reportTargetTypeEnum: reportTargetTypeEnum,
+  reports: reports,
+  resolveReportSchema: resolveReportSchema,
+  sendMessageSchema: sendMessageSchema,
+  sessions: sessions,
+  socialLinksSchema: socialLinksSchema,
+  tags: tags,
+  updateContentSchema: updateContentSchema,
+  updateContestSchema: updateContestSchema,
+  updateDocsPageSchema: updateDocsPageSchema,
+  updateDocsSiteSchema: updateDocsSiteSchema,
+  updateLearningPathSchema: updateLearningPathSchema,
+  updateModuleSchema: updateModuleSchema,
+  updateProductSchema: updateProductSchema,
+  updateProfileSchema: updateProfileSchema,
+  userRoleEnum: userRoleEnum,
+  userStatusEnum: userStatusEnum,
+  usernameSchema: usernameSchema,
+  users: users,
+  verifications: verifications,
+  videoCategories: videoCategories,
+  videoPlatformEnum: videoPlatformEnum,
+  videos: videos
+}, Symbol.toStringTag, { value: 'Module' }));
 
 function createAuth({ config, db, secret, baseURL }) {
   const plugins = [username()];
@@ -6586,7 +7336,7 @@ const ROLE_HIERARCHY = {
   member: 1
 };
 const PERMISSION_MAP = {
-  editCommunity: 3,
+  editHub: 3,
   // admin+
   manageMembers: 3,
   // admin+
@@ -6912,6 +7662,33 @@ async function getFollowing(db, actorUri) {
   }).from(followRelationships).where(and(eq(followRelationships.followerActorUri, actorUri), eq(followRelationships.status, "accepted")));
 }
 
+async function sanitizeBlockContent(content) {
+  var _a;
+  if (!Array.isArray(content))
+    return content;
+  const blocks = content;
+  const hasHtml = blocks.some(([, data]) => typeof data.html === "string" && data.html);
+  if (!hasHtml)
+    return content;
+  let sanitize;
+  try {
+    const mod = await import('isomorphic-dompurify');
+    const DOMPurify = (_a = mod.default) != null ? _a : mod;
+    sanitize = (html) => DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "em", "b", "i", "u", "s", "code", "a", "ul", "ol", "li", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "span", "sub", "sup"],
+      ALLOWED_ATTR: ["href", "target", "rel", "class"]
+    });
+  } catch {
+    return content;
+  }
+  return blocks.map(([type, data]) => {
+    const sanitized = { ...data };
+    if (typeof sanitized.html === "string" && sanitized.html) {
+      sanitized.html = sanitize(sanitized.html);
+    }
+    return [type, sanitized];
+  });
+}
 function mapToListItem(row, author) {
   const item = row;
   return {
@@ -7025,7 +7802,7 @@ async function getContentBySlug(db, slug, requesterId) {
   };
 }
 async function createContent(db, authorId, input) {
-  var _a, _b, _c, _d, _e, _f, _g, _h;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
   const slug = await ensureUniqueSlug(db, generateSlug(input.title));
   const previewToken = crypto.randomUUID().replace(/-/g, "");
   const [item] = await db.insert(contentItems).values({
@@ -7035,15 +7812,19 @@ async function createContent(db, authorId, input) {
     slug,
     subtitle: (_a = input.subtitle) != null ? _a : null,
     description: (_b = input.description) != null ? _b : null,
-    content: (_c = input.content) != null ? _c : null,
+    content: (_c = await sanitizeBlockContent(input.content)) != null ? _c : null,
     coverImageUrl: (_d = input.coverImageUrl) != null ? _d : null,
     category: (_e = input.category) != null ? _e : null,
     difficulty: (_f = input.difficulty) != null ? _f : null,
-    sections: (_g = input.sections) != null ? _g : null,
+    buildTime: (_g = input.buildTime) != null ? _g : null,
+    estimatedCost: (_h = input.estimatedCost) != null ? _h : null,
+    visibility: (_i = input.visibility) != null ? _i : "public",
+    seoDescription: (_j = input.seoDescription) != null ? _j : null,
+    sections: (_k = input.sections) != null ? _k : null,
     status: "draft",
     previewToken
   }).returning();
-  if ((_h = input.tags) == null ? void 0 : _h.length) {
+  if ((_l = input.tags) == null ? void 0 : _l.length) {
     await syncTags(db, item.id, input.tags);
   }
   return await getContentBySlug(db, item.slug, authorId);
@@ -7068,7 +7849,7 @@ async function updateContent(db, contentId, authorId, input) {
   if (input.description !== void 0)
     updates.description = input.description;
   if (input.content !== void 0)
-    updates.content = input.content;
+    updates.content = await sanitizeBlockContent(input.content);
   if (input.coverImageUrl !== void 0)
     updates.coverImageUrl = input.coverImageUrl;
   if (input.category !== void 0)
@@ -7079,6 +7860,12 @@ async function updateContent(db, contentId, authorId, input) {
     updates.seoDescription = input.seoDescription;
   if (input.sections !== void 0)
     updates.sections = input.sections;
+  if (input.buildTime !== void 0)
+    updates.buildTime = input.buildTime;
+  if (input.estimatedCost !== void 0)
+    updates.estimatedCost = input.estimatedCost;
+  if (input.visibility !== void 0)
+    updates.visibility = input.visibility;
   if (input.status !== void 0) {
     updates.status = input.status;
     if (input.status === "published" && !current.publishedAt) {
@@ -7098,7 +7885,53 @@ async function deleteContent(db, contentId, authorId) {
   return ((_a = result.rowCount) != null ? _a : 0) > 0;
 }
 async function publishContent(db, contentId, authorId) {
+  await createContentVersion(db, contentId, authorId);
   return updateContent(db, contentId, authorId, { status: "published" });
+}
+async function createContentVersion(db, contentId, userId) {
+  var _a;
+  const content = await db.select().from(contentItems).where(eq(contentItems.id, contentId)).limit(1);
+  if (content.length === 0)
+    throw new Error("Content not found");
+  const item = content[0];
+  const [lastVersion] = await db.select({ version: contentVersions.version }).from(contentVersions).where(eq(contentVersions.contentId, contentId)).orderBy(desc(contentVersions.version)).limit(1);
+  const nextVersion = ((_a = lastVersion == null ? void 0 : lastVersion.version) != null ? _a : 0) + 1;
+  const [row] = await db.insert(contentVersions).values({
+    contentId,
+    version: nextVersion,
+    title: item.title,
+    content: item.content,
+    metadata: {
+      subtitle: item.subtitle,
+      description: item.description,
+      category: item.category,
+      difficulty: item.difficulty,
+      buildTime: item.buildTime,
+      estimatedCost: item.estimatedCost,
+      coverImageUrl: item.coverImageUrl,
+      parts: item.parts,
+      sections: item.sections
+    },
+    createdById: userId
+  }).returning({ id: contentVersions.id, version: contentVersions.version });
+  return { id: row.id, version: row.version };
+}
+async function listContentVersions(db, contentId) {
+  const rows = await db.select({
+    version: contentVersions,
+    user: {
+      id: users.id,
+      username: users.username,
+      displayName: users.displayName
+    }
+  }).from(contentVersions).innerJoin(users, eq(contentVersions.createdById, users.id)).where(eq(contentVersions.contentId, contentId)).orderBy(desc(contentVersions.version));
+  return rows.map((row) => ({
+    id: row.version.id,
+    version: row.version.version,
+    title: row.version.title,
+    createdAt: row.version.createdAt,
+    createdBy: row.user
+  }));
 }
 async function incrementViewCount(db, contentId) {
   await db.update(contentItems).set({ viewCount: sql`${contentItems.viewCount} + 1` }).where(eq(contentItems.id, contentId));
@@ -7132,66 +7965,66 @@ async function onContentPublished(db, contentId, config) {
   });
 }
 
-async function ensureUniqueCommunitySlug(db, slug, excludeId) {
+async function ensureUniqueHubSlug(db, slug, excludeId) {
   if (!slug)
-    slug = `community-${Date.now()}`;
-  const conditions = [eq(communities.slug, slug)];
-  const existing = await db.select({ id: communities.id }).from(communities).where(and(...conditions)).limit(1);
+    slug = `hub-${Date.now()}`;
+  const conditions = [eq(hubs.slug, slug)];
+  const existing = await db.select({ id: hubs.id }).from(hubs).where(and(...conditions)).limit(1);
   if (existing.length === 0)
     return slug;
   return `${slug}-${Date.now()}`;
 }
-async function listCommunities(db, filters = {}) {
+async function listHubs(db, filters = {}) {
   var _a, _b, _c, _d;
   const conditions = [];
   if (filters.search) {
-    conditions.push(ilike(communities.name, `%${filters.search}%`));
+    conditions.push(ilike(hubs.name, `%${filters.search}%`));
   }
   if (filters.joinPolicy) {
-    conditions.push(eq(communities.joinPolicy, filters.joinPolicy));
+    conditions.push(eq(hubs.joinPolicy, filters.joinPolicy));
   }
   const where = conditions.length > 0 ? and(...conditions) : void 0;
   const limit = Math.min((_a = filters.limit) != null ? _a : 20, 100);
   const offset = (_b = filters.offset) != null ? _b : 0;
   const [rows, countResult] = await Promise.all([
     db.select({
-      community: communities,
+      hub: hubs,
       createdBy: {
         id: users.id,
         username: users.username,
         displayName: users.displayName,
         avatarUrl: users.avatarUrl
       }
-    }).from(communities).innerJoin(users, eq(communities.createdById, users.id)).where(where).orderBy(desc(communities.createdAt)).limit(limit).offset(offset),
-    db.select({ count: sql`count(*)::int` }).from(communities).where(where)
+    }).from(hubs).innerJoin(users, eq(hubs.createdById, users.id)).where(where).orderBy(desc(hubs.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(hubs).where(where)
   ]);
   const items = rows.map((row) => ({
-    id: row.community.id,
-    name: row.community.name,
-    slug: row.community.slug,
-    description: row.community.description,
-    iconUrl: row.community.iconUrl,
-    bannerUrl: row.community.bannerUrl,
-    joinPolicy: row.community.joinPolicy,
-    isOfficial: row.community.isOfficial,
-    memberCount: row.community.memberCount,
-    postCount: row.community.postCount,
-    createdAt: row.community.createdAt,
+    id: row.hub.id,
+    name: row.hub.name,
+    slug: row.hub.slug,
+    description: row.hub.description,
+    iconUrl: row.hub.iconUrl,
+    bannerUrl: row.hub.bannerUrl,
+    joinPolicy: row.hub.joinPolicy,
+    isOfficial: row.hub.isOfficial,
+    memberCount: row.hub.memberCount,
+    postCount: row.hub.postCount,
+    createdAt: row.hub.createdAt,
     createdBy: row.createdBy
   }));
   return { items, total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0 };
 }
-async function getCommunityBySlug(db, slug, requesterId) {
+async function getHubBySlug(db, slug, requesterId) {
   var _a, _b;
   const rows = await db.select({
-    community: communities,
+    hub: hubs,
     createdBy: {
       id: users.id,
       username: users.username,
       displayName: users.displayName,
       avatarUrl: users.avatarUrl
     }
-  }).from(communities).innerJoin(users, eq(communities.createdById, users.id)).where(eq(communities.slug, slug)).limit(1);
+  }).from(hubs).innerJoin(users, eq(hubs.createdById, users.id)).where(eq(hubs.slug, slug)).limit(1);
   if (rows.length === 0)
     return null;
   const row = rows[0];
@@ -7199,35 +8032,35 @@ async function getCommunityBySlug(db, slug, requesterId) {
   let isBanned = false;
   if (requesterId) {
     const [memberRows, banResult] = await Promise.all([
-      db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, row.community.id), eq(communityMembers.userId, requesterId))).limit(1),
-      checkBan(db, row.community.id, requesterId)
+      db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, row.hub.id), eq(hubMembers.userId, requesterId))).limit(1),
+      checkBan(db, row.hub.id, requesterId)
     ]);
     currentUserRole = (_b = (_a = memberRows[0]) == null ? void 0 : _a.role) != null ? _b : null;
     isBanned = banResult !== null;
   }
   return {
-    id: row.community.id,
-    name: row.community.name,
-    slug: row.community.slug,
-    description: row.community.description,
-    iconUrl: row.community.iconUrl,
-    bannerUrl: row.community.bannerUrl,
-    joinPolicy: row.community.joinPolicy,
-    isOfficial: row.community.isOfficial,
-    memberCount: row.community.memberCount,
-    postCount: row.community.postCount,
-    createdAt: row.community.createdAt,
+    id: row.hub.id,
+    name: row.hub.name,
+    slug: row.hub.slug,
+    description: row.hub.description,
+    iconUrl: row.hub.iconUrl,
+    bannerUrl: row.hub.bannerUrl,
+    joinPolicy: row.hub.joinPolicy,
+    isOfficial: row.hub.isOfficial,
+    memberCount: row.hub.memberCount,
+    postCount: row.hub.postCount,
+    createdAt: row.hub.createdAt,
     createdBy: row.createdBy,
-    rules: row.community.rules,
-    updatedAt: row.community.updatedAt,
+    rules: row.hub.rules,
+    updatedAt: row.hub.updatedAt,
     currentUserRole,
     isBanned
   };
 }
-async function createCommunity(db, userId, input) {
+async function createHub(db, userId, input) {
   var _a, _b, _c;
-  const slug = await ensureUniqueCommunitySlug(db, generateSlug(input.name));
-  const [community] = await db.insert(communities).values({
+  const slug = await ensureUniqueHubSlug(db, generateSlug(input.name));
+  const [inserted] = await db.insert(hubs).values({
     name: input.name,
     slug,
     description: (_a = input.description) != null ? _a : null,
@@ -7236,71 +8069,71 @@ async function createCommunity(db, userId, input) {
     createdById: userId,
     memberCount: 1
   }).returning();
-  await db.insert(communityMembers).values({
-    communityId: community.id,
+  await db.insert(hubMembers).values({
+    hubId: inserted.id,
     userId,
     role: "owner"
   });
-  return await getCommunityBySlug(db, community.slug, userId);
+  return await getHubBySlug(db, inserted.slug, userId);
 }
-async function joinCommunity(db, userId, communityId, inviteToken) {
-  const ban = await checkBan(db, communityId, userId);
+async function joinHub(db, userId, hubId, inviteToken) {
+  const ban = await checkBan(db, hubId, userId);
   if (ban) {
-    return { joined: false, error: "You are banned from this community" };
+    return { joined: false, error: "You are banned from this hub" };
   }
-  const community = await db.select({ joinPolicy: communities.joinPolicy }).from(communities).where(eq(communities.id, communityId)).limit(1);
-  if (community.length === 0) {
-    return { joined: false, error: "Community not found" };
+  const hubRow = await db.select({ joinPolicy: hubs.joinPolicy }).from(hubs).where(eq(hubs.id, hubId)).limit(1);
+  if (hubRow.length === 0) {
+    return { joined: false, error: "Hub not found" };
   }
-  const policy = community[0].joinPolicy;
+  const policy = hubRow[0].joinPolicy;
   if (policy !== "open") {
     {
       return { joined: false, error: "Invite token required" };
     }
   }
   return db.transaction(async (tx) => {
-    const inserted = await tx.insert(communityMembers).values({ communityId, userId, role: "member" }).onConflictDoNothing().returning();
+    const inserted = await tx.insert(hubMembers).values({ hubId, userId, role: "member" }).onConflictDoNothing().returning();
     if (inserted.length === 0) {
       return { joined: true };
     }
-    await tx.update(communities).set({ memberCount: sql`${communities.memberCount} + 1` }).where(eq(communities.id, communityId));
+    await tx.update(hubs).set({ memberCount: sql`${hubs.memberCount} + 1` }).where(eq(hubs.id, hubId));
     return { joined: true };
   });
 }
-async function leaveCommunity(db, userId, communityId) {
-  const member = await db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId))).limit(1);
+async function leaveHub(db, userId, hubId) {
+  const member = await db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, userId))).limit(1);
   if (member.length === 0) {
     return { left: false, error: "Not a member" };
   }
   if (member[0].role === "owner") {
-    return { left: false, error: "Owner cannot leave the community" };
+    return { left: false, error: "Owner cannot leave the hub" };
   }
-  await db.delete(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId)));
-  await db.update(communities).set({ memberCount: sql`GREATEST(${communities.memberCount} - 1, 0)` }).where(eq(communities.id, communityId));
+  await db.delete(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, userId)));
+  await db.update(hubs).set({ memberCount: sql`GREATEST(${hubs.memberCount} - 1, 0)` }).where(eq(hubs.id, hubId));
   return { left: true };
 }
-async function listMembers(db, communityId) {
+async function listMembers(db, hubId) {
   const rows = await db.select({
-    member: communityMembers,
+    member: hubMembers,
     user: {
       id: users.id,
       username: users.username,
       displayName: users.displayName,
       avatarUrl: users.avatarUrl
     }
-  }).from(communityMembers).innerJoin(users, eq(communityMembers.userId, users.id)).where(eq(communityMembers.communityId, communityId)).orderBy(desc(communityMembers.joinedAt));
+  }).from(hubMembers).innerJoin(users, eq(hubMembers.userId, users.id)).where(eq(hubMembers.hubId, hubId)).orderBy(desc(hubMembers.joinedAt));
   return rows.map((row) => ({
-    communityId: row.member.communityId,
+    hubId: row.member.hubId,
     userId: row.member.userId,
     role: row.member.role,
     joinedAt: row.member.joinedAt,
     user: row.user
   }));
 }
-async function changeRole(db, actorId, communityId, targetUserId, newRole) {
+async function changeRole(db, actorId, hubId, targetUserId, newRole) {
   const [actorMember, targetMember] = await Promise.all([
-    db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, actorId))).limit(1),
-    db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, targetUserId))).limit(1)
+    db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, actorId))).limit(1),
+    db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, targetUserId))).limit(1)
   ]);
   if (actorMember.length === 0) {
     return { changed: false, error: "Not a member" };
@@ -7317,13 +8150,13 @@ async function changeRole(db, actorId, communityId, targetUserId, newRole) {
   if (newRole === "owner") {
     return { changed: false, error: "Cannot promote to owner" };
   }
-  await db.update(communityMembers).set({ role: newRole }).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, targetUserId)));
+  await db.update(hubMembers).set({ role: newRole }).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, targetUserId)));
   return { changed: true };
 }
-async function kickMember(db, actorId, communityId, targetUserId) {
+async function kickMember(db, actorId, hubId, targetUserId) {
   const [actorMember, targetMember] = await Promise.all([
-    db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, actorId))).limit(1),
-    db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, targetUserId))).limit(1)
+    db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, actorId))).limit(1),
+    db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, targetUserId))).limit(1)
   ]);
   if (actorMember.length === 0) {
     return { kicked: false, error: "Not a member" };
@@ -7337,23 +8170,23 @@ async function kickMember(db, actorId, communityId, targetUserId) {
   if (!canManageRole(actorMember[0].role, targetMember[0].role)) {
     return { kicked: false, error: "Cannot kick a user with equal or higher role" };
   }
-  await db.delete(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, targetUserId)));
-  await db.update(communities).set({ memberCount: sql`GREATEST(${communities.memberCount} - 1, 0)` }).where(eq(communities.id, communityId));
+  await db.delete(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, targetUserId)));
+  await db.update(hubs).set({ memberCount: sql`GREATEST(${hubs.memberCount} - 1, 0)` }).where(eq(hubs.id, hubId));
   return { kicked: true };
 }
 async function createPost(db, authorId, input) {
   var _a;
-  const member = await db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, input.communityId), eq(communityMembers.userId, authorId))).limit(1);
+  const member = await db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, input.hubId), eq(hubMembers.userId, authorId))).limit(1);
   if (member.length === 0) {
     throw new Error("Must be a member to post");
   }
-  const [post] = await db.insert(communityPosts).values({
-    communityId: input.communityId,
+  const [post] = await db.insert(hubPosts).values({
+    hubId: input.hubId,
     authorId,
     type: (_a = input.type) != null ? _a : "text",
     content: input.content
   }).returning();
-  await db.update(communities).set({ postCount: sql`${communities.postCount} + 1` }).where(eq(communities.id, input.communityId));
+  await db.update(hubs).set({ postCount: sql`${hubs.postCount} + 1` }).where(eq(hubs.id, input.hubId));
   const author = await db.select({
     id: users.id,
     username: users.username,
@@ -7362,7 +8195,7 @@ async function createPost(db, authorId, input) {
   }).from(users).where(eq(users.id, authorId)).limit(1);
   return {
     id: post.id,
-    communityId: post.communityId,
+    hubId: post.hubId,
     type: post.type,
     content: post.content,
     isPinned: post.isPinned,
@@ -7374,31 +8207,31 @@ async function createPost(db, authorId, input) {
     author: author[0]
   };
 }
-async function listPosts(db, communityId, filters = {}) {
+async function listPosts(db, hubId, filters = {}) {
   var _a, _b, _c, _d;
-  const conditions = [eq(communityPosts.communityId, communityId)];
+  const conditions = [eq(hubPosts.hubId, hubId)];
   if (filters.type) {
-    conditions.push(eq(communityPosts.type, filters.type));
+    conditions.push(eq(hubPosts.type, filters.type));
   }
   const where = and(...conditions);
   const limit = Math.min((_a = filters.limit) != null ? _a : 20, 100);
   const offset = (_b = filters.offset) != null ? _b : 0;
   const [rows, countResult] = await Promise.all([
     db.select({
-      post: communityPosts,
+      post: hubPosts,
       author: {
         id: users.id,
         username: users.username,
         displayName: users.displayName,
         avatarUrl: users.avatarUrl
       }
-    }).from(communityPosts).innerJoin(users, eq(communityPosts.authorId, users.id)).where(where).orderBy(desc(communityPosts.isPinned), desc(communityPosts.createdAt)).limit(limit).offset(offset),
-    db.select({ count: sql`count(*)::int` }).from(communityPosts).where(where)
+    }).from(hubPosts).innerJoin(users, eq(hubPosts.authorId, users.id)).where(where).orderBy(desc(hubPosts.isPinned), desc(hubPosts.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(hubPosts).where(where)
   ]);
   const items = rows.map((row) => {
     const item = {
       id: row.post.id,
-      communityId: row.post.communityId,
+      hubId: row.post.hubId,
       type: row.post.type,
       content: row.post.content,
       isPinned: row.post.isPinned,
@@ -7419,40 +8252,40 @@ async function listPosts(db, communityId, filters = {}) {
   });
   return { items, total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0 };
 }
-async function deletePost(db, postId, userId, communityId) {
-  const post = await db.select({ authorId: communityPosts.authorId }).from(communityPosts).where(eq(communityPosts.id, postId)).limit(1);
+async function deletePost(db, postId, userId, hubId) {
+  const post = await db.select({ authorId: hubPosts.authorId }).from(hubPosts).where(eq(hubPosts.id, postId)).limit(1);
   if (post.length === 0)
     return false;
   if (post[0].authorId !== userId) {
-    const member = await db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId))).limit(1);
+    const member = await db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, userId))).limit(1);
     if (member.length === 0 || !hasPermission(member[0].role, "deletePost")) {
       return false;
     }
   }
-  await db.delete(communityPosts).where(eq(communityPosts.id, postId));
-  await db.update(communities).set({ postCount: sql`GREATEST(${communities.postCount} - 1, 0)` }).where(eq(communities.id, communityId));
+  await db.delete(hubPosts).where(eq(hubPosts.id, postId));
+  await db.update(hubs).set({ postCount: sql`GREATEST(${hubs.postCount} - 1, 0)` }).where(eq(hubs.id, hubId));
   return true;
 }
 async function createReply(db, authorId, input) {
   var _a;
-  const post = await db.select({ communityId: communityPosts.communityId, isLocked: communityPosts.isLocked }).from(communityPosts).where(eq(communityPosts.id, input.postId)).limit(1);
+  const post = await db.select({ hubId: hubPosts.hubId, isLocked: hubPosts.isLocked }).from(hubPosts).where(eq(hubPosts.id, input.postId)).limit(1);
   if (post.length === 0)
     throw new Error("Post not found");
   if (post[0].isLocked)
     throw new Error("Post is locked");
-  const member = await db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, post[0].communityId), eq(communityMembers.userId, authorId))).limit(1);
+  const member = await db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, post[0].hubId), eq(hubMembers.userId, authorId))).limit(1);
   if (member.length === 0)
     throw new Error("Must be a member to reply");
-  const ban = await checkBan(db, post[0].communityId, authorId);
+  const ban = await checkBan(db, post[0].hubId, authorId);
   if (ban)
-    throw new Error("You are banned from this community");
-  const [reply] = await db.insert(communityPostReplies).values({
+    throw new Error("You are banned from this hub");
+  const [reply] = await db.insert(hubPostReplies).values({
     postId: input.postId,
     authorId,
     content: input.content,
     parentId: (_a = input.parentId) != null ? _a : null
   }).returning();
-  await db.update(communityPosts).set({ replyCount: sql`${communityPosts.replyCount} + 1` }).where(eq(communityPosts.id, input.postId));
+  await db.update(hubPosts).set({ replyCount: sql`${hubPosts.replyCount} + 1` }).where(eq(hubPosts.id, input.postId));
   const author = await db.select({
     id: users.id,
     username: users.username,
@@ -7472,14 +8305,14 @@ async function createReply(db, authorId, input) {
 }
 async function listReplies(db, postId) {
   const rows = await db.select({
-    reply: communityPostReplies,
+    reply: hubPostReplies,
     author: {
       id: users.id,
       username: users.username,
       displayName: users.displayName,
       avatarUrl: users.avatarUrl
     }
-  }).from(communityPostReplies).innerJoin(users, eq(communityPostReplies.authorId, users.id)).where(eq(communityPostReplies.postId, postId)).orderBy(desc(communityPostReplies.createdAt));
+  }).from(hubPostReplies).innerJoin(users, eq(hubPostReplies.authorId, users.id)).where(eq(hubPostReplies.postId, postId)).orderBy(desc(hubPostReplies.createdAt));
   const replyMap = /* @__PURE__ */ new Map();
   const rootReplies = [];
   for (const row of rows) {
@@ -7505,66 +8338,66 @@ async function listReplies(db, postId) {
   }
   return rootReplies;
 }
-async function banUser(db, actorId, communityId, targetUserId, reason, expiresAt) {
+async function banUser(db, actorId, hubId, targetUserId, reason, expiresAt) {
   const [actorMember, targetMember] = await Promise.all([
-    db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, actorId))).limit(1),
-    db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, targetUserId))).limit(1)
+    db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, actorId))).limit(1),
+    db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, targetUserId))).limit(1)
   ]);
   if (actorMember.length === 0 || !hasPermission(actorMember[0].role, "banUser")) {
     return { banned: false, error: "Insufficient permissions" };
   }
-  if (actorMember[0].role === "moderator" && true) {
+  if (actorMember[0].role === "moderator" && !expiresAt) {
     return { banned: false, error: "Moderators can only issue temporary bans" };
   }
   if (targetMember.length > 0) {
     if (!canManageRole(actorMember[0].role, targetMember[0].role)) {
       return { banned: false, error: "Cannot ban a user with equal or higher role" };
     }
-    await db.delete(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, targetUserId)));
-    await db.update(communities).set({ memberCount: sql`GREATEST(${communities.memberCount} - 1, 0)` }).where(eq(communities.id, communityId));
+    await db.delete(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, targetUserId)));
+    await db.update(hubs).set({ memberCount: sql`GREATEST(${hubs.memberCount} - 1, 0)` }).where(eq(hubs.id, hubId));
   }
-  await db.insert(communityBans).values({
-    communityId,
+  await db.insert(hubBans).values({
+    hubId,
     userId: targetUserId,
     bannedById: actorId,
     reason: reason != null ? reason : null,
-    expiresAt: null
+    expiresAt: expiresAt != null ? expiresAt : null
   });
   return { banned: true };
 }
-async function unbanUser(db, actorId, communityId, targetUserId) {
-  const actorMember = await db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, actorId))).limit(1);
+async function unbanUser(db, actorId, hubId, targetUserId) {
+  const actorMember = await db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, actorId))).limit(1);
   if (actorMember.length === 0 || !hasPermission(actorMember[0].role, "banUser")) {
     return { unbanned: false, error: "Insufficient permissions" };
   }
-  await db.delete(communityBans).where(and(eq(communityBans.communityId, communityId), eq(communityBans.userId, targetUserId)));
+  await db.delete(hubBans).where(and(eq(hubBans.hubId, hubId), eq(hubBans.userId, targetUserId)));
   return { unbanned: true };
 }
-async function checkBan(db, communityId, userId) {
+async function checkBan(db, hubId, userId) {
   const rows = await db.select({
-    id: communityBans.id,
-    reason: communityBans.reason,
-    expiresAt: communityBans.expiresAt
-  }).from(communityBans).where(and(eq(communityBans.communityId, communityId), eq(communityBans.userId, userId))).limit(1);
+    id: hubBans.id,
+    reason: hubBans.reason,
+    expiresAt: hubBans.expiresAt
+  }).from(hubBans).where(and(eq(hubBans.hubId, hubId), eq(hubBans.userId, userId))).limit(1);
   if (rows.length === 0)
     return null;
   const ban = rows[0];
   if (ban.expiresAt && ban.expiresAt < /* @__PURE__ */ new Date()) {
-    await db.delete(communityBans).where(eq(communityBans.id, ban.id));
+    await db.delete(hubBans).where(eq(hubBans.id, ban.id));
     return null;
   }
   return ban;
 }
-async function listBans(db, communityId) {
+async function listBans(db, hubId) {
   const rows = await db.select({
-    ban: communityBans,
+    ban: hubBans,
     user: {
       id: users.id,
       username: users.username,
       displayName: users.displayName,
       avatarUrl: users.avatarUrl
     }
-  }).from(communityBans).innerJoin(users, eq(communityBans.userId, users.id)).where(eq(communityBans.communityId, communityId)).orderBy(desc(communityBans.createdAt));
+  }).from(hubBans).innerJoin(users, eq(hubBans.userId, users.id)).where(eq(hubBans.hubId, hubId)).orderBy(desc(hubBans.createdAt));
   const banIds = rows.map((r) => r.ban.bannedById);
   const uniqueBannerIds = [...new Set(banIds)];
   const banners = /* @__PURE__ */ new Map();
@@ -7596,14 +8429,14 @@ async function listBans(db, communityId) {
     };
   });
 }
-async function createInvite(db, userId, communityId, maxUses, expiresAt) {
-  const member = await db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId))).limit(1);
+async function createInvite(db, userId, hubId, maxUses, expiresAt) {
+  const member = await db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, userId))).limit(1);
   if (member.length === 0 || !hasPermission(member[0].role, "manageMembers")) {
     return null;
   }
   const token = crypto.randomUUID().replace(/-/g, "");
-  const [invite] = await db.insert(communityInvites).values({
-    communityId,
+  const [invite] = await db.insert(hubInvites).values({
+    hubId,
     createdById: userId,
     token,
     maxUses: maxUses != null ? maxUses : null,
@@ -7625,16 +8458,16 @@ async function createInvite(db, userId, communityId, maxUses, expiresAt) {
     createdBy: author[0]
   };
 }
-async function listInvites(db, communityId) {
+async function listInvites(db, hubId) {
   const rows = await db.select({
-    invite: communityInvites,
+    invite: hubInvites,
     createdBy: {
       id: users.id,
       username: users.username,
       displayName: users.displayName,
       avatarUrl: users.avatarUrl
     }
-  }).from(communityInvites).innerJoin(users, eq(communityInvites.createdById, users.id)).where(eq(communityInvites.communityId, communityId)).orderBy(desc(communityInvites.createdAt));
+  }).from(hubInvites).innerJoin(users, eq(hubInvites.createdById, users.id)).where(eq(hubInvites.hubId, hubId)).orderBy(desc(hubInvites.createdAt));
   return rows.map((row) => ({
     id: row.invite.id,
     token: row.invite.token,
@@ -7645,8 +8478,8 @@ async function listInvites(db, communityId) {
     createdBy: row.createdBy
   }));
 }
-async function shareContent(db, userId, communityId, contentId) {
-  const member = await db.select({ role: communityMembers.role }).from(communityMembers).where(and(eq(communityMembers.communityId, communityId), eq(communityMembers.userId, userId))).limit(1);
+async function shareContent(db, userId, hubId, contentId) {
+  const member = await db.select({ role: hubMembers.role }).from(hubMembers).where(and(eq(hubMembers.hubId, hubId), eq(hubMembers.userId, userId))).limit(1);
   if (member.length === 0)
     return null;
   const content = await db.select({
@@ -7663,16 +8496,414 @@ async function shareContent(db, userId, communityId, contentId) {
     slug: content[0].slug,
     type: content[0].type
   });
-  await db.insert(communityShares).values({
-    communityId,
+  await db.insert(hubShares).values({
+    hubId,
     contentId,
     sharedById: userId
   });
   return createPost(db, userId, {
-    communityId,
+    hubId,
     type: "share",
     content: sharePayload
   });
+}
+
+async function ensureUniqueProductSlug(db, slug, excludeId) {
+  if (!slug)
+    slug = `product-${Date.now()}`;
+  const conditions = [eq(products.slug, slug)];
+  if (excludeId) {
+    const { ne } = await import('drizzle-orm');
+    conditions.push(ne(products.id, excludeId));
+  }
+  const existing = await db.select({ id: products.id }).from(products).where(and(...conditions)).limit(1);
+  if (existing.length === 0)
+    return slug;
+  return `${slug}-${Date.now()}`;
+}
+async function createProduct(db, userId, hubId, input) {
+  var _a, _b, _c, _d, _e, _f, _g;
+  const slug = await ensureUniqueProductSlug(db, generateSlug(input.name));
+  const [product] = await db.insert(products).values({
+    name: input.name,
+    slug,
+    description: (_a = input.description) != null ? _a : null,
+    hubId,
+    category: input.category,
+    specs: (_b = input.specs) != null ? _b : null,
+    imageUrl: (_c = input.imageUrl) != null ? _c : null,
+    purchaseUrl: (_d = input.purchaseUrl) != null ? _d : null,
+    datasheetUrl: (_e = input.datasheetUrl) != null ? _e : null,
+    pricing: (_f = input.pricing) != null ? _f : null,
+    status: (_g = input.status) != null ? _g : "active",
+    createdById: userId
+  }).returning();
+  return await getProductBySlug(db, product.slug);
+}
+async function updateProduct(db, productId, userId, input) {
+  const existing = await db.select({ id: products.id, createdById: products.createdById }).from(products).where(eq(products.id, productId)).limit(1);
+  if (existing.length === 0)
+    return null;
+  const updates = { updatedAt: /* @__PURE__ */ new Date() };
+  if (input.name !== void 0) {
+    updates.name = input.name;
+    updates.slug = await ensureUniqueProductSlug(db, generateSlug(input.name), productId);
+  }
+  if (input.description !== void 0)
+    updates.description = input.description;
+  if (input.category !== void 0)
+    updates.category = input.category;
+  if (input.specs !== void 0)
+    updates.specs = input.specs;
+  if (input.imageUrl !== void 0)
+    updates.imageUrl = input.imageUrl;
+  if (input.purchaseUrl !== void 0)
+    updates.purchaseUrl = input.purchaseUrl;
+  if (input.datasheetUrl !== void 0)
+    updates.datasheetUrl = input.datasheetUrl;
+  if (input.pricing !== void 0)
+    updates.pricing = input.pricing;
+  if (input.status !== void 0)
+    updates.status = input.status;
+  await db.update(products).set(updates).where(eq(products.id, productId));
+  const updated = await db.select({ slug: products.slug }).from(products).where(eq(products.id, productId)).limit(1);
+  return getProductBySlug(db, updated[0].slug);
+}
+async function deleteProduct(db, productId) {
+  const result = await db.delete(products).where(eq(products.id, productId)).returning({ id: products.id });
+  return result.length > 0;
+}
+async function getProductBySlug(db, slug) {
+  const rows = await db.select({
+    product: products,
+    createdBy: {
+      id: users.id,
+      username: users.username,
+      displayName: users.displayName,
+      avatarUrl: users.avatarUrl
+    },
+    hub: {
+      id: hubs.id,
+      name: hubs.name,
+      slug: hubs.slug,
+      hubType: hubs.hubType
+    }
+  }).from(products).innerJoin(users, eq(products.createdById, users.id)).innerJoin(hubs, eq(products.hubId, hubs.id)).where(eq(products.slug, slug)).limit(1);
+  if (rows.length === 0)
+    return null;
+  const row = rows[0];
+  return {
+    id: row.product.id,
+    name: row.product.name,
+    slug: row.product.slug,
+    description: row.product.description,
+    category: row.product.category,
+    imageUrl: row.product.imageUrl,
+    purchaseUrl: row.product.purchaseUrl,
+    datasheetUrl: row.product.datasheetUrl,
+    specs: row.product.specs,
+    alternatives: row.product.alternatives,
+    pricing: row.product.pricing,
+    status: row.product.status,
+    hubId: row.product.hubId,
+    createdAt: row.product.createdAt,
+    updatedAt: row.product.updatedAt,
+    createdBy: row.createdBy,
+    hub: row.hub
+  };
+}
+async function listHubProducts(db, hubId, filters = {}) {
+  var _a, _b, _c, _d;
+  const conditions = [eq(products.hubId, hubId)];
+  if (filters.search) {
+    conditions.push(ilike(products.name, `%${filters.search}%`));
+  }
+  if (filters.category) {
+    conditions.push(eq(products.category, filters.category));
+  }
+  if (filters.status) {
+    conditions.push(eq(products.status, filters.status));
+  }
+  const where = and(...conditions);
+  const limit = Math.min((_a = filters.limit) != null ? _a : 20, 100);
+  const offset = (_b = filters.offset) != null ? _b : 0;
+  const [rows, countResult] = await Promise.all([
+    db.select().from(products).where(where).orderBy(desc(products.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(products).where(where)
+  ]);
+  const items = rows.map((p) => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    description: p.description,
+    category: p.category,
+    imageUrl: p.imageUrl,
+    purchaseUrl: p.purchaseUrl,
+    status: p.status,
+    hubId: p.hubId,
+    createdAt: p.createdAt
+  }));
+  return { items, total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0 };
+}
+async function searchProducts(db, filters = {}) {
+  var _a, _b, _c, _d;
+  const conditions = [];
+  if (filters.search) {
+    conditions.push(ilike(products.name, `%${filters.search}%`));
+  }
+  if (filters.category) {
+    conditions.push(eq(products.category, filters.category));
+  }
+  if (filters.status) {
+    conditions.push(eq(products.status, filters.status));
+  }
+  if (filters.hubId) {
+    conditions.push(eq(products.hubId, filters.hubId));
+  }
+  const where = conditions.length > 0 ? and(...conditions) : void 0;
+  const limit = Math.min((_a = filters.limit) != null ? _a : 20, 100);
+  const offset = (_b = filters.offset) != null ? _b : 0;
+  const [rows, countResult] = await Promise.all([
+    db.select().from(products).where(where).orderBy(desc(products.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(products).where(where)
+  ]);
+  const items = rows.map((p) => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    description: p.description,
+    category: p.category,
+    imageUrl: p.imageUrl,
+    purchaseUrl: p.purchaseUrl,
+    status: p.status,
+    hubId: p.hubId,
+    createdAt: p.createdAt
+  }));
+  return { items, total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0 };
+}
+async function addContentProduct(db, contentId, input) {
+  var _a, _b, _c, _d, _e;
+  const product = await db.select({ id: products.id, name: products.name, slug: products.slug, imageUrl: products.imageUrl }).from(products).where(eq(products.id, input.productId)).limit(1);
+  if (product.length === 0)
+    return null;
+  const [row] = await db.insert(contentProducts).values({
+    contentId,
+    productId: input.productId,
+    quantity: (_a = input.quantity) != null ? _a : 1,
+    role: (_b = input.role) != null ? _b : null,
+    notes: (_c = input.notes) != null ? _c : null,
+    required: (_d = input.required) != null ? _d : true,
+    sortOrder: (_e = input.sortOrder) != null ? _e : 0
+  }).onConflictDoNothing().returning();
+  if (!row)
+    return null;
+  return {
+    id: row.id,
+    productId: product[0].id,
+    productName: product[0].name,
+    productSlug: product[0].slug,
+    productImageUrl: product[0].imageUrl,
+    quantity: row.quantity,
+    role: row.role,
+    notes: row.notes,
+    required: row.required,
+    sortOrder: row.sortOrder
+  };
+}
+async function removeContentProduct(db, contentId, productId) {
+  const result = await db.delete(contentProducts).where(and(eq(contentProducts.contentId, contentId), eq(contentProducts.productId, productId))).returning({ id: contentProducts.id });
+  return result.length > 0;
+}
+async function listContentProducts(db, contentId) {
+  const rows = await db.select({
+    cp: contentProducts,
+    product: {
+      id: products.id,
+      name: products.name,
+      slug: products.slug,
+      imageUrl: products.imageUrl
+    }
+  }).from(contentProducts).innerJoin(products, eq(contentProducts.productId, products.id)).where(eq(contentProducts.contentId, contentId)).orderBy(contentProducts.sortOrder);
+  return rows.map((row) => ({
+    id: row.cp.id,
+    productId: row.product.id,
+    productName: row.product.name,
+    productSlug: row.product.slug,
+    productImageUrl: row.product.imageUrl,
+    quantity: row.cp.quantity,
+    role: row.cp.role,
+    notes: row.cp.notes,
+    required: row.cp.required,
+    sortOrder: row.cp.sortOrder
+  }));
+}
+async function syncContentProducts(db, contentId, items) {
+  return db.transaction(async (tx) => {
+    await tx.delete(contentProducts).where(eq(contentProducts.contentId, contentId));
+    if (items.length === 0)
+      return [];
+    await tx.insert(contentProducts).values(items.map((item, index) => {
+      var _a, _b, _c, _d;
+      return {
+        contentId,
+        productId: item.productId,
+        quantity: (_a = item.quantity) != null ? _a : 1,
+        role: (_b = item.role) != null ? _b : null,
+        notes: (_c = item.notes) != null ? _c : null,
+        required: (_d = item.required) != null ? _d : true,
+        sortOrder: index
+      };
+    }));
+    const rows = await tx.select({
+      cp: contentProducts,
+      product: {
+        id: products.id,
+        name: products.name,
+        slug: products.slug,
+        imageUrl: products.imageUrl
+      }
+    }).from(contentProducts).innerJoin(products, eq(contentProducts.productId, products.id)).where(eq(contentProducts.contentId, contentId)).orderBy(contentProducts.sortOrder);
+    return rows.map((row) => ({
+      id: row.cp.id,
+      productId: row.product.id,
+      productName: row.product.name,
+      productSlug: row.product.slug,
+      productImageUrl: row.product.imageUrl,
+      quantity: row.cp.quantity,
+      role: row.cp.role,
+      notes: row.cp.notes,
+      required: row.cp.required,
+      sortOrder: row.cp.sortOrder
+    }));
+  });
+}
+async function listProductContent(db, productId, opts = {}) {
+  var _a, _b, _c, _d;
+  const limit = Math.min((_a = opts.limit) != null ? _a : 20, 100);
+  const offset = (_b = opts.offset) != null ? _b : 0;
+  const where = and(eq(contentProducts.productId, productId), eq(contentItems.status, "published"));
+  const [rows, countResult] = await Promise.all([
+    db.select({
+      content: {
+        id: contentItems.id,
+        title: contentItems.title,
+        slug: contentItems.slug,
+        type: contentItems.type,
+        coverImageUrl: contentItems.coverImageUrl,
+        publishedAt: contentItems.publishedAt
+      },
+      author: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl
+      }
+    }).from(contentProducts).innerJoin(contentItems, eq(contentProducts.contentId, contentItems.id)).innerJoin(users, eq(contentItems.authorId, users.id)).where(where).orderBy(desc(contentItems.publishedAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(contentProducts).innerJoin(contentItems, eq(contentProducts.contentId, contentItems.id)).where(where)
+  ]);
+  return {
+    items: rows.map((row) => ({
+      ...row.content,
+      author: row.author
+    })),
+    total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0
+  };
+}
+async function listHubGallery(db, hubId, opts = {}) {
+  var _a, _b, _c, _d, _e, _f, _g, _h;
+  const limit = Math.min((_a = opts.limit) != null ? _a : 20, 100);
+  const offset = (_b = opts.offset) != null ? _b : 0;
+  const hub = await db.select({ id: hubs.id, hubType: hubs.hubType }).from(hubs).where(eq(hubs.id, hubId)).limit(1);
+  if (hub.length === 0)
+    return { items: [], total: 0 };
+  const hubType = hub[0].hubType;
+  if (hubType === "product") {
+    const productIds = await db.select({ id: products.id }).from(products).where(eq(products.hubId, hubId));
+    if (productIds.length === 0)
+      return { items: [], total: 0 };
+    const pIds = productIds.map((p) => p.id);
+    const where2 = and(inArray(contentProducts.productId, pIds), eq(contentItems.status, "published"));
+    const [rows2, countResult2] = await Promise.all([
+      db.selectDistinctOn([contentItems.id], {
+        content: {
+          id: contentItems.id,
+          title: contentItems.title,
+          slug: contentItems.slug,
+          type: contentItems.type,
+          coverImageUrl: contentItems.coverImageUrl,
+          publishedAt: contentItems.publishedAt
+        },
+        author: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl
+        }
+      }).from(contentProducts).innerJoin(contentItems, eq(contentProducts.contentId, contentItems.id)).innerJoin(users, eq(contentItems.authorId, users.id)).where(where2).orderBy(contentItems.id, desc(contentItems.publishedAt)).limit(limit).offset(offset),
+      db.select({ count: sql`count(DISTINCT ${contentItems.id})::int` }).from(contentProducts).innerJoin(contentItems, eq(contentProducts.contentId, contentItems.id)).where(where2)
+    ]);
+    return {
+      items: rows2.map((row) => ({ ...row.content, author: row.author })),
+      total: (_d = (_c = countResult2[0]) == null ? void 0 : _c.count) != null ? _d : 0
+    };
+  }
+  if (hubType === "company") {
+    const childHubIds = await db.select({ id: hubs.id }).from(hubs).where(eq(hubs.parentHubId, hubId));
+    const allHubIds = [hubId, ...childHubIds.map((h) => h.id)];
+    const productIds = await db.select({ id: products.id }).from(products).where(inArray(products.hubId, allHubIds));
+    if (productIds.length === 0)
+      return { items: [], total: 0 };
+    const pIds = productIds.map((p) => p.id);
+    const where2 = and(inArray(contentProducts.productId, pIds), eq(contentItems.status, "published"));
+    const [rows2, countResult2] = await Promise.all([
+      db.selectDistinctOn([contentItems.id], {
+        content: {
+          id: contentItems.id,
+          title: contentItems.title,
+          slug: contentItems.slug,
+          type: contentItems.type,
+          coverImageUrl: contentItems.coverImageUrl,
+          publishedAt: contentItems.publishedAt
+        },
+        author: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl
+        }
+      }).from(contentProducts).innerJoin(contentItems, eq(contentProducts.contentId, contentItems.id)).innerJoin(users, eq(contentItems.authorId, users.id)).where(where2).orderBy(contentItems.id, desc(contentItems.publishedAt)).limit(limit).offset(offset),
+      db.select({ count: sql`count(DISTINCT ${contentItems.id})::int` }).from(contentProducts).innerJoin(contentItems, eq(contentProducts.contentId, contentItems.id)).where(where2)
+    ]);
+    return {
+      items: rows2.map((row) => ({ ...row.content, author: row.author })),
+      total: (_f = (_e = countResult2[0]) == null ? void 0 : _e.count) != null ? _f : 0
+    };
+  }
+  const { hubShares } = await Promise.resolve().then(function () { return index; });
+  const where = and(eq(hubShares.hubId, hubId), eq(contentItems.status, "published"));
+  const [rows, countResult] = await Promise.all([
+    db.select({
+      content: {
+        id: contentItems.id,
+        title: contentItems.title,
+        slug: contentItems.slug,
+        type: contentItems.type,
+        coverImageUrl: contentItems.coverImageUrl,
+        publishedAt: contentItems.publishedAt
+      },
+      author: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl
+      }
+    }).from(hubShares).innerJoin(contentItems, eq(hubShares.contentId, contentItems.id)).innerJoin(users, eq(contentItems.authorId, users.id)).where(where).orderBy(desc(hubShares.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(hubShares).innerJoin(contentItems, eq(hubShares.contentId, contentItems.id)).where(where)
+  ]);
+  return {
+    items: rows.map((row) => ({ ...row.content, author: row.author })),
+    total: (_h = (_g = countResult[0]) == null ? void 0 : _g.count) != null ? _h : 0
+  };
 }
 
 async function toggleLike(db, userId, targetType, targetId) {
@@ -7697,9 +8928,9 @@ async function updateLikeCount(tx, targetType, targetId, delta) {
       }).where(eq(comments.id, targetId));
       break;
     case "post":
-      await tx.update(communityPosts).set({
-        likeCount: delta > 0 ? sql`${communityPosts.likeCount} + 1` : sql`GREATEST(${communityPosts.likeCount} - 1, 0)`
-      }).where(eq(communityPosts.id, targetId));
+      await tx.update(hubPosts).set({
+        likeCount: delta > 0 ? sql`${hubPosts.likeCount} + 1` : sql`GREATEST(${hubPosts.likeCount} - 1, 0)`
+      }).where(eq(hubPosts.id, targetId));
       break;
     default:
       await tx.update(contentItems).set({
@@ -7756,7 +8987,7 @@ async function createComment(db, authorId, input) {
     parentId: (_a = input.parentId) != null ? _a : null
   }).returning();
   if (input.targetType === "post") {
-    await db.update(communityPosts).set({ replyCount: sql`${communityPosts.replyCount} + 1` }).where(eq(communityPosts.id, input.targetId));
+    await db.update(hubPosts).set({ replyCount: sql`${hubPosts.replyCount} + 1` }).where(eq(hubPosts.id, input.targetId));
   } else {
     await db.update(contentItems).set({ commentCount: sql`${contentItems.commentCount} + 1` }).where(eq(contentItems.id, input.targetId));
   }
@@ -7782,7 +9013,7 @@ async function deleteComment(db, commentId, authorId) {
     return false;
   await db.delete(comments).where(eq(comments.id, commentId));
   if (existing[0].targetType === "post") {
-    await db.update(communityPosts).set({ replyCount: sql`GREATEST(${communityPosts.replyCount} - 1, 0)` }).where(eq(communityPosts.id, existing[0].targetId));
+    await db.update(hubPosts).set({ replyCount: sql`GREATEST(${hubPosts.replyCount} - 1, 0)` }).where(eq(hubPosts.id, existing[0].targetId));
   } else {
     await db.update(contentItems).set({ commentCount: sql`GREATEST(${contentItems.commentCount} - 1, 0)` }).where(eq(contentItems.id, existing[0].targetId));
   }
@@ -7799,6 +9030,131 @@ async function toggleBookmark(db, userId, targetType, targetId) {
     await tx.insert(bookmarks).values({ userId, targetType: typedTargetType, targetId });
     return { bookmarked: true };
   });
+}
+async function listUserBookmarks(db, userId, opts = {}) {
+  var _a, _b, _c, _d;
+  const limit = Math.min((_a = opts.limit) != null ? _a : 20, 100);
+  const offset = (_b = opts.offset) != null ? _b : 0;
+  const where = eq(bookmarks.userId, userId);
+  const [rows, countResult] = await Promise.all([
+    db.select({
+      bookmark: bookmarks,
+      content: {
+        id: contentItems.id,
+        title: contentItems.title,
+        slug: contentItems.slug,
+        type: contentItems.type,
+        coverImageUrl: contentItems.coverImageUrl
+      },
+      author: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl
+      }
+    }).from(bookmarks).leftJoin(contentItems, eq(bookmarks.targetId, contentItems.id)).leftJoin(users, eq(contentItems.authorId, users.id)).where(where).orderBy(desc(bookmarks.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(bookmarks).where(where)
+  ]);
+  const items = rows.map((row) => {
+    var _a2, _b2;
+    return {
+      id: row.bookmark.id,
+      targetType: row.bookmark.targetType,
+      targetId: row.bookmark.targetId,
+      createdAt: row.bookmark.createdAt,
+      content: ((_a2 = row.content) == null ? void 0 : _a2.id) ? {
+        id: row.content.id,
+        title: row.content.title,
+        slug: row.content.slug,
+        type: row.content.type,
+        coverImageUrl: row.content.coverImageUrl,
+        author: (_b2 = row.author) != null ? _b2 : { id: "", username: "", displayName: null, avatarUrl: null }
+      } : null
+    };
+  });
+  return { items, total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0 };
+}
+async function followUser(db, followerId, followingId) {
+  if (followerId === followingId)
+    return { followed: false };
+  const [result] = await db.insert(follows).values({ followerId, followingId }).onConflictDoNothing().returning();
+  return { followed: !!result };
+}
+async function unfollowUser(db, followerId, followingId) {
+  const result = await db.delete(follows).where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId))).returning({ id: follows.id });
+  return { unfollowed: result.length > 0 };
+}
+async function listFollowers(db, userId, opts = {}) {
+  var _a, _b, _c, _d;
+  const limit = Math.min((_a = opts.limit) != null ? _a : 20, 100);
+  const offset = (_b = opts.offset) != null ? _b : 0;
+  const where = eq(follows.followingId, userId);
+  const [rows, countResult] = await Promise.all([
+    db.select({
+      user: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+        bio: users.bio
+      },
+      followedAt: follows.createdAt
+    }).from(follows).innerJoin(users, eq(follows.followerId, users.id)).where(where).orderBy(desc(follows.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(follows).where(where)
+  ]);
+  return {
+    items: rows.map((row) => {
+      var _a2;
+      return {
+        ...row.user,
+        bio: (_a2 = row.user.bio) != null ? _a2 : null,
+        followedAt: row.followedAt
+      };
+    }),
+    total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0
+  };
+}
+async function listFollowing(db, userId, opts = {}) {
+  var _a, _b, _c, _d;
+  const limit = Math.min((_a = opts.limit) != null ? _a : 20, 100);
+  const offset = (_b = opts.offset) != null ? _b : 0;
+  const where = eq(follows.followerId, userId);
+  const [rows, countResult] = await Promise.all([
+    db.select({
+      user: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+        bio: users.bio
+      },
+      followedAt: follows.createdAt
+    }).from(follows).innerJoin(users, eq(follows.followingId, users.id)).where(where).orderBy(desc(follows.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(follows).where(where)
+  ]);
+  return {
+    items: rows.map((row) => {
+      var _a2;
+      return {
+        ...row.user,
+        bio: (_a2 = row.user.bio) != null ? _a2 : null,
+        followedAt: row.followedAt
+      };
+    }),
+    total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0
+  };
+}
+async function createReport(db, reporterId, input) {
+  var _a;
+  const { reports } = await Promise.resolve().then(function () { return index; });
+  const [report] = await db.insert(reports).values({
+    reporterId,
+    targetType: input.targetType,
+    targetId: input.targetId,
+    reason: input.reason,
+    description: (_a = input.description) != null ? _a : null
+  }).returning({ id: reports.id });
+  return { id: report.id };
 }
 
 function calculatePathProgress(totalLessons, completedCount) {
@@ -8435,12 +9791,12 @@ async function listAuditLogs(db, filters = {}) {
 }
 async function getPlatformStats(db) {
   var _a, _b, _c, _d, _e, _f;
-  const [usersByRole, usersByStatus, contentByType, contentByStatus, communityCount, pendingReports, totalReports] = await Promise.all([
+  const [usersByRole, usersByStatus, contentByType, contentByStatus, hubCount, pendingReports, totalReports] = await Promise.all([
     db.select({ role: users.role, count: sql`count(*)::int` }).from(users).groupBy(users.role),
     db.select({ status: users.status, count: sql`count(*)::int` }).from(users).groupBy(users.status),
     db.select({ type: contentItems.type, count: sql`count(*)::int` }).from(contentItems).groupBy(contentItems.type),
     db.select({ status: contentItems.status, count: sql`count(*)::int` }).from(contentItems).groupBy(contentItems.status),
-    db.select({ count: sql`count(*)::int` }).from(communities),
+    db.select({ count: sql`count(*)::int` }).from(hubs),
     db.select({ count: sql`count(*)::int` }).from(reports).where(eq(reports.status, "pending")),
     db.select({ count: sql`count(*)::int` }).from(reports)
   ]);
@@ -8467,7 +9823,7 @@ async function getPlatformStats(db) {
   return {
     users: { total: totalUsers, byRole, byStatus },
     content: { total: totalContent, byType, byStatus: byContentStatus },
-    communities: { total: (_b = (_a = communityCount[0]) == null ? void 0 : _a.count) != null ? _b : 0 },
+    hubs: { total: (_b = (_a = hubCount[0]) == null ? void 0 : _a.count) != null ? _b : 0 },
     reports: {
       pending: (_d = (_c = pendingReports[0]) == null ? void 0 : _c.count) != null ? _d : 0,
       total: (_f = (_e = totalReports[0]) == null ? void 0 : _e.count) != null ? _f : 0
@@ -8644,7 +10000,7 @@ async function deleteUser(db, userId, adminId, ip) {
           await tx.update(comments).set({ likeCount: sql`GREATEST(${comments.likeCount} - 1, 0)` }).where(eq(comments.id, like.targetId));
           break;
         case "post":
-          await tx.update(communityPosts).set({ likeCount: sql`GREATEST(${communityPosts.likeCount} - 1, 0)` }).where(eq(communityPosts.id, like.targetId));
+          await tx.update(hubPosts).set({ likeCount: sql`GREATEST(${hubPosts.likeCount} - 1, 0)` }).where(eq(hubPosts.id, like.targetId));
           break;
         default:
           await tx.update(contentItems).set({ likeCount: sql`GREATEST(${contentItems.likeCount} - 1, 0)` }).where(eq(contentItems.id, like.targetId));
@@ -8654,14 +10010,14 @@ async function deleteUser(db, userId, adminId, ip) {
     const userComments = await tx.select({ targetType: comments.targetType, targetId: comments.targetId }).from(comments).where(eq(comments.authorId, userId));
     for (const comment of userComments) {
       if (comment.targetType === "post") {
-        await tx.update(communityPosts).set({ replyCount: sql`GREATEST(${communityPosts.replyCount} - 1, 0)` }).where(eq(communityPosts.id, comment.targetId));
+        await tx.update(hubPosts).set({ replyCount: sql`GREATEST(${hubPosts.replyCount} - 1, 0)` }).where(eq(hubPosts.id, comment.targetId));
       } else {
         await tx.update(contentItems).set({ commentCount: sql`GREATEST(${contentItems.commentCount} - 1, 0)` }).where(eq(contentItems.id, comment.targetId));
       }
     }
-    const memberships = await tx.select({ communityId: communityMembers.communityId }).from(communityMembers).where(eq(communityMembers.userId, userId));
+    const memberships = await tx.select({ hubId: hubMembers.hubId }).from(hubMembers).where(eq(hubMembers.userId, userId));
     for (const m of memberships) {
-      await tx.update(communities).set({ memberCount: sql`GREATEST(${communities.memberCount} - 1, 0)` }).where(eq(communities.id, m.communityId));
+      await tx.update(hubs).set({ memberCount: sql`GREATEST(${hubs.memberCount} - 1, 0)` }).where(eq(hubs.id, m.hubId));
     }
     const userEnrollments = await tx.select({ pathId: enrollments.pathId }).from(enrollments).where(eq(enrollments.userId, userId));
     for (const e of userEnrollments) {
@@ -8698,7 +10054,7 @@ async function removeContent(db, contentId, adminId, ip) {
 }
 
 async function getUserByUsername(db, username) {
-  var _a, _b, _c, _d, _e, _f, _g;
+  var _a, _b, _c, _d, _e, _f;
   const rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
   if (rows.length === 0)
     return null;
@@ -8722,13 +10078,45 @@ async function getUserByUsername(db, username) {
     createdAt: user.createdAt,
     stats: {
       projects: (_b = countMap["project"]) != null ? _b : 0,
-      guides: (_c = countMap["guide"]) != null ? _c : 0,
-      explainers: (_d = countMap["explainer"]) != null ? _d : 0,
-      articles: (_e = countMap["article"]) != null ? _e : 0,
-      followers: (_f = followerResult == null ? void 0 : followerResult.count) != null ? _f : 0,
-      following: (_g = followingResult == null ? void 0 : followingResult.count) != null ? _g : 0
+      explainers: (_c = countMap["explainer"]) != null ? _c : 0,
+      articles: (_d = countMap["article"]) != null ? _d : 0,
+      followers: (_e = followerResult == null ? void 0 : followerResult.count) != null ? _e : 0,
+      following: (_f = followingResult == null ? void 0 : followingResult.count) != null ? _f : 0
     }
   };
+}
+async function updateUserProfile(db, userId, input) {
+  const existing = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1);
+  if (existing.length === 0)
+    return null;
+  const updates = { updatedAt: /* @__PURE__ */ new Date() };
+  if (input.displayName !== void 0)
+    updates.displayName = input.displayName;
+  if (input.bio !== void 0)
+    updates.bio = input.bio;
+  if (input.headline !== void 0)
+    updates.headline = input.headline;
+  if (input.location !== void 0)
+    updates.location = input.location;
+  if (input.website !== void 0)
+    updates.website = input.website;
+  if (input.avatarUrl !== void 0)
+    updates.avatarUrl = input.avatarUrl;
+  if (input.bannerUrl !== void 0)
+    updates.bannerUrl = input.bannerUrl;
+  if (input.socialLinks !== void 0)
+    updates.socialLinks = input.socialLinks;
+  if (input.skills !== void 0)
+    updates.skills = input.skills;
+  if (input.pronouns !== void 0)
+    updates.pronouns = input.pronouns;
+  if (input.timezone !== void 0)
+    updates.timezone = input.timezone;
+  if (input.emailNotifications !== void 0)
+    updates.emailNotifications = input.emailNotifications;
+  await db.update(users).set(updates).where(eq(users.id, userId));
+  const user = await db.select({ username: users.username }).from(users).where(eq(users.id, userId)).limit(1);
+  return getUserByUsername(db, user[0].username);
 }
 async function getUserContent(db, userId, type) {
   return listContent(db, {
@@ -8739,9 +10127,9 @@ async function getUserContent(db, userId, type) {
   });
 }
 
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __defProp$1 = Object.defineProperty;
+var __defNormalProp$1 = (obj, key, value) => key in obj ? __defProp$1(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField$1 = (obj, key, value) => __defNormalProp$1(obj, typeof key !== "symbol" ? key + "" : key, value);
 function getSecurityHeaders(isDev) {
   const headers = {
     "X-Content-Type-Options": "nosniff",
@@ -8759,8 +10147,8 @@ function generateNonce() {
 }
 class RateLimitStore {
   constructor() {
-    __publicField(this, "windows", /* @__PURE__ */ new Map());
-    __publicField(this, "cleanupInterval", null);
+    __publicField$1(this, "windows", /* @__PURE__ */ new Map());
+    __publicField$1(this, "cleanupInterval", null);
     this.cleanupInterval = setInterval(() => this.cleanup(), 6e4);
   }
   /** Check if a key has exceeded its limit. Returns remaining requests. */
@@ -8837,120 +10225,619 @@ function checkRateLimit(store, ip, pathname) {
 }
 
 async function listContests(db, filters = {}) {
-  return { items: [], total: 0 };
+  var _a, _b, _c, _d;
+  const conditions = [];
+  if (filters.status) {
+    conditions.push(eq(contests.status, filters.status));
+  }
+  const where = conditions.length > 0 ? and(...conditions) : void 0;
+  const limit = Math.min((_a = filters.limit) != null ? _a : 20, 100);
+  const offset = (_b = filters.offset) != null ? _b : 0;
+  const [rows, countResult] = await Promise.all([
+    db.select().from(contests).where(where).orderBy(desc(contests.startDate)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(contests).where(where)
+  ]);
+  const items = rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    description: row.description,
+    bannerUrl: row.bannerUrl,
+    status: row.status,
+    startDate: row.startDate,
+    endDate: row.endDate,
+    entryCount: row.entryCount,
+    createdAt: row.createdAt
+  }));
+  return { items, total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0 };
 }
 async function getContestBySlug(db, slug) {
-  return null;
+  var _a, _b;
+  const rows = await db.select().from(contests).where(eq(contests.slug, slug)).limit(1);
+  if (rows.length === 0)
+    return null;
+  const row = rows[0];
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    description: row.description,
+    bannerUrl: row.bannerUrl,
+    status: row.status,
+    startDate: row.startDate,
+    endDate: row.endDate,
+    entryCount: row.entryCount,
+    createdAt: row.createdAt,
+    rules: row.rules,
+    prizes: (_a = row.prizes) != null ? _a : null,
+    judgingCriteria: null,
+    judgingEndDate: row.judgingEndDate,
+    judges: (_b = row.judges) != null ? _b : null,
+    createdById: row.createdById
+  };
 }
 async function createContest(db, input) {
-  var _a, _b, _c, _d, _e, _f;
-  const id = crypto.randomUUID();
-  return {
-    id,
+  var _a, _b, _c, _d, _e, _f, _g;
+  const [row] = await db.insert(contests).values({
     title: input.title,
     slug: input.slug,
     description: (_a = input.description) != null ? _a : null,
-    status: "draft",
-    startDate: (_b = input.startDate) != null ? _b : null,
-    endDate: (_c = input.endDate) != null ? _c : null,
-    entryCount: 0,
-    createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-    rules: (_d = input.rules) != null ? _d : null,
-    prizes: (_e = input.prizes) != null ? _e : null,
-    judgingCriteria: (_f = input.judgingCriteria) != null ? _f : null,
-    createdBy: input.createdBy
+    rules: (_b = input.rules) != null ? _b : null,
+    bannerUrl: (_c = input.bannerUrl) != null ? _c : null,
+    prizes: (_d = input.prizes) != null ? _d : null,
+    judges: (_e = input.judges) != null ? _e : null,
+    startDate: new Date(input.startDate),
+    endDate: new Date(input.endDate),
+    judgingEndDate: input.judgingEndDate ? new Date(input.judgingEndDate) : null,
+    createdById: input.createdBy
+  }).returning();
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    description: row.description,
+    bannerUrl: row.bannerUrl,
+    status: row.status,
+    startDate: row.startDate,
+    endDate: row.endDate,
+    entryCount: row.entryCount,
+    createdAt: row.createdAt,
+    rules: row.rules,
+    prizes: (_f = row.prizes) != null ? _f : null,
+    judgingCriteria: null,
+    judgingEndDate: row.judgingEndDate,
+    judges: (_g = row.judges) != null ? _g : null,
+    createdById: row.createdById
   };
 }
-async function updateContest(db, slug, data) {
-  return null;
+async function updateContest(db, slug, userId, data) {
+  var _a;
+  const existing = await db.select().from(contests).where(eq(contests.slug, slug)).limit(1);
+  if (existing.length === 0)
+    return null;
+  if (existing[0].createdById !== userId)
+    return null;
+  const updates = { updatedAt: /* @__PURE__ */ new Date() };
+  if (data.title !== void 0)
+    updates.title = data.title;
+  if (data.description !== void 0)
+    updates.description = data.description;
+  if (data.rules !== void 0)
+    updates.rules = data.rules;
+  if (data.bannerUrl !== void 0)
+    updates.bannerUrl = data.bannerUrl;
+  if (data.prizes !== void 0)
+    updates.prizes = data.prizes;
+  if (data.judges !== void 0)
+    updates.judges = data.judges;
+  if (data.startDate !== void 0)
+    updates.startDate = new Date(data.startDate);
+  if (data.endDate !== void 0)
+    updates.endDate = new Date(data.endDate);
+  await db.update(contests).set(updates).where(eq(contests.slug, slug));
+  return getContestBySlug(db, (_a = data.slug) != null ? _a : slug);
 }
 async function listContestEntries(db, contestId) {
-  return [];
+  const rows = await db.select().from(contestEntries).where(eq(contestEntries.contestId, contestId)).orderBy(desc(contestEntries.submittedAt));
+  return rows.map((row) => ({
+    id: row.id,
+    contestId: row.contestId,
+    contentId: row.contentId,
+    userId: row.userId,
+    score: row.score,
+    rank: row.rank,
+    submittedAt: row.submittedAt
+  }));
 }
 async function submitContestEntry(db, contestId, contentId, userId) {
+  const contest = await db.select({ id: contests.id, status: contests.status }).from(contests).where(eq(contests.id, contestId)).limit(1);
+  if (contest.length === 0)
+    return null;
+  if (contest[0].status !== "active")
+    return null;
+  const content = await db.select({ id: contentItems.id, authorId: contentItems.authorId, status: contentItems.status }).from(contentItems).where(eq(contentItems.id, contentId)).limit(1);
+  if (content.length === 0)
+    return null;
+  if (content[0].status !== "published")
+    return null;
+  if (content[0].authorId !== userId)
+    return null;
+  const [row] = await db.insert(contestEntries).values({ contestId, contentId, userId }).onConflictDoNothing().returning();
+  if (!row)
+    return null;
+  await db.update(contests).set({ entryCount: sql`${contests.entryCount} + 1` }).where(eq(contests.id, contestId));
   return {
-    id: crypto.randomUUID(),
-    contestId,
-    contentId,
-    userId,
-    score: null,
-    rank: null,
-    submittedAt: (/* @__PURE__ */ new Date()).toISOString()
+    id: row.id,
+    contestId: row.contestId,
+    contentId: row.contentId,
+    userId: row.userId,
+    score: row.score,
+    rank: row.rank,
+    submittedAt: row.submittedAt
   };
 }
-async function judgeContestEntry(db, entryId, score, judgeId) {
+async function judgeContestEntry(db, entryId, score, judgeId, feedback) {
+  var _a, _b;
+  const existing = await db.select({
+    entry: contestEntries,
+    contestJudges: contests.judges,
+    contestStatus: contests.status
+  }).from(contestEntries).innerJoin(contests, eq(contestEntries.contestId, contests.id)).where(eq(contestEntries.id, entryId)).limit(1);
+  if (existing.length === 0)
+    return { judged: false, error: "Entry not found" };
+  const row = existing[0];
+  if (row.contestStatus !== "judging") {
+    return { judged: false, error: "Contest is not in judging phase" };
+  }
+  const judges = (_a = row.contestJudges) != null ? _a : [];
+  if (!judges.includes(judgeId)) {
+    return { judged: false, error: "Not authorized to judge this contest" };
+  }
+  const entry = row.entry;
+  const scores = (_b = entry.judgeScores) != null ? _b : [];
+  const existingIdx = scores.findIndex((s) => s.judgeId === judgeId);
+  if (existingIdx >= 0) {
+    scores[existingIdx] = { judgeId, score, feedback };
+  } else {
+    scores.push({ judgeId, score, feedback });
+  }
+  const avgScore = Math.round(scores.reduce((sum, s) => sum + s.score, 0) / scores.length);
+  await db.update(contestEntries).set({ judgeScores: scores, score: avgScore }).where(eq(contestEntries.id, entryId));
+  return { judged: true };
+}
+async function deleteContest(db, contestId, userId) {
+  const contest = await db.select({ createdById: contests.createdById }).from(contests).where(eq(contests.id, contestId)).limit(1);
+  if (contest.length === 0)
+    return false;
+  if (contest[0].createdById !== userId)
+    return false;
+  await db.delete(contests).where(eq(contests.id, contestId));
+  return true;
+}
+const VALID_TRANSITIONS = {
+  upcoming: ["active"],
+  active: ["judging"],
+  judging: ["completed"],
+  completed: []
+};
+async function transitionContestStatus(db, contestId, userId, newStatus) {
+  var _a;
+  const contest = await db.select({ createdById: contests.createdById, status: contests.status }).from(contests).where(eq(contests.id, contestId)).limit(1);
+  if (contest.length === 0)
+    return { transitioned: false, error: "Contest not found" };
+  if (contest[0].createdById !== userId)
+    return { transitioned: false, error: "Not the contest owner" };
+  const currentStatus = contest[0].status;
+  const allowed = (_a = VALID_TRANSITIONS[currentStatus]) != null ? _a : [];
+  if (!allowed.includes(newStatus)) {
+    return { transitioned: false, error: `Cannot transition from ${currentStatus} to ${newStatus}` };
+  }
+  await db.update(contests).set({
+    status: newStatus,
+    updatedAt: /* @__PURE__ */ new Date()
+  }).where(eq(contests.id, contestId));
+  return { transitioned: true };
 }
 
 async function listNotifications(db, filters) {
-  return { items: [], total: 0 };
+  var _a, _b, _c, _d;
+  const conditions = [eq(notifications.userId, filters.userId)];
+  if (filters.type) {
+    conditions.push(eq(notifications.type, filters.type));
+  }
+  if (filters.read !== void 0) {
+    conditions.push(eq(notifications.read, filters.read));
+  }
+  const where = and(...conditions);
+  const limit = Math.min((_a = filters.limit) != null ? _a : 20, 100);
+  const offset = (_b = filters.offset) != null ? _b : 0;
+  const [rows, countResult] = await Promise.all([
+    db.select({
+      notification: notifications,
+      actorName: users.displayName
+    }).from(notifications).leftJoin(users, eq(notifications.actorId, users.id)).where(where).orderBy(desc(notifications.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(notifications).where(where)
+  ]);
+  const items = rows.map((row) => ({
+    id: row.notification.id,
+    userId: row.notification.userId,
+    type: row.notification.type,
+    title: row.notification.title,
+    message: row.notification.message,
+    link: row.notification.link,
+    actorId: row.notification.actorId,
+    actorName: row.actorName,
+    read: row.notification.read,
+    createdAt: row.notification.createdAt
+  }));
+  return { items, total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0 };
 }
 async function getUnreadCount(db, userId) {
-  return 0;
+  var _a, _b;
+  const result = await db.select({ count: sql`count(*)::int` }).from(notifications).where(and(eq(notifications.userId, userId), eq(notifications.read, false)));
+  return (_b = (_a = result[0]) == null ? void 0 : _a.count) != null ? _b : 0;
 }
 async function markNotificationRead(db, notificationId, userId) {
+  await db.update(notifications).set({ read: true }).where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
 }
 async function markAllNotificationsRead(db, userId) {
+  await db.update(notifications).set({ read: true }).where(and(eq(notifications.userId, userId), eq(notifications.read, false)));
 }
 async function deleteNotification(db, notificationId, userId) {
+  await db.delete(notifications).where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
 }
 
 async function listConversations(db, userId) {
-  return [];
+  const rows = await db.select().from(conversations).where(sql`${conversations.participants} @> ${JSON.stringify([userId])}::jsonb`).orderBy(desc(conversations.lastMessageAt));
+  return rows.map((row) => ({
+    id: row.id,
+    participants: row.participants,
+    lastMessageAt: row.lastMessageAt,
+    lastMessage: row.lastMessage,
+    createdAt: row.createdAt
+  }));
 }
 async function getConversationMessages(db, conversationId, userId) {
-  return [];
+  const conv = await db.select().from(conversations).where(and(eq(conversations.id, conversationId), sql`${conversations.participants} @> ${JSON.stringify([userId])}::jsonb`)).limit(1);
+  if (conv.length === 0)
+    return [];
+  const rows = await db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
+  return rows.map((row) => ({
+    id: row.id,
+    conversationId: row.conversationId,
+    senderId: row.senderId,
+    body: row.body,
+    createdAt: row.createdAt,
+    readAt: row.readAt
+  }));
 }
 async function createConversation(db, participants) {
-  const id = crypto.randomUUID();
+  const [row] = await db.insert(conversations).values({
+    participants
+  }).returning();
   return {
-    id,
-    participants,
-    lastMessageAt: /* @__PURE__ */ new Date(),
-    lastMessage: null,
-    createdAt: /* @__PURE__ */ new Date()
+    id: row.id,
+    participants: row.participants,
+    lastMessageAt: row.lastMessageAt,
+    lastMessage: row.lastMessage,
+    createdAt: row.createdAt
   };
 }
 async function sendMessage(db, conversationId, senderId, body) {
-  const id = crypto.randomUUID();
-  return {
-    id,
+  const [row] = await db.insert(messages).values({
     conversationId,
     senderId,
-    body,
-    createdAt: /* @__PURE__ */ new Date(),
-    readAt: null
+    body
+  }).returning();
+  await db.update(conversations).set({
+    lastMessageAt: /* @__PURE__ */ new Date(),
+    lastMessage: body.length > 200 ? body.slice(0, 200) + "..." : body
+  }).where(eq(conversations.id, conversationId));
+  return {
+    id: row.id,
+    conversationId: row.conversationId,
+    senderId: row.senderId,
+    body: row.body,
+    createdAt: row.createdAt,
+    readAt: row.readAt
   };
 }
 async function markMessagesRead(db, conversationId, userId) {
+  await db.update(messages).set({ readAt: /* @__PURE__ */ new Date() }).where(and(eq(messages.conversationId, conversationId), sql`${messages.senderId} != ${userId}`, isNull(messages.readAt)));
 }
 
 async function listVideos(db, filters = {}) {
-  return { items: [], total: 0 };
+  var _a, _b, _c, _d;
+  const conditions = [];
+  if (filters.authorId) {
+    conditions.push(eq(videos.authorId, filters.authorId));
+  }
+  const where = conditions.length > 0 ? sql`${sql.join(conditions, sql` AND `)}` : void 0;
+  const limit = Math.min((_a = filters.limit) != null ? _a : 20, 100);
+  const offset = (_b = filters.offset) != null ? _b : 0;
+  const [rows, countResult] = await Promise.all([
+    db.select({
+      video: videos,
+      authorName: users.displayName,
+      authorUsername: users.username
+    }).from(videos).innerJoin(users, eq(videos.authorId, users.id)).where(where).orderBy(desc(videos.createdAt)).limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::int` }).from(videos).where(where)
+  ]);
+  const items = rows.map((row) => ({
+    id: row.video.id,
+    title: row.video.title,
+    url: row.video.url,
+    embedUrl: row.video.embedUrl,
+    platform: row.video.platform,
+    thumbnailUrl: row.video.thumbnailUrl,
+    duration: row.video.duration,
+    viewCount: row.video.viewCount,
+    likeCount: row.video.likeCount,
+    commentCount: row.video.commentCount,
+    authorId: row.video.authorId,
+    authorName: row.authorName,
+    authorUsername: row.authorUsername,
+    createdAt: row.video.createdAt
+  }));
+  return { items, total: (_d = (_c = countResult[0]) == null ? void 0 : _c.count) != null ? _d : 0 };
 }
 async function getVideoById(db, id) {
-  return null;
-}
-async function createVideo(db, input) {
-  var _a, _b, _c, _d;
-  const id = crypto.randomUUID();
+  const rows = await db.select({
+    video: videos,
+    authorName: users.displayName,
+    authorUsername: users.username
+  }).from(videos).innerJoin(users, eq(videos.authorId, users.id)).where(eq(videos.id, id)).limit(1);
+  if (rows.length === 0)
+    return null;
+  const row = rows[0];
   return {
-    id,
-    title: input.title,
-    url: input.url,
-    thumbnailUrl: (_a = input.thumbnailUrl) != null ? _a : null,
-    duration: (_b = input.duration) != null ? _b : null,
-    viewCount: 0,
-    categoryId: (_c = input.categoryId) != null ? _c : null,
-    authorId: input.authorId,
-    createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-    description: (_d = input.description) != null ? _d : null,
-    tags: []
+    id: row.video.id,
+    title: row.video.title,
+    url: row.video.url,
+    embedUrl: row.video.embedUrl,
+    platform: row.video.platform,
+    thumbnailUrl: row.video.thumbnailUrl,
+    duration: row.video.duration,
+    viewCount: row.video.viewCount,
+    likeCount: row.video.likeCount,
+    commentCount: row.video.commentCount,
+    authorId: row.video.authorId,
+    authorName: row.authorName,
+    authorUsername: row.authorUsername,
+    createdAt: row.video.createdAt,
+    description: row.video.description
   };
 }
+async function createVideo(db, input) {
+  var _a, _b, _c, _d, _e;
+  const [row] = await db.insert(videos).values({
+    title: input.title,
+    url: input.url,
+    description: (_a = input.description) != null ? _a : null,
+    embedUrl: (_b = input.embedUrl) != null ? _b : null,
+    platform: (_c = input.platform) != null ? _c : "youtube",
+    thumbnailUrl: (_d = input.thumbnailUrl) != null ? _d : null,
+    duration: (_e = input.duration) != null ? _e : null,
+    authorId: input.authorId
+  }).returning();
+  return await getVideoById(db, row.id);
+}
 async function listVideoCategories(db) {
-  return [];
+  const rows = await db.select({
+    id: videoCategories.id,
+    name: videoCategories.name,
+    slug: videoCategories.slug
+  }).from(videoCategories).orderBy(videoCategories.sortOrder);
+  return rows;
 }
 async function incrementVideoViewCount(db, id) {
+  await db.update(videos).set({ viewCount: sql`${videos.viewCount} + 1` }).where(eq(videos.id, id));
+}
+
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+function generateStorageKey(originalName, purpose) {
+  const ext = originalName.includes(".") ? originalName.split(".").pop() : "";
+  const id = randomUUID();
+  return `${purpose}/${id}${ext ? `.${ext}` : ""}`;
+}
+class LocalStorageAdapter {
+  constructor(basePath, baseUrl) {
+    __publicField(this, "basePath");
+    __publicField(this, "baseUrl");
+    this.basePath = basePath;
+    this.baseUrl = baseUrl.replace(/\/$/, "");
+  }
+  async upload(key, data, _mimeType) {
+    const filePath = join(this.basePath, key);
+    await mkdir(dirname$1(filePath), { recursive: true });
+    if (Buffer.isBuffer(data)) {
+      const writeStream = createWriteStream(filePath);
+      await new Promise((resolve, reject) => {
+        writeStream.write(data, (err) => {
+          if (err)
+            reject(err);
+          else {
+            writeStream.end();
+            resolve();
+          }
+        });
+      });
+    } else {
+      const writeStream = createWriteStream(filePath);
+      await pipeline(data, writeStream);
+    }
+    return this.getUrl(key);
+  }
+  async delete(key) {
+    const filePath = join(this.basePath, key);
+    try {
+      await unlink$1(filePath);
+    } catch (err) {
+      if (err.code !== "ENOENT")
+        throw err;
+    }
+  }
+  getUrl(key) {
+    return `${this.baseUrl}/uploads/${key}`;
+  }
+}
+class S3StorageAdapter {
+  constructor(config) {
+    __publicField(this, "bucket");
+    __publicField(this, "publicUrl");
+    __publicField(this, "client", null);
+    __publicField(this, "config");
+    var _a;
+    this.bucket = config.bucket;
+    this.config = config;
+    this.publicUrl = (_a = config.publicUrl) != null ? _a : config.endpoint ? `${config.endpoint}/${config.bucket}` : `https://${config.bucket}.s3.${config.region}.amazonaws.com`;
+  }
+  async getClient() {
+    var _a;
+    if (this.client)
+      return this.client;
+    const { S3Client } = await import('@aws-sdk/client-s3');
+    this.client = new S3Client({
+      region: this.config.region,
+      endpoint: this.config.endpoint,
+      credentials: {
+        accessKeyId: this.config.accessKeyId,
+        secretAccessKey: this.config.secretAccessKey
+      },
+      forcePathStyle: (_a = this.config.forcePathStyle) != null ? _a : !!this.config.endpoint
+    });
+    return this.client;
+  }
+  async upload(key, data, mimeType) {
+    let body;
+    if (Buffer.isBuffer(data)) {
+      body = data;
+    } else {
+      const chunks = [];
+      for await (const chunk of data) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      body = Buffer.concat(chunks);
+    }
+    const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+    const client = await this.getClient();
+    await client.send(new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      Body: body,
+      ContentType: mimeType,
+      ACL: "public-read"
+    }));
+    return this.getUrl(key);
+  }
+  async delete(key) {
+    const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+    const client = await this.getClient();
+    await client.send(new DeleteObjectCommand({
+      Bucket: this.bucket,
+      Key: key
+    }));
+  }
+  getUrl(key) {
+    return `${this.publicUrl}/${key}`;
+  }
+}
+function createStorageFromEnv() {
+  var _a, _b, _c, _d, _e, _f;
+  const bucket = process.env.S3_BUCKET;
+  if (bucket) {
+    return new S3StorageAdapter({
+      bucket,
+      region: (_a = process.env.S3_REGION) != null ? _a : "us-east-1",
+      endpoint: process.env.S3_ENDPOINT || void 0,
+      accessKeyId: (_b = process.env.S3_ACCESS_KEY) != null ? _b : "",
+      secretAccessKey: (_c = process.env.S3_SECRET_KEY) != null ? _c : "",
+      publicUrl: process.env.S3_PUBLIC_URL || void 0,
+      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true"
+    });
+  }
+  const uploadDir = (_d = process.env.UPLOAD_DIR) != null ? _d : "./uploads";
+  const siteUrl = (_f = (_e = process.env.SITE_URL) != null ? _e : process.env.NUXT_PUBLIC_SITE_URL) != null ? _f : "http://localhost:3000";
+  return new LocalStorageAdapter(uploadDir, siteUrl);
+}
+const ALLOWED_IMAGE_TYPES = /* @__PURE__ */ new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp"
+]);
+const ALLOWED_MIME_TYPES = /* @__PURE__ */ new Set([
+  ...ALLOWED_IMAGE_TYPES,
+  "image/svg+xml",
+  "application/pdf",
+  "text/plain",
+  "text/markdown",
+  "application/zip",
+  "application/gzip"
+]);
+const MAX_UPLOAD_SIZES = {
+  avatar: 2 * 1024 * 1024,
+  // 2MB
+  banner: 5 * 1024 * 1024,
+  // 5MB
+  cover: 10 * 1024 * 1024,
+  // 10MB
+  content: 10 * 1024 * 1024,
+  // 10MB
+  attachment: 100 * 1024 * 1024
+  // 100MB
+};
+function validateUpload(mimeType, sizeBytes, purpose) {
+  var _a, _b;
+  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+    return { valid: false, error: `File type ${mimeType} is not allowed` };
+  }
+  const maxSize = (_b = (_a = MAX_UPLOAD_SIZES[purpose]) != null ? _a : MAX_UPLOAD_SIZES["attachment"]) != null ? _b : 100 * 1024 * 1024;
+  if (sizeBytes > maxSize) {
+    return { valid: false, error: `File size exceeds maximum of ${Math.round(maxSize / 1024 / 1024)}MB` };
+  }
+  return { valid: true };
+}
+function isProcessableImage(mimeType) {
+  return ALLOWED_IMAGE_TYPES.has(mimeType);
+}
+
+const IMAGE_VARIANTS = {
+  thumb: 150,
+  small: 300,
+  medium: 600,
+  large: 1200
+};
+async function processImage(data, originalName, purpose, storage) {
+  var _a, _b, _c;
+  const sharp = (await import('sharp')).default;
+  const metadata = await sharp(data).metadata();
+  const originalWidth = (_a = metadata.width) != null ? _a : 0;
+  const originalHeight = (_b = metadata.height) != null ? _b : 0;
+  const originalKey = generateStorageKey(originalName, purpose);
+  const originalUrl = await storage.upload(originalKey, data, `image/${(_c = metadata.format) != null ? _c : "jpeg"}`);
+  const variants = [];
+  const variantEntries = Object.entries(IMAGE_VARIANTS);
+  for (const [name, maxWidth] of variantEntries) {
+    if (originalWidth > 0 && maxWidth >= originalWidth)
+      continue;
+    const resized = await sharp(data).resize(maxWidth, void 0, {
+      fit: "inside",
+      withoutEnlargement: true
+    }).webp({ quality: 80 }).toBuffer();
+    const variantKey = generateStorageKey(`${name}.webp`, `${purpose}/variants`);
+    const url = await storage.upload(variantKey, resized, "image/webp");
+    variants.push({ name, width: maxWidth, key: variantKey, url });
+  }
+  return {
+    originalKey,
+    originalUrl,
+    width: originalWidth,
+    height: originalHeight,
+    variants
+  };
 }
 
 const store = new RateLimitStore();
@@ -8990,39 +10877,28 @@ const _lazy_Wew5oZ = () => import('../routes/api/admin/users.get.mjs');
 const _lazy_AncTe6 = () => import('../routes/api/admin/users/_id_.delete.mjs');
 const _lazy_rnRD3x = () => import('../routes/api/admin/users/_id/role.put.mjs');
 const _lazy_mSN0U6 = () => import('../routes/api/admin/users/_id/status.put.mjs');
-const _lazy_rdtCyC = () => import('../routes/api/communities/_slug_.get.mjs');
-const _lazy_FXFCIP = () => import('../routes/api/communities/_slug/bans.get.mjs');
-const _lazy_76RHNH = () => import('../routes/api/communities/_slug/bans.post.mjs');
-const _lazy_XceibV = () => import('../routes/api/communities/_slug/bans/_userId_.delete.mjs');
-const _lazy_fH_iYK = () => import('../routes/api/communities/_slug/invites.get.mjs');
-const _lazy_WWo4X_ = () => import('../routes/api/communities/_slug/invites.post.mjs');
-const _lazy_69seWK = () => import('../routes/api/communities/_slug/join.post.mjs');
-const _lazy_2jYnWX = () => import('../routes/api/communities/_slug/leave.post.mjs');
-const _lazy_g_ykBy = () => import('../routes/api/communities/_slug/members.get.mjs');
-const _lazy_AQHBBL = () => import('../routes/api/communities/_slug/members/_userId_.delete.mjs');
-const _lazy_HViDPq = () => import('../routes/api/communities/_slug/members/_userId_.put.mjs');
-const _lazy_APnU2p = () => import('../routes/api/communities/_slug/posts/_postId_.delete.mjs');
-const _lazy_cArUZn = () => import('../routes/api/communities/_slug/posts/_postId/replies.get.mjs');
-const _lazy_thmyQh = () => import('../routes/api/communities/_slug/posts/_postId/replies.post.mjs');
-const _lazy_uvlwsD = () => import('../routes/api/communities/_slug/index.get.mjs');
-const _lazy_Xw9Ewa = () => import('../routes/api/communities/_slug/index.post.mjs');
-const _lazy_svxkl4 = () => import('../routes/api/communities/_slug/share.post.mjs');
-const _lazy_i0eoRo = () => import('../routes/api/index.get.mjs');
-const _lazy_jYpP2c = () => import('../routes/api/index.post.mjs');
 const _lazy_aketXu = () => import('../routes/api/content/_id_.delete.mjs');
 const _lazy_wWJcsH = () => import('../routes/api/content/_id_.put.mjs');
+const _lazy_COvTvp = () => import('../routes/api/content/_id/products.get.mjs');
+const _lazy_DP4Ay7 = () => import('../routes/api/content/_id/products.post.mjs');
+const _lazy_UKloZE = () => import('../routes/api/content/_id/products.put.mjs');
+const _lazy_Cs2g1s = () => import('../routes/api/content/_id/products/_productId_.delete.mjs');
 const _lazy_nvGW0A = () => import('../routes/api/content/_id/publish.post.mjs');
+const _lazy_znufi_ = () => import('../routes/api/content/_id/report.post.mjs');
+const _lazy_T1Or0I = () => import('../routes/api/content/_id/versions.get.mjs');
 const _lazy_5xwqzL = () => import('../routes/api/content/_id/view.post.mjs');
 const _lazy_vM03Hh = () => import('../routes/api/content/_slug_.get.mjs');
-const _lazy_x5oiU1 = () => import('../routes/api/index.get2.mjs');
-const _lazy_d1wpDk = () => import('../routes/api/index.post2.mjs');
+const _lazy_x5oiU1 = () => import('../routes/api/index.get.mjs');
+const _lazy_d1wpDk = () => import('../routes/api/index.post.mjs');
+const _lazy_7DWjCB = () => import('../routes/api/contests/_slug_.delete.mjs');
 const _lazy_T6VRVr = () => import('../routes/api/contests/_slug_.get.mjs');
 const _lazy_L6tGde = () => import('../routes/api/contests/_slug_.put.mjs');
 const _lazy_aWSNzD = () => import('../routes/api/contests/_slug/entries.get.mjs');
 const _lazy_2Vbyzt = () => import('../routes/api/contests/_slug/entries.post.mjs');
 const _lazy_KvT54o = () => import('../routes/api/contests/_slug/judge.post.mjs');
-const _lazy_DECgZ5 = () => import('../routes/api/index.get3.mjs');
-const _lazy_XOr96X = () => import('../routes/api/index.post3.mjs');
+const _lazy_Vtturf = () => import('../routes/api/contests/_slug/transition.post.mjs');
+const _lazy_DECgZ5 = () => import('../routes/api/index.get2.mjs');
+const _lazy_XOr96X = () => import('../routes/api/index.post2.mjs');
 const _lazy_4b7WPd = () => import('../routes/api/docs/_siteSlug_.delete.mjs');
 const _lazy_XjmqdF = () => import('../routes/api/docs/_siteSlug_.get.mjs');
 const _lazy_HQRiJL = () => import('../routes/api/docs/_siteSlug_.put.mjs');
@@ -9032,9 +10908,35 @@ const _lazy_t6h8n4 = () => import('../routes/api/docs/_siteSlug/pages.post.mjs')
 const _lazy_uvwSIz = () => import('../routes/api/docs/_siteSlug/pages/_pageId_.put.mjs');
 const _lazy_kwKJ8K = () => import('../routes/api/docs/_siteSlug/search.get.mjs');
 const _lazy_9ZpYPh = () => import('../routes/api/docs/_siteSlug/versions.post.mjs');
-const _lazy_qgBaDe = () => import('../routes/api/index.get4.mjs');
-const _lazy_d2gy1E = () => import('../routes/api/index.post4.mjs');
+const _lazy_qgBaDe = () => import('../routes/api/index.get3.mjs');
+const _lazy_d2gy1E = () => import('../routes/api/index.post3.mjs');
+const _lazy_Tn0njh = () => import('../routes/api/files/_id_.delete.mjs');
+const _lazy_TvYAs4 = () => import('../routes/api/files/mine.get.mjs');
+const _lazy_inDOPa = () => import('../routes/api/files/upload.post.mjs');
 const _lazy_Z1yxwm = () => import('../routes/api/health.get.mjs');
+const _lazy_3eNNxC = () => import('../routes/api/hubs/_slug_.get.mjs');
+const _lazy_94SzjH = () => import('../routes/api/hubs/_slug/bans.get.mjs');
+const _lazy_akeW7s = () => import('../routes/api/hubs/_slug/bans.post.mjs');
+const _lazy_rpBiY6 = () => import('../routes/api/hubs/_slug/bans/_userId_.delete.mjs');
+const _lazy_rJWQ_1 = () => import('../routes/api/hubs/_slug/feed.xml.get.mjs');
+const _lazy_dnkjHg = () => import('../routes/api/hubs/_slug/gallery.get.mjs');
+const _lazy_PBg7X_ = () => import('../routes/api/hubs/_slug/invites.get.mjs');
+const _lazy_gFIK_y = () => import('../routes/api/hubs/_slug/invites.post.mjs');
+const _lazy_UuI17m = () => import('../routes/api/hubs/_slug/join.post.mjs');
+const _lazy_qT8pYp = () => import('../routes/api/hubs/_slug/leave.post.mjs');
+const _lazy_seQlVL = () => import('../routes/api/hubs/_slug/members.get.mjs');
+const _lazy_P6keue = () => import('../routes/api/hubs/_slug/members/_userId_.delete.mjs');
+const _lazy_vs5UWR = () => import('../routes/api/hubs/_slug/members/_userId_.put.mjs');
+const _lazy_rmgBTp = () => import('../routes/api/hubs/_slug/posts/_postId_.delete.mjs');
+const _lazy_Uwo27T = () => import('../routes/api/hubs/_slug/posts/_postId/replies.get.mjs');
+const _lazy_9JGU7y = () => import('../routes/api/hubs/_slug/posts/_postId/replies.post.mjs');
+const _lazy_HAAigD = () => import('../routes/api/hubs/_slug/index.get.mjs');
+const _lazy_N4SgUN = () => import('../routes/api/hubs/_slug/index.post.mjs');
+const _lazy_gBbnz3 = () => import('../routes/api/hubs/_slug/products.get.mjs');
+const _lazy_RWRJ2C = () => import('../routes/api/hubs/_slug/products.post.mjs');
+const _lazy_7kuZa4 = () => import('../routes/api/hubs/_slug/share.post.mjs');
+const _lazy_CTfFMz = () => import('../routes/api/index.get4.mjs');
+const _lazy_ScB6nf = () => import('../routes/api/index.post4.mjs');
 const _lazy_VFAI03 = () => import('../routes/api/learn/_slug_.delete.mjs');
 const _lazy_PrU_Zc = () => import('../routes/api/learn/_slug_.get.mjs');
 const _lazy_Ub23ql = () => import('../routes/api/learn/_slug_.put.mjs');
@@ -9058,8 +10960,17 @@ const _lazy_vP0SVO = () => import('../routes/api/notifications/_id_.delete.mjs')
 const _lazy_25WxSl = () => import('../routes/api/notifications/count.get.mjs');
 const _lazy_jIohCW = () => import('../routes/api/index.get7.mjs');
 const _lazy_RPIH2G = () => import('../routes/api/notifications/read.post.mjs');
+const _lazy_P11qqE = () => import('../routes/api/notifications/stream.get.mjs');
+const _lazy_wrgU9F = () => import('../routes/api/products/_id_.delete.mjs');
+const _lazy_w5HYlr = () => import('../routes/api/products/_id_.put.mjs');
+const _lazy_HGXzkB = () => import('../routes/api/products/_slug_.get.mjs');
+const _lazy_17IMid = () => import('../routes/api/products/_slug/content.get.mjs');
+const _lazy_p6cYPD = () => import('../routes/api/index.get8.mjs');
+const _lazy_hKnS3T = () => import('../routes/api/profile.get.mjs');
+const _lazy_MjHZeY = () => import('../routes/api/profile.put.mjs');
 const _lazy_Jk2q9O = () => import('../routes/api/search.get.mjs');
 const _lazy_RZKWJe = () => import('../routes/api/social/bookmark.post.mjs');
+const _lazy_NrrwiT = () => import('../routes/api/social/bookmarks.get.mjs');
 const _lazy_zTkwK8 = () => import('../routes/api/social/comments.get.mjs');
 const _lazy_j5WvfR = () => import('../routes/api/social/comments.post.mjs');
 const _lazy_BFGQGB = () => import('../routes/api/social/comments/_id_.delete.mjs');
@@ -9068,14 +10979,22 @@ const _lazy__1MI6F = () => import('../routes/api/social/like.post.mjs');
 const _lazy_9ZZaRw = () => import('../routes/api/stats.get.mjs');
 const _lazy_H03rTy = () => import('../routes/api/users/_username_.get.mjs');
 const _lazy_04EajR = () => import('../routes/api/users/_username/content.get.mjs');
+const _lazy_cfktEX = () => import('../routes/api/users/_username/feed.xml.get.mjs');
+const _lazy_0U6x7e = () => import('../routes/api/users/_username/follow.delete.mjs');
+const _lazy_a9Dse6 = () => import('../routes/api/users/_username/follow.post.mjs');
+const _lazy_v_BuVH = () => import('../routes/api/users/_username/followers.get.mjs');
+const _lazy_E79g5r = () => import('../routes/api/users/_username/following.get.mjs');
 const _lazy_41m87_ = () => import('../routes/api/videos/_id_.get.mjs');
 const _lazy_TNPVVm = () => import('../routes/api/videos/categories.get.mjs');
-const _lazy_SM0QnG = () => import('../routes/api/index.get8.mjs');
+const _lazy_SM0QnG = () => import('../routes/api/index.get9.mjs');
 const _lazy_V2m1Rm = () => import('../routes/api/index.post7.mjs');
 const _lazy_UfE1f_ = () => import('../routes/.well-known/nodeinfo.mjs');
 const _lazy_SYVK3d = () => import('../routes/.well-known/webfinger.mjs');
+const _lazy_WOZO80 = () => import('../routes/feed.xml.mjs');
 const _lazy_JOhz5F = () => import('../routes/inbox.mjs');
 const _lazy_5I7kwM = () => import('../routes/nodeinfo/2.1.mjs');
+const _lazy_DIF4QD = () => import('../routes/robots.txt.mjs');
+const _lazy_nTomkI = () => import('../routes/sitemap.xml.mjs');
 const _lazy_8dZriH = () => import('../routes/users/_username_.mjs');
 const _lazy_iUTKuI = () => import('../routes/users/_username/followers.mjs');
 const _lazy_8IfJxf = () => import('../routes/users/_username/following.mjs');
@@ -9098,37 +11017,26 @@ const handlers = [
   { route: '/api/admin/users/:id', handler: _lazy_AncTe6, lazy: true, middleware: false, method: "delete" },
   { route: '/api/admin/users/:id/role', handler: _lazy_rnRD3x, lazy: true, middleware: false, method: "put" },
   { route: '/api/admin/users/:id/status', handler: _lazy_mSN0U6, lazy: true, middleware: false, method: "put" },
-  { route: '/api/communities/:slug', handler: _lazy_rdtCyC, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/bans', handler: _lazy_FXFCIP, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/bans', handler: _lazy_76RHNH, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/bans/:userId', handler: _lazy_XceibV, lazy: true, middleware: false, method: "delete" },
-  { route: '/api/communities/:slug/invites', handler: _lazy_fH_iYK, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/invites', handler: _lazy_WWo4X_, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/join', handler: _lazy_69seWK, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/leave', handler: _lazy_2jYnWX, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/members', handler: _lazy_g_ykBy, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/members/:userId', handler: _lazy_AQHBBL, lazy: true, middleware: false, method: "delete" },
-  { route: '/api/communities/:slug/members/:userId', handler: _lazy_HViDPq, lazy: true, middleware: false, method: "put" },
-  { route: '/api/communities/:slug/posts/:postId', handler: _lazy_APnU2p, lazy: true, middleware: false, method: "delete" },
-  { route: '/api/communities/:slug/posts/:postId/replies', handler: _lazy_cArUZn, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/posts/:postId/replies', handler: _lazy_thmyQh, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/posts', handler: _lazy_uvlwsD, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities/:slug/posts', handler: _lazy_Xw9Ewa, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities/:slug/share', handler: _lazy_svxkl4, lazy: true, middleware: false, method: "post" },
-  { route: '/api/communities', handler: _lazy_i0eoRo, lazy: true, middleware: false, method: "get" },
-  { route: '/api/communities', handler: _lazy_jYpP2c, lazy: true, middleware: false, method: "post" },
   { route: '/api/content/:id', handler: _lazy_aketXu, lazy: true, middleware: false, method: "delete" },
   { route: '/api/content/:id', handler: _lazy_wWJcsH, lazy: true, middleware: false, method: "put" },
+  { route: '/api/content/:id/products', handler: _lazy_COvTvp, lazy: true, middleware: false, method: "get" },
+  { route: '/api/content/:id/products', handler: _lazy_DP4Ay7, lazy: true, middleware: false, method: "post" },
+  { route: '/api/content/:id/products', handler: _lazy_UKloZE, lazy: true, middleware: false, method: "put" },
+  { route: '/api/content/:id/products/:productId', handler: _lazy_Cs2g1s, lazy: true, middleware: false, method: "delete" },
   { route: '/api/content/:id/publish', handler: _lazy_nvGW0A, lazy: true, middleware: false, method: "post" },
+  { route: '/api/content/:id/report', handler: _lazy_znufi_, lazy: true, middleware: false, method: "post" },
+  { route: '/api/content/:id/versions', handler: _lazy_T1Or0I, lazy: true, middleware: false, method: "get" },
   { route: '/api/content/:id/view', handler: _lazy_5xwqzL, lazy: true, middleware: false, method: "post" },
   { route: '/api/content/:slug', handler: _lazy_vM03Hh, lazy: true, middleware: false, method: "get" },
   { route: '/api/content', handler: _lazy_x5oiU1, lazy: true, middleware: false, method: "get" },
   { route: '/api/content', handler: _lazy_d1wpDk, lazy: true, middleware: false, method: "post" },
+  { route: '/api/contests/:slug', handler: _lazy_7DWjCB, lazy: true, middleware: false, method: "delete" },
   { route: '/api/contests/:slug', handler: _lazy_T6VRVr, lazy: true, middleware: false, method: "get" },
   { route: '/api/contests/:slug', handler: _lazy_L6tGde, lazy: true, middleware: false, method: "put" },
   { route: '/api/contests/:slug/entries', handler: _lazy_aWSNzD, lazy: true, middleware: false, method: "get" },
   { route: '/api/contests/:slug/entries', handler: _lazy_2Vbyzt, lazy: true, middleware: false, method: "post" },
   { route: '/api/contests/:slug/judge', handler: _lazy_KvT54o, lazy: true, middleware: false, method: "post" },
+  { route: '/api/contests/:slug/transition', handler: _lazy_Vtturf, lazy: true, middleware: false, method: "post" },
   { route: '/api/contests', handler: _lazy_DECgZ5, lazy: true, middleware: false, method: "get" },
   { route: '/api/contests', handler: _lazy_XOr96X, lazy: true, middleware: false, method: "post" },
   { route: '/api/docs/:siteSlug', handler: _lazy_4b7WPd, lazy: true, middleware: false, method: "delete" },
@@ -9142,7 +11050,33 @@ const handlers = [
   { route: '/api/docs/:siteSlug/versions', handler: _lazy_9ZpYPh, lazy: true, middleware: false, method: "post" },
   { route: '/api/docs', handler: _lazy_qgBaDe, lazy: true, middleware: false, method: "get" },
   { route: '/api/docs', handler: _lazy_d2gy1E, lazy: true, middleware: false, method: "post" },
+  { route: '/api/files/:id', handler: _lazy_Tn0njh, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/files/mine', handler: _lazy_TvYAs4, lazy: true, middleware: false, method: "get" },
+  { route: '/api/files/upload', handler: _lazy_inDOPa, lazy: true, middleware: false, method: "post" },
   { route: '/api/health', handler: _lazy_Z1yxwm, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug', handler: _lazy_3eNNxC, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/bans', handler: _lazy_94SzjH, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/bans', handler: _lazy_akeW7s, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/bans/:userId', handler: _lazy_rpBiY6, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/hubs/:slug/feed.xml', handler: _lazy_rJWQ_1, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/gallery', handler: _lazy_dnkjHg, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/invites', handler: _lazy_PBg7X_, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/invites', handler: _lazy_gFIK_y, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/join', handler: _lazy_UuI17m, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/leave', handler: _lazy_qT8pYp, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/members', handler: _lazy_seQlVL, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/members/:userId', handler: _lazy_P6keue, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/hubs/:slug/members/:userId', handler: _lazy_vs5UWR, lazy: true, middleware: false, method: "put" },
+  { route: '/api/hubs/:slug/posts/:postId', handler: _lazy_rmgBTp, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/hubs/:slug/posts/:postId/replies', handler: _lazy_Uwo27T, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/posts/:postId/replies', handler: _lazy_9JGU7y, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/posts', handler: _lazy_HAAigD, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/posts', handler: _lazy_N4SgUN, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/products', handler: _lazy_gBbnz3, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs/:slug/products', handler: _lazy_RWRJ2C, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs/:slug/share', handler: _lazy_7kuZa4, lazy: true, middleware: false, method: "post" },
+  { route: '/api/hubs', handler: _lazy_CTfFMz, lazy: true, middleware: false, method: "get" },
+  { route: '/api/hubs', handler: _lazy_ScB6nf, lazy: true, middleware: false, method: "post" },
   { route: '/api/learn/:slug', handler: _lazy_VFAI03, lazy: true, middleware: false, method: "delete" },
   { route: '/api/learn/:slug', handler: _lazy_PrU_Zc, lazy: true, middleware: false, method: "get" },
   { route: '/api/learn/:slug', handler: _lazy_Ub23ql, lazy: true, middleware: false, method: "put" },
@@ -9166,8 +11100,17 @@ const handlers = [
   { route: '/api/notifications/count', handler: _lazy_25WxSl, lazy: true, middleware: false, method: "get" },
   { route: '/api/notifications', handler: _lazy_jIohCW, lazy: true, middleware: false, method: "get" },
   { route: '/api/notifications/read', handler: _lazy_RPIH2G, lazy: true, middleware: false, method: "post" },
+  { route: '/api/notifications/stream', handler: _lazy_P11qqE, lazy: true, middleware: false, method: "get" },
+  { route: '/api/products/:id', handler: _lazy_wrgU9F, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/products/:id', handler: _lazy_w5HYlr, lazy: true, middleware: false, method: "put" },
+  { route: '/api/products/:slug', handler: _lazy_HGXzkB, lazy: true, middleware: false, method: "get" },
+  { route: '/api/products/:slug/content', handler: _lazy_17IMid, lazy: true, middleware: false, method: "get" },
+  { route: '/api/products', handler: _lazy_p6cYPD, lazy: true, middleware: false, method: "get" },
+  { route: '/api/profile', handler: _lazy_hKnS3T, lazy: true, middleware: false, method: "get" },
+  { route: '/api/profile', handler: _lazy_MjHZeY, lazy: true, middleware: false, method: "put" },
   { route: '/api/search', handler: _lazy_Jk2q9O, lazy: true, middleware: false, method: "get" },
   { route: '/api/social/bookmark', handler: _lazy_RZKWJe, lazy: true, middleware: false, method: "post" },
+  { route: '/api/social/bookmarks', handler: _lazy_NrrwiT, lazy: true, middleware: false, method: "get" },
   { route: '/api/social/comments', handler: _lazy_zTkwK8, lazy: true, middleware: false, method: "get" },
   { route: '/api/social/comments', handler: _lazy_j5WvfR, lazy: true, middleware: false, method: "post" },
   { route: '/api/social/comments/:id', handler: _lazy_BFGQGB, lazy: true, middleware: false, method: "delete" },
@@ -9176,14 +11119,22 @@ const handlers = [
   { route: '/api/stats', handler: _lazy_9ZZaRw, lazy: true, middleware: false, method: "get" },
   { route: '/api/users/:username', handler: _lazy_H03rTy, lazy: true, middleware: false, method: "get" },
   { route: '/api/users/:username/content', handler: _lazy_04EajR, lazy: true, middleware: false, method: "get" },
+  { route: '/api/users/:username/feed.xml', handler: _lazy_cfktEX, lazy: true, middleware: false, method: "get" },
+  { route: '/api/users/:username/follow', handler: _lazy_0U6x7e, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/users/:username/follow', handler: _lazy_a9Dse6, lazy: true, middleware: false, method: "post" },
+  { route: '/api/users/:username/followers', handler: _lazy_v_BuVH, lazy: true, middleware: false, method: "get" },
+  { route: '/api/users/:username/following', handler: _lazy_E79g5r, lazy: true, middleware: false, method: "get" },
   { route: '/api/videos/:id', handler: _lazy_41m87_, lazy: true, middleware: false, method: "get" },
   { route: '/api/videos/categories', handler: _lazy_TNPVVm, lazy: true, middleware: false, method: "get" },
   { route: '/api/videos', handler: _lazy_SM0QnG, lazy: true, middleware: false, method: "get" },
   { route: '/api/videos', handler: _lazy_V2m1Rm, lazy: true, middleware: false, method: "post" },
   { route: '/.well-known/nodeinfo', handler: _lazy_UfE1f_, lazy: true, middleware: false, method: undefined },
   { route: '/.well-known/webfinger', handler: _lazy_SYVK3d, lazy: true, middleware: false, method: undefined },
+  { route: '/feed.xml', handler: _lazy_WOZO80, lazy: true, middleware: false, method: undefined },
   { route: '/inbox', handler: _lazy_JOhz5F, lazy: true, middleware: false, method: undefined },
   { route: '/nodeinfo/2.1', handler: _lazy_5I7kwM, lazy: true, middleware: false, method: undefined },
+  { route: '/robots.txt', handler: _lazy_DIF4QD, lazy: true, middleware: false, method: undefined },
+  { route: '/sitemap.xml', handler: _lazy_nTomkI, lazy: true, middleware: false, method: undefined },
   { route: '/users/:username', handler: _lazy_8dZriH, lazy: true, middleware: false, method: undefined },
   { route: '/users/:username/followers', handler: _lazy_iUTKuI, lazy: true, middleware: false, method: undefined },
   { route: '/users/:username/following', handler: _lazy_8IfJxf, lazy: true, middleware: false, method: undefined },
@@ -9646,5 +11597,5 @@ trapUnhandledNodeErrors();
 setupGracefulShutdown(listener, nitroApp);
 const nodeServer = {};
 
-export { deleteDocsSite as $, kickMember as A, changeRole as B, deletePost as C, listReplies as D, createReply as E, listPosts as F, createPost as G, shareContent as H, listCommunities as I, createCommunity as J, deleteContent as K, updateContent as L, useConfig as M, publishContent as N, onContentPublished as O, incrementViewCount as P, getContentBySlug as Q, listContent as R, createContent as S, getContestBySlug as T, updateContest as U, listContestEntries as V, submitContestEntry as W, judgeContestEntry as X, listContests as Y, createContest as Z, getDocsSiteBySlug as _, getRouterParam as a, getResponseStatus as a$, updateDocsSite as a0, getDocsNav as a1, listDocsPages as a2, createDocsPage as a3, updateDocsPage as a4, searchDocsPages as a5, createDocsVersion as a6, listDocsSites as a7, createDocsSite as a8, getPathBySlug as a9, createComment as aA, deleteComment as aB, isLiked as aC, toggleLike as aD, getUserByUsername as aE, getUserContent as aF, getVideoById as aG, incrementVideoViewCount as aH, listVideoCategories as aI, listVideos as aJ, createVideo as aK, getRequestURL as aL, parseWebFingerResource as aM, setResponseHeader as aN, buildWebFingerResponse as aO, getMethod as aP, processInboxActivity as aQ, buildNodeInfoResponse as aR, getRequestHeader as aS, sendRedirect as aT, getOrCreateActorKeypair as aU, getFollowers as aV, getFollowing as aW, generateOutboxCollection as aX, joinRelativeURL as aY, useRuntimeConfig as aZ, getResponseStatusText as a_, deletePath as aa, updatePath as ab, getLessonBySlug as ac, markLessonComplete as ad, enroll as ae, createLesson as af, createModule as ag, updateModule as ah, publishPath as ai, unenroll as aj, getUserCertificates as ak, getUserEnrollments as al, listPaths as am, createPath as an, getConversationMessages as ao, markMessagesRead as ap, sendMessage as aq, listConversations as ar, createConversation as as, deleteNotification as at, getUnreadCount as au, listNotifications as av, markNotificationRead as aw, markAllNotificationsRead as ax, toggleBookmark as ay, listComments as az, listReports as b, defineRenderHandler as b0, getRouteRules as b1, joinURL as b2, useNitroApp as b3, parseURL as b4, encodePath as b5, decodePath as b6, hasProtocol as b7, isScriptProtocol as b8, withQuery as b9, sanitizeStatusCode as ba, getContext as bb, $fetch as bc, createHooks as bd, defu as be, executeAsync as bf, parseQuery as bg, withTrailingSlash as bh, withoutTrailingSlash as bi, hash$1 as bj, nodeServer as bk, readBody as c, defineEventHandler as d, resolveReport as e, getInstanceSettings as f, getQuery as g, getPlatformStats as h, listUsers as i, deleteUser as j, updateUserRole as k, listAuditLogs as l, updateUserStatus as m, getCommunityBySlug as n, createError$1 as o, listBans as p, banUser as q, removeContent as r, setInstanceSetting as s, unbanUser as t, useDB as u, listInvites as v, createInvite as w, joinCommunity as x, leaveCommunity as y, listMembers as z };
+export { getDocsSiteBySlug as $, addContentProduct as A, syncContentProducts as B, removeContentProduct as C, useConfig as D, publishContent as E, onContentPublished as F, createReportSchema as G, createReport as H, listContentVersions as I, incrementViewCount as J, getContentBySlug as K, listContent as L, createContentSchema as M, createContent as N, getContestBySlug as O, deleteContest as P, updateContestSchema as Q, updateContest as R, listContestEntries as S, submitContestEntry as T, judgeEntrySchema as U, judgeContestEntry as V, contestTransitionSchema as W, transitionContestStatus as X, listContests as Y, createContestSchema as Z, createContest as _, getRouterParam as a, createModule as a$, deleteDocsSite as a0, updateDocsSiteSchema as a1, updateDocsSite as a2, getDocsNav as a3, listDocsPages as a4, createDocsPageSchema as a5, createDocsPage as a6, updateDocsPageSchema as a7, updateDocsPage as a8, searchDocsPages as a9, kickMember as aA, changeRoleSchema as aB, changeRole as aC, deletePost as aD, listReplies as aE, createReplySchema as aF, createReply as aG, listPosts as aH, createPostSchema as aI, createPost as aJ, listHubProducts as aK, createProductSchema as aL, createProduct as aM, shareContent as aN, listHubs as aO, createHubSchema as aP, createHub as aQ, getPathBySlug as aR, deletePath as aS, updateLearningPathSchema as aT, updatePath as aU, getLessonBySlug as aV, markLessonComplete as aW, enroll as aX, createLessonSchema as aY, createLesson as aZ, createModuleSchema as a_, createDocsVersionSchema as aa, createDocsVersion as ab, listDocsSites as ac, createDocsSiteSchema as ad, createDocsSite as ae, files as af, createStorageFromEnv as ag, readMultipartFormData as ah, validateUpload as ai, isProcessableImage as aj, processImage as ak, generateStorageKey as al, getHubBySlug as am, listBans as an, banUserSchema as ao, banUser as ap, unbanUser as aq, listHubGallery as ar, setResponseHeader as as, useRuntimeConfig as at, listInvites as au, createInviteSchema as av, createInvite as aw, joinHub as ax, leaveHub as ay, listMembers as az, listReports as b, generateOutboxCollection as b$, updateModuleSchema as b0, updateModule as b1, publishPath as b2, unenroll as b3, getUserCertificates as b4, getUserEnrollments as b5, listPaths as b6, createLearningPathSchema as b7, createPath as b8, getConversationMessages as b9, isLiked as bA, toggleLike as bB, likeTargetTypeSchema as bC, getUserContent as bD, unfollowUser as bE, followUser as bF, listFollowers as bG, listFollowing as bH, getVideoById as bI, incrementVideoViewCount as bJ, listVideoCategories as bK, listVideos as bL, createVideoSchema as bM, createVideo as bN, getRequestURL as bO, parseWebFingerResource as bP, buildWebFingerResponse as bQ, getMethod as bR, processInboxActivity as bS, buildNodeInfoResponse as bT, contentItems as bU, users as bV, getRequestHeader as bW, sendRedirect as bX, getOrCreateActorKeypair as bY, getFollowers as bZ, getFollowing as b_, markMessagesRead as ba, sendMessageSchema as bb, sendMessage as bc, listConversations as bd, createConversationSchema as be, createConversation as bf, deleteNotification as bg, getUnreadCount as bh, listNotifications as bi, markNotificationRead as bj, markAllNotificationsRead as bk, deleteProduct as bl, updateProductSchema as bm, updateProduct as bn, getProductBySlug as bo, listProductContent as bp, searchProducts as bq, getUserByUsername as br, updateProfileSchema as bs, updateUserProfile as bt, toggleBookmark as bu, listUserBookmarks as bv, listComments as bw, createCommentSchema as bx, createComment as by, deleteComment as bz, readBody as c, joinRelativeURL as c0, getResponseStatusText as c1, getResponseStatus as c2, defineRenderHandler as c3, getRouteRules as c4, joinURL as c5, useNitroApp as c6, hasProtocol as c7, isScriptProtocol as c8, parseQuery as c9, withQuery as ca, sanitizeStatusCode as cb, parseURL as cc, encodePath as cd, decodePath as ce, getContext as cf, withTrailingSlash as cg, withoutTrailingSlash as ch, $fetch as ci, createHooks as cj, defu as ck, executeAsync as cl, hash$1 as cm, nodeServer as cn, defineEventHandler as d, resolveReportSchema as e, createError$1 as f, getQuery as g, resolveReport as h, getInstanceSettings as i, adminSettingSchema as j, getPlatformStats as k, listAuditLogs as l, listUsers as m, deleteUser as n, adminUpdateRoleSchema as o, updateUserRole as p, adminUpdateStatusSchema as q, removeContent as r, setInstanceSetting as s, updateUserStatus as t, useDB as u, deleteContent as v, updateContentSchema as w, updateContent as x, listContentProducts as y, addContentProductSchema as z };
 //# sourceMappingURL=nitro.mjs.map

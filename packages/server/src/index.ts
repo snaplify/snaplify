@@ -8,15 +8,15 @@ export type {
   ContentFilters,
   CreateContentInput,
   UpdateContentInput,
-  CommunityListItem,
-  CommunityDetail,
-  CommunityFilters,
-  CommunityMemberItem,
-  CommunityPostItem,
-  CommunityPostFilters,
-  CommunityReplyItem,
-  CommunityInviteItem,
-  CommunityBanItem,
+  HubListItem,
+  HubDetail,
+  HubFilters,
+  HubMemberItem,
+  HubPostItem,
+  HubPostFilters,
+  HubReplyItem,
+  HubInviteItem,
+  HubBanItem,
   CommentItem,
   LearningPathListItem,
   LearningPathDetail,
@@ -40,17 +40,20 @@ export {
   onContentPublished,
   onContentUpdated,
   onContentDeleted,
+  createContentVersion,
+  listContentVersions,
 } from './content.js';
+export type { ContentVersionItem } from './content.js';
 
-// Community
+// Hubs
 export {
-  listCommunities,
-  getCommunityBySlug,
-  createCommunity,
-  updateCommunity,
-  deleteCommunity,
-  joinCommunity,
-  leaveCommunity,
+  listHubs,
+  getHubBySlug,
+  createHub,
+  updateHub,
+  deleteHub,
+  joinHub,
+  leaveHub,
   getMember,
   listMembers,
   changeRole,
@@ -74,7 +77,29 @@ export {
   shareContent,
   unshareContent,
   listShares,
-} from './community.js';
+} from './hub.js';
+
+// Products
+export {
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getProductBySlug,
+  listHubProducts,
+  searchProducts,
+  addContentProduct,
+  removeContentProduct,
+  listContentProducts,
+  syncContentProducts,
+  listProductContent,
+  listHubGallery,
+} from './product.js';
+export type {
+  ProductListItem,
+  ProductDetail,
+  ContentProductItem,
+  ProductFilters,
+} from './product.js';
 
 // Social
 export {
@@ -85,7 +110,15 @@ export {
   deleteComment,
   toggleBookmark,
   onContentLiked,
+  followUser,
+  unfollowUser,
+  isFollowing,
+  listFollowers,
+  listFollowing,
+  createReport,
+  listUserBookmarks,
 } from './social.js';
+export type { FollowUserItem, BookmarkItem } from './social.js';
 
 // Learning
 export {
@@ -163,7 +196,7 @@ export type {
 } from './admin.js';
 
 // Profile
-export { getUserByUsername, getUserContent } from './profile.js';
+export { getUserByUsername, getUserContent, updateUserProfile } from './profile.js';
 
 // Security
 export {
@@ -212,6 +245,9 @@ export {
   listContestEntries,
   submitContestEntry,
   judgeContestEntry,
+  deleteContest,
+  transitionContestStatus,
+  calculateContestRanks,
 } from './contest.js';
 export type {
   ContestListItem,
@@ -256,3 +292,33 @@ export type {
   VideoFilters,
   VideoCategoryItem,
 } from './video.js';
+
+// Storage
+export {
+  LocalStorageAdapter,
+  S3StorageAdapter,
+  createStorageFromEnv,
+  generateStorageKey,
+  validateUpload,
+  isProcessableImage,
+  ALLOWED_MIME_TYPES,
+  ALLOWED_IMAGE_TYPES,
+  MAX_UPLOAD_SIZES,
+} from './storage.js';
+export type { StorageAdapter } from './storage.js';
+
+// Image Processing
+export {
+  processImage,
+  getBestVariant,
+  IMAGE_VARIANTS,
+} from './image.js';
+export type { ProcessedImage, ImageVariant, ImageVariantName } from './image.js';
+
+// Email
+export {
+  SmtpEmailAdapter,
+  ConsoleEmailAdapter,
+  emailTemplates,
+} from './email.js';
+export type { EmailAdapter, EmailMessage } from './email.js';

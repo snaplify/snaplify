@@ -1,10 +1,30 @@
 <script setup lang="ts">
+import type { ContentViewData } from '~/composables/useEngagement';
+
 const props = defineProps<{
-  content: any;
+  content: ContentViewData;
 }>();
 
-const liked = ref(false);
-const bookmarked = ref(false);
+const contentId = computed(() => props.content?.id);
+const contentType = computed(() => props.content?.type ?? 'article');
+const { liked, bookmarked, likeCount, toggleLike, toggleBookmark, share, setInitialState } = useEngagement(contentId, contentType);
+
+onMounted(() => {
+  setInitialState(false, false, props.content?.likeCount ?? 0);
+});
+
+const config = useRuntimeConfig();
+useJsonLd({
+  type: 'article',
+  title: props.content.title,
+  description: props.content.seoDescription ?? props.content.description ?? '',
+  url: `${config.public.siteUrl}/article/${props.content.slug}`,
+  imageUrl: props.content.coverImageUrl ?? undefined,
+  authorName: props.content.author?.displayName ?? props.content.author?.username ?? '',
+  authorUrl: `${config.public.siteUrl}/u/${props.content.author?.username}`,
+  publishedAt: props.content.publishedAt ?? props.content.createdAt,
+  updatedAt: props.content.updatedAt,
+});
 </script>
 
 <template>
@@ -58,14 +78,14 @@ const bookmarked = ref(false);
       <div class="cpub-engagement-row">
         <div class="cpub-eng-stat"><i class="fa-regular fa-eye"></i> {{ content.viewCount?.toLocaleString() || '0' }} views</div>
         <div class="cpub-eng-sep"></div>
-        <button class="cpub-eng-btn" :class="{ liked }" @click="liked = !liked">
-          <i class="fa-solid fa-heart"></i> {{ content.likeCount ?? 0 }}
+        <button class="cpub-eng-btn" :class="{ liked }" @click="toggleLike">
+          <i class="fa-solid fa-heart"></i> {{ likeCount }}
         </button>
-        <button class="cpub-eng-btn" :class="{ bookmarked }" @click="bookmarked = !bookmarked">
-          <i class="fa-solid fa-bookmark"></i> {{ content.bookmarkCount ?? 0 }}
+        <button class="cpub-eng-btn" :class="{ bookmarked }" @click="toggleBookmark">
+          <i class="fa-solid fa-bookmark"></i> Bookmark
         </button>
         <div class="cpub-eng-spacer"></div>
-        <button class="cpub-eng-btn"><i class="fa-solid fa-share-nodes"></i> Share</button>
+        <button class="cpub-eng-btn" @click="share"><i class="fa-solid fa-share-nodes"></i> Share</button>
         <button class="cpub-eng-btn"><i class="fa-solid fa-ellipsis"></i></button>
       </div>
 
@@ -143,7 +163,7 @@ const bookmarked = ref(false);
       </div>
 
       <!-- COMMENTS SECTION -->
-      <CommentSection :content-id="content.id" />
+      <CommentSection :target-type="content.type" :target-id="content.id" />
 
     </div>
   </div>

@@ -15,6 +15,20 @@ import { NuxtModule, ModuleDependencyMeta } from '@nuxt/schema'
 
    authSecret: string,
 
+   s3Bucket: string,
+
+   s3Region: string,
+
+   s3Endpoint: string,
+
+   s3AccessKey: string,
+
+   s3SecretKey: string,
+
+   s3PublicUrl: string,
+
+   uploadDir: string,
+
    nitro: {
       envPrefix: string,
    },

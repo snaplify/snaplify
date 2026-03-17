@@ -8,155 +8,420 @@ useSeoMeta({
 
 const { user } = useAuth();
 
+const activeTab = ref<'content' | 'bookmarks' | 'learning'>('content');
+
+// My content (all statuses)
 const { data: myContent } = await useFetch('/api/content', {
-  query: { status: undefined, authorId: user.value?.id },
+  query: { authorId: user.value?.id },
 });
+
+// Bookmarks
+const { data: bookmarkData } = await useFetch('/api/social/bookmarks', {
+  query: { limit: 10 },
+  lazy: true,
+});
+
+// Learning enrollments
+const { data: enrollments } = await useFetch('/api/learn/enrollments', {
+  lazy: true,
+});
+
+// Notification count
+const { data: notifCount } = await useFetch('/api/notifications/count', {
+  lazy: true,
+});
+
+const drafts = computed(() =>
+  (myContent.value?.items ?? []).filter((i: Record<string, unknown>) => i.status === 'draft'),
+);
+const published = computed(() =>
+  (myContent.value?.items ?? []).filter((i: Record<string, unknown>) => i.status === 'published'),
+);
+const totalViews = computed(() =>
+  published.value.reduce((sum: number, item: Record<string, unknown>) => sum + ((item.viewCount as number) ?? 0), 0),
+);
+const totalLikes = computed(() =>
+  published.value.reduce((sum: number, item: Record<string, unknown>) => sum + ((item.likeCount as number) ?? 0), 0),
+);
 </script>
 
 <template>
-  <div class="dashboard-page">
-    <div class="dashboard-header">
-      <h1 class="dashboard-title">Dashboard</h1>
-      <NuxtLink to="/create" class="cpub-create-btn">Create</NuxtLink>
+  <div class="cpub-dash">
+    <div class="cpub-dash-header">
+      <h1 class="cpub-dash-title">Dashboard</h1>
+      <NuxtLink to="/create" class="cpub-dash-create-btn">
+        <i class="fa-solid fa-plus"></i> Create
+      </NuxtLink>
     </div>
 
-    <div class="dashboard-grid">
-      <section class="dashboard-card">
-        <h2 class="card-heading">My Content</h2>
-        <template v-if="myContent?.items?.length">
-          <div class="content-row" v-for="item in myContent.items" :key="item.id">
-            <NuxtLink :to="`/${item.type}/${item.slug}`" class="content-row-title">{{ item.title }}</NuxtLink>
-            <span class="content-row-status" :class="`status-${item.status}`">{{ item.status }}</span>
-          </div>
-        </template>
-        <p class="card-empty" v-else>You haven't created any content yet.</p>
-      </section>
+    <!-- Stats row -->
+    <div class="cpub-dash-stats">
+      <div class="cpub-dash-stat">
+        <span class="cpub-dash-stat-n">{{ published.length }}</span>
+        <span class="cpub-dash-stat-l">Published</span>
+      </div>
+      <div class="cpub-dash-stat">
+        <span class="cpub-dash-stat-n">{{ drafts.length }}</span>
+        <span class="cpub-dash-stat-l">Drafts</span>
+      </div>
+      <div class="cpub-dash-stat">
+        <span class="cpub-dash-stat-n">{{ totalViews.toLocaleString() }}</span>
+        <span class="cpub-dash-stat-l">Views</span>
+      </div>
+      <div class="cpub-dash-stat">
+        <span class="cpub-dash-stat-n">{{ totalLikes }}</span>
+        <span class="cpub-dash-stat-l">Likes</span>
+      </div>
+      <div class="cpub-dash-stat">
+        <span class="cpub-dash-stat-n">{{ (notifCount as any)?.count ?? 0 }}</span>
+        <span class="cpub-dash-stat-l">Unread</span>
+      </div>
+    </div>
 
-      <section class="dashboard-card">
-        <h2 class="card-heading">Stats</h2>
-        <div class="stats-row">
-          <div class="stat-item">
-            <span class="stat-number">{{ myContent?.total ?? 0 }}</span>
-            <span class="stat-label">Posts</span>
+    <!-- Tabs -->
+    <div class="cpub-dash-tabs">
+      <button
+        :class="['cpub-dash-tab', { active: activeTab === 'content' }]"
+        @click="activeTab = 'content'"
+      >
+        My Content
+      </button>
+      <button
+        :class="['cpub-dash-tab', { active: activeTab === 'bookmarks' }]"
+        @click="activeTab = 'bookmarks'"
+      >
+        Bookmarks
+      </button>
+      <button
+        :class="['cpub-dash-tab', { active: activeTab === 'learning' }]"
+        @click="activeTab = 'learning'"
+      >
+        Learning
+      </button>
+    </div>
+
+    <!-- Content tab -->
+    <div v-if="activeTab === 'content'" class="cpub-dash-panel">
+      <!-- Drafts section -->
+      <div v-if="drafts.length" class="cpub-dash-section">
+        <h2 class="cpub-dash-section-title">Drafts</h2>
+        <div class="cpub-dash-list">
+          <div v-for="item in drafts" :key="item.id" class="cpub-dash-row">
+            <NuxtLink :to="`/${(item as any).type}/${(item as any).slug}/edit`" class="cpub-dash-row-title">
+              {{ (item as any).title }}
+            </NuxtLink>
+            <span class="cpub-dash-row-meta">
+              <ContentTypeBadge :type="(item as any).type" />
+              <time>{{ new Date((item as any).createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}</time>
+            </span>
+            <NuxtLink :to="`/${(item as any).type}/${(item as any).slug}/edit`" class="cpub-dash-row-action" aria-label="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </NuxtLink>
           </div>
         </div>
-      </section>
+      </div>
+
+      <!-- Published section -->
+      <div class="cpub-dash-section">
+        <h2 class="cpub-dash-section-title">Published</h2>
+        <div class="cpub-dash-list">
+          <div v-for="item in published" :key="item.id" class="cpub-dash-row">
+            <NuxtLink :to="`/${(item as any).type}/${(item as any).slug}`" class="cpub-dash-row-title">
+              {{ (item as any).title }}
+            </NuxtLink>
+            <span class="cpub-dash-row-meta">
+              <ContentTypeBadge :type="(item as any).type" />
+              <span><i class="fa-regular fa-eye"></i> {{ ((item as any).viewCount ?? 0).toLocaleString() }}</span>
+              <span><i class="fa-regular fa-heart"></i> {{ (item as any).likeCount ?? 0 }}</span>
+            </span>
+            <NuxtLink :to="`/${(item as any).type}/${(item as any).slug}/edit`" class="cpub-dash-row-action" aria-label="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </NuxtLink>
+          </div>
+          <p v-if="!published.length" class="cpub-dash-empty">No published content yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookmarks tab -->
+    <div v-if="activeTab === 'bookmarks'" class="cpub-dash-panel">
+      <div class="cpub-dash-list">
+        <div v-for="bm in (bookmarkData as any)?.items ?? []" :key="bm.id" class="cpub-dash-row">
+          <template v-if="bm.content">
+            <NuxtLink :to="`/${bm.content.type}/${bm.content.slug}`" class="cpub-dash-row-title">
+              {{ bm.content.title }}
+            </NuxtLink>
+            <span class="cpub-dash-row-meta">
+              <ContentTypeBadge :type="bm.content.type" />
+              <span v-if="bm.content.author">by {{ bm.content.author.displayName || bm.content.author.username }}</span>
+            </span>
+          </template>
+          <template v-else>
+            <span class="cpub-dash-row-title cpub-dash-row-removed">Removed content</span>
+          </template>
+        </div>
+        <p v-if="!(bookmarkData as any)?.items?.length" class="cpub-dash-empty">
+          No bookmarks yet. Bookmark content you want to revisit!
+        </p>
+      </div>
+    </div>
+
+    <!-- Learning tab -->
+    <div v-if="activeTab === 'learning'" class="cpub-dash-panel">
+      <div class="cpub-dash-list">
+        <div v-for="enrollment in (enrollments as any) ?? []" :key="enrollment.pathId" class="cpub-dash-row">
+          <NuxtLink :to="`/learn/${enrollment.pathSlug}`" class="cpub-dash-row-title">
+            {{ enrollment.pathTitle }}
+          </NuxtLink>
+          <span class="cpub-dash-row-meta">
+            <span v-if="enrollment.completedAt" class="cpub-dash-badge cpub-dash-badge--green">
+              <i class="fa-solid fa-check"></i> Complete
+            </span>
+            <span v-else class="cpub-dash-badge">
+              {{ enrollment.progress ?? 0 }}% progress
+            </span>
+          </span>
+        </div>
+        <p v-if="!(enrollments as any)?.length" class="cpub-dash-empty">
+          Not enrolled in any learning paths. <NuxtLink to="/learn" class="cpub-link">Browse paths</NuxtLink>
+        </p>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.dashboard-page {
-  max-width: var(--content-max-width);
+.cpub-dash {
+  max-width: 800px;
 }
 
-.dashboard-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-weight-bold);
-}
-
-.dashboard-header {
+.cpub-dash-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-6);
+  margin-bottom: 24px;
 }
 
-.cpub-create-btn {
-  padding: var(--space-2) var(--space-4);
+.cpub-dash-title {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.cpub-dash-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
   background: var(--accent);
-  color: var(--color-on-primary);
-  border: 1px solid var(--border);
+  color: #fff;
+  border: 2px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
   text-decoration: none;
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
+  box-shadow: 4px 4px 0 var(--border);
+  cursor: pointer;
 }
 
-.cpub-create-btn:hover {
-  opacity: 0.9;
+.cpub-dash-create-btn:hover {
+  box-shadow: 2px 2px 0 var(--border);
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--space-4);
-}
-
-.dashboard-card {
+/* Stats */
+.cpub-dash-stats {
+  display: flex;
+  gap: 0;
+  border: 2px solid var(--border);
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
+  margin-bottom: 24px;
 }
 
-.card-heading {
-  font-size: var(--text-md);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--space-3);
+.cpub-dash-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 16px 12px;
+  border-right: 2px solid var(--border);
 }
 
-.card-empty {
+.cpub-dash-stat:last-child {
+  border-right: none;
+}
+
+.cpub-dash-stat-n {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+.cpub-dash-stat-l {
+  font-size: 10px;
+  font-family: var(--font-mono);
   color: var(--text-faint);
-  font-size: var(--text-sm);
-  text-align: center;
-  padding: var(--space-6) 0;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.content-row {
+/* Tabs */
+.cpub-dash-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 0;
+}
+
+.cpub-dash-tab {
+  padding: 10px 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+
+.cpub-dash-tab:hover {
+  color: var(--text);
+}
+
+.cpub-dash-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Panel */
+.cpub-dash-panel {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-top: none;
+}
+
+.cpub-dash-section {
+  border-bottom: 2px solid var(--border);
+}
+
+.cpub-dash-section:last-child {
+  border-bottom: none;
+}
+
+.cpub-dash-section-title {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 12px 16px 8px;
+}
+
+.cpub-dash-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cpub-dash-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border2);
 }
 
-.content-row-title {
+.cpub-dash-row:last-child {
+  border-bottom: none;
+}
+
+.cpub-dash-row-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text);
   text-decoration: none;
-  font-size: var(--text-sm);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.content-row-title:hover {
+.cpub-dash-row-title:hover {
   color: var(--accent);
 }
 
-.content-row-status {
-  font-size: var(--text-xs);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+.cpub-dash-row-removed {
+  color: var(--text-faint);
+  font-style: italic;
 }
 
-.status-published {
-  background: var(--green-bg, var(--surface2));
-  color: var(--green, var(--text));
+.cpub-dash-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  flex-shrink: 0;
 }
 
-.status-draft {
+.cpub-dash-row-action {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  text-decoration: none;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.cpub-dash-row-action:hover {
+  color: var(--accent);
+}
+
+.cpub-dash-badge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border: 1px solid var(--border2);
   background: var(--surface2);
   color: var(--text-dim);
 }
 
-.stats-row {
-  display: flex;
-  gap: var(--space-6);
-  justify-content: center;
-  padding: var(--space-4) 0;
+.cpub-dash-badge--green {
+  border-color: var(--green-border);
+  background: var(--green-bg);
+  color: var(--green);
 }
 
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.stat-number {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-weight-bold);
-}
-
-.stat-label {
-  font-size: var(--text-xs);
+.cpub-dash-empty {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 13px;
   color: var(--text-faint);
+}
+
+.cpub-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.cpub-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .cpub-dash-stats {
+    flex-wrap: wrap;
+  }
+  .cpub-dash-stat {
+    min-width: 33%;
+  }
 }
 </style>

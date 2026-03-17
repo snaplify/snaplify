@@ -1,7 +1,14 @@
 <script setup lang="ts">
 const { user, isAuthenticated, signOut } = useAuth();
 
+useHead({
+  link: [
+    { rel: 'alternate', type: 'application/rss+xml', title: 'CommonPub RSS', href: '/feed.xml' },
+  ],
+});
+
 const userMenuOpen = ref(false);
+const mobileMenuOpen = ref(false);
 
 // Notification count polling
 const { data: notifData } = useFetch<{ count: number }>('/api/notifications/count', {
@@ -14,48 +21,31 @@ onMounted(() => {
   notifInterval = setInterval(async () => {
     try {
       const res = await $fetch<{ count: number }>('/api/notifications/count');
-      if (res && typeof res.count === 'number') {
-        notifData.value = res;
-      }
-    } catch {
-      // silently ignore polling errors
-    }
+      if (res && typeof res.count === 'number') notifData.value = res;
+    } catch { /* ignore */ }
   }, 30_000);
 });
-onUnmounted(() => {
-  if (notifInterval) clearInterval(notifInterval);
-});
+onUnmounted(() => { if (notifInterval) clearInterval(notifInterval); });
 
 const unreadCount = computed(() => notifData.value?.count ?? 0);
 
-// Cmd+K / Ctrl+K shortcut → navigate to search
+// Cmd+K / Ctrl+K → search
 function handleGlobalKeydown(e: KeyboardEvent): void {
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault();
     navigateTo('/search');
   }
 }
+onMounted(() => document.addEventListener('keydown', handleGlobalKeydown));
+onUnmounted(() => document.removeEventListener('keydown', handleGlobalKeydown));
 
-onMounted(() => {
-  document.addEventListener('keydown', handleGlobalKeydown);
-});
-onUnmounted(() => {
-  document.removeEventListener('keydown', handleGlobalKeydown);
-});
-
-// Close user menu on click outside
+// Close menus on click outside
 function handleClickOutside(e: MouseEvent): void {
   const target = e.target as HTMLElement;
-  if (!target.closest('.cpub-user-menu-wrapper')) {
-    userMenuOpen.value = false;
-  }
+  if (!target.closest('.cpub-user-menu-wrapper')) userMenuOpen.value = false;
 }
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-});
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-});
+onMounted(() => document.addEventListener('click', handleClickOutside));
+onUnmounted(() => document.removeEventListener('click', handleClickOutside));
 
 function handleSignOut(): void {
   userMenuOpen.value = false;
@@ -75,7 +65,7 @@ const userUsername = computed(() => {
 
 <template>
   <div class="cpub-layout">
-    <!-- Topbar — matches mockup 01 exactly -->
+    <!-- ═══ TOP NAV ═══ -->
     <header class="cpub-topbar">
       <NuxtLink to="/" class="cpub-topbar-logo">
         <span class="cpub-logo-bracket">[</span>C<span class="cpub-logo-bracket">]</span>
@@ -83,18 +73,18 @@ const userUsername = computed(() => {
       </NuxtLink>
 
       <nav class="cpub-topbar-nav" aria-label="Main navigation">
-        <NuxtLink to="/" class="cpub-nav-link">Explore</NuxtLink>
-        <NuxtLink to="/learn" class="cpub-nav-link">Learn</NuxtLink>
-        <NuxtLink to="/create" class="cpub-nav-link">Create</NuxtLink>
-        <NuxtLink to="/communities" class="cpub-nav-link">Community</NuxtLink>
+        <NuxtLink to="/" class="cpub-nav-link"><i class="fa-solid fa-house"></i> Home</NuxtLink>
+        <NuxtLink to="/hubs" class="cpub-nav-link"><i class="fa-solid fa-users"></i> Hubs</NuxtLink>
+        <NuxtLink to="/learn" class="cpub-nav-link"><i class="fa-solid fa-graduation-cap"></i> Learn</NuxtLink>
+        <NuxtLink to="/contests" class="cpub-nav-link"><i class="fa-solid fa-trophy"></i> Contests</NuxtLink>
       </nav>
 
       <div class="cpub-topbar-spacer" />
 
       <div class="cpub-topbar-actions">
-        <NuxtLink to="/search" class="cpub-search-btn">
+        <NuxtLink to="/search" class="cpub-search-btn" aria-label="Search">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <span class="cpub-search-text">Search content&hellip;</span>
+          <span class="cpub-search-text">Search...</span>
           <span class="cpub-kbd">&lceil;K</span>
         </NuxtLink>
 
@@ -103,307 +93,168 @@ const userUsername = computed(() => {
             <i class="fa-solid fa-bell"></i>
             <span v-if="unreadCount > 0" class="cpub-notif-dot" />
           </NuxtLink>
-
-          <NuxtLink to="/create" class="cpub-btn-new">
-            <i class="fa-solid fa-plus"></i> New
+          <NuxtLink to="/create" class="cpub-btn-new" aria-label="Create new content">
+            <i class="fa-solid fa-plus"></i> <span class="cpub-new-text">New</span>
           </NuxtLink>
-
           <div class="cpub-user-menu-wrapper">
-            <button
-              class="cpub-avatar-btn"
-              aria-label="User menu"
-              :aria-expanded="userMenuOpen"
-              @click.stop="userMenuOpen = !userMenuOpen"
-            >
+            <button class="cpub-avatar-btn" aria-label="User menu" :aria-expanded="userMenuOpen" @click.stop="userMenuOpen = !userMenuOpen">
               <span class="cpub-user-avatar">{{ userInitial }}</span>
             </button>
             <div v-if="userMenuOpen" class="cpub-user-dropdown" role="menu">
-              <NuxtLink :to="`/u/${userUsername}`" class="cpub-dropdown-item" role="menuitem" @click="userMenuOpen = false">
-                <i class="fa-solid fa-user"></i> Profile
-              </NuxtLink>
-              <NuxtLink to="/settings" class="cpub-dropdown-item" role="menuitem" @click="userMenuOpen = false">
-                <i class="fa-solid fa-gear"></i> Settings
-              </NuxtLink>
-              <button class="cpub-dropdown-item" role="menuitem" @click="handleSignOut">
-                <i class="fa-solid fa-right-from-bracket"></i> Sign out
-              </button>
+              <NuxtLink :to="`/u/${userUsername}`" class="cpub-dropdown-item" role="menuitem" @click="userMenuOpen = false"><i class="fa-solid fa-user"></i> Profile</NuxtLink>
+              <NuxtLink to="/dashboard" class="cpub-dropdown-item" role="menuitem" @click="userMenuOpen = false"><i class="fa-solid fa-gauge"></i> Dashboard</NuxtLink>
+              <NuxtLink to="/settings" class="cpub-dropdown-item" role="menuitem" @click="userMenuOpen = false"><i class="fa-solid fa-gear"></i> Settings</NuxtLink>
+              <div class="cpub-dropdown-divider" />
+              <button class="cpub-dropdown-item" role="menuitem" @click="handleSignOut"><i class="fa-solid fa-right-from-bracket"></i> Sign out</button>
             </div>
           </div>
         </template>
         <NuxtLink v-else to="/auth/login" class="cpub-btn-new">Log in</NuxtLink>
+
+        <button class="cpub-mobile-toggle" aria-label="Toggle menu" @click="mobileMenuOpen = !mobileMenuOpen">
+          <i :class="mobileMenuOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars'"></i>
+        </button>
       </div>
     </header>
 
-    <!-- Main content — no sidebar, full width -->
+    <!-- Mobile menu -->
+    <div v-if="mobileMenuOpen" class="cpub-mobile-menu" @click.self="mobileMenuOpen = false">
+      <nav class="cpub-mobile-nav" aria-label="Mobile navigation">
+        <NuxtLink to="/" class="cpub-mobile-link" @click="mobileMenuOpen = false"><i class="fa-solid fa-house"></i> Home</NuxtLink>
+        <NuxtLink to="/hubs" class="cpub-mobile-link" @click="mobileMenuOpen = false"><i class="fa-solid fa-users"></i> Hubs</NuxtLink>
+        <NuxtLink to="/learn" class="cpub-mobile-link" @click="mobileMenuOpen = false"><i class="fa-solid fa-graduation-cap"></i> Learn</NuxtLink>
+        <NuxtLink to="/contests" class="cpub-mobile-link" @click="mobileMenuOpen = false"><i class="fa-solid fa-trophy"></i> Contests</NuxtLink>
+        <NuxtLink to="/search" class="cpub-mobile-link" @click="mobileMenuOpen = false"><i class="fa-solid fa-magnifying-glass"></i> Search</NuxtLink>
+        <template v-if="isAuthenticated">
+          <div class="cpub-mobile-divider" />
+          <NuxtLink to="/create" class="cpub-mobile-link" @click="mobileMenuOpen = false"><i class="fa-solid fa-plus"></i> Create</NuxtLink>
+          <NuxtLink to="/dashboard" class="cpub-mobile-link" @click="mobileMenuOpen = false"><i class="fa-solid fa-gauge"></i> Dashboard</NuxtLink>
+          <NuxtLink to="/notifications" class="cpub-mobile-link" @click="mobileMenuOpen = false"><i class="fa-solid fa-bell"></i> Notifications</NuxtLink>
+        </template>
+      </nav>
+    </div>
+
+    <!-- ═══ MAIN ═══ -->
     <main id="main-content">
       <slot />
     </main>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="cpub-footer">
+      <div class="cpub-footer-inner">
+        <div class="cpub-footer-brand">
+          <span class="cpub-footer-logo"><span class="cpub-logo-bracket">[</span>C<span class="cpub-logo-bracket">]</span> CommonPub</span>
+          <p class="cpub-footer-tagline">Built by makers, for makers.</p>
+          <div class="cpub-footer-social">
+            <a href="https://github.com" target="_blank" rel="noopener" class="cpub-footer-social-link" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+            <a href="https://discord.gg" target="_blank" rel="noopener" class="cpub-footer-social-link" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+            <a href="/feed.xml" class="cpub-footer-social-link" aria-label="RSS"><i class="fa-solid fa-rss"></i></a>
+          </div>
+        </div>
+        <nav class="cpub-footer-col" aria-label="Content links">
+          <h4 class="cpub-footer-col-title">Content</h4>
+          <NuxtLink to="/project" class="cpub-footer-link">Projects</NuxtLink>
+          <NuxtLink to="/article" class="cpub-footer-link">Articles</NuxtLink>
+          <NuxtLink to="/blog" class="cpub-footer-link">Blog</NuxtLink>
+          <NuxtLink to="/explainer" class="cpub-footer-link">Explainers</NuxtLink>
+        </nav>
+        <nav class="cpub-footer-col" aria-label="Community links">
+          <h4 class="cpub-footer-col-title">Community</h4>
+          <NuxtLink to="/hubs" class="cpub-footer-link">Hubs</NuxtLink>
+          <NuxtLink to="/contests" class="cpub-footer-link">Contests</NuxtLink>
+          <NuxtLink to="/learn" class="cpub-footer-link">Learning Paths</NuxtLink>
+          <NuxtLink to="/search" class="cpub-footer-link">Explore</NuxtLink>
+        </nav>
+        <nav class="cpub-footer-col" aria-label="Platform links">
+          <h4 class="cpub-footer-col-title">Platform</h4>
+          <NuxtLink to="/about" class="cpub-footer-link">About</NuxtLink>
+          <NuxtLink to="/docs" class="cpub-footer-link">Docs</NuxtLink>
+          <a href="/feed.xml" class="cpub-footer-link">RSS Feed</a>
+          <a href="/sitemap.xml" class="cpub-footer-link">Sitemap</a>
+        </nav>
+      </div>
+      <div class="cpub-footer-bottom">
+        <span>&copy; {{ new Date().getFullYear() }} CommonPub. Open source under MIT.</span>
+      </div>
+    </footer>
   </div>
 </template>
 
 <style scoped>
-.cpub-layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+.cpub-layout { min-height: 100vh; display: flex; flex-direction: column; }
 
-/* ─── TOPBAR ─── */
+/* ═══ TOPBAR ═══ */
 .cpub-topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 48px;
-  background: var(--surface);
-  border-bottom: 2px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  gap: 0;
-  z-index: 100;
+  position: fixed; top: 0; left: 0; right: 0; height: 48px;
+  background: var(--surface); border-bottom: 2px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 0; z-index: 100;
 }
+.cpub-topbar-logo { display: flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 700; font-family: var(--font-mono); color: var(--text); white-space: nowrap; flex-shrink: 0; text-decoration: none; }
+.cpub-logo-bracket { color: var(--accent); font-size: 15px; }
+.cpub-logo-name { margin-left: 2px; }
 
-.cpub-topbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  color: var(--text);
-  white-space: nowrap;
-  flex-shrink: 0;
-  text-decoration: none;
-}
+.cpub-topbar-nav { display: flex; align-items: center; gap: 2px; margin-left: 24px; }
+.cpub-nav-link { font-size: 12px; color: var(--text-dim); padding: 5px 12px; border: 2px solid transparent; background: none; text-decoration: none; transition: color 0.15s, background 0.15s; display: flex; align-items: center; gap: 6px; }
+.cpub-nav-link i { font-size: 10px; }
+.cpub-nav-link:hover { color: var(--text); background: var(--surface2); }
+.cpub-nav-link.router-link-active { color: var(--text); background: var(--surface2); border-color: var(--border); }
 
-.cpub-logo-bracket {
-  color: var(--accent);
-  font-size: 15px;
-}
+.cpub-topbar-spacer { flex: 1; }
+.cpub-topbar-actions { display: flex; align-items: center; gap: 6px; }
 
-.cpub-logo-name {
-  margin-left: 2px;
-}
+.cpub-search-btn { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--surface2); border: 2px solid var(--border2); color: var(--text-dim); font-size: 12px; min-width: 180px; text-decoration: none; transition: border-color 0.15s; }
+.cpub-search-btn:hover { border-color: var(--accent-border); color: var(--text); }
+.cpub-search-btn i { font-size: 11px; }
+.cpub-kbd { margin-left: auto; font-size: 10px; font-family: var(--font-mono); padding: 2px 6px; background: var(--surface3); border: 2px solid var(--border2); color: var(--text-faint); }
 
-.cpub-topbar-nav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: 24px;
-}
+.cpub-icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: transparent; border: 2px solid transparent; color: var(--text-dim); font-size: 13px; position: relative; transition: all 0.15s; text-decoration: none; }
+.cpub-icon-btn:hover { background: var(--surface2); border-color: var(--border); color: var(--text); }
+.cpub-notif-dot { position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); border: 1.5px solid var(--surface); }
 
-.cpub-nav-link {
-  font-size: 12px;
-  color: var(--text-dim);
-  padding: 5px 12px;
-  border: 2px solid transparent;
-  background: none;
-  text-decoration: none;
-  transition: color 0.15s, background 0.15s;
-}
+.cpub-btn-new { display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--accent); border: 2px solid var(--border); color: var(--color-text-inverse); font-size: 12px; font-weight: 600; transition: all 0.15s; box-shadow: 2px 2px 0 var(--border); text-decoration: none; cursor: pointer; }
+.cpub-btn-new:hover { box-shadow: 4px 4px 0 var(--border); transform: translate(-1px, -1px); }
 
-.cpub-nav-link:hover {
-  color: var(--text);
-  background: var(--surface2);
-}
+.cpub-avatar-btn { background: none; border: none; padding: 0; cursor: pointer; }
+.cpub-user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--purple-bg); border: 2px solid var(--purple); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--purple); font-family: var(--font-mono); }
+.cpub-user-menu-wrapper { position: relative; }
+.cpub-user-dropdown { position: absolute; top: calc(100% + 6px); right: 0; min-width: 180px; background: var(--surface); border: 2px solid var(--border); box-shadow: 4px 4px 0 var(--border); z-index: 200; display: flex; flex-direction: column; padding: 4px 0; }
+.cpub-dropdown-item { display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 12px; color: var(--text-dim); text-decoration: none; background: none; border: none; cursor: pointer; font-family: inherit; width: 100%; text-align: left; transition: all 0.15s; }
+.cpub-dropdown-item:hover { background: var(--surface2); color: var(--text); }
+.cpub-dropdown-item i { width: 14px; text-align: center; font-size: 11px; }
+.cpub-dropdown-divider { height: 2px; background: var(--border2); margin: 4px 12px; }
 
-.cpub-nav-link.router-link-active {
-  color: var(--text);
-  background: var(--surface2);
-  border-color: var(--border);
-}
+.cpub-mobile-toggle { display: none; width: 32px; height: 32px; background: none; border: 2px solid transparent; color: var(--text-dim); font-size: 16px; cursor: pointer; align-items: center; justify-content: center; }
+.cpub-mobile-menu { display: none; position: fixed; inset: 0; top: 48px; z-index: 99; background: rgba(0, 0, 0, 0.4); }
+.cpub-mobile-nav { background: var(--surface); border-bottom: 2px solid var(--border); padding: 8px 0; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+.cpub-mobile-link { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13px; color: var(--text-dim); text-decoration: none; transition: background 0.1s; }
+.cpub-mobile-link:hover { background: var(--surface2); color: var(--text); }
+.cpub-mobile-link i { width: 16px; text-align: center; font-size: 12px; }
+.cpub-mobile-divider { height: 2px; background: var(--border2); margin: 4px 16px; }
 
-.cpub-topbar-spacer {
-  flex: 1;
-}
+#main-content { margin-top: 48px; flex: 1; }
 
-.cpub-topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+/* ═══ FOOTER ═══ */
+.cpub-footer { background: var(--surface); border-top: 2px solid var(--border); margin-top: auto; }
+.cpub-footer-inner { max-width: 1200px; margin: 0 auto; padding: 40px 32px 32px; display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 32px; }
+.cpub-footer-brand { display: flex; flex-direction: column; gap: 8px; }
+.cpub-footer-logo { font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--text); }
+.cpub-footer-tagline { font-size: 12px; color: var(--text-dim); }
+.cpub-footer-social { display: flex; gap: 8px; margin-top: 8px; }
+.cpub-footer-social-link { width: 28px; height: 28px; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 12px; text-decoration: none; transition: all 0.12s; }
+.cpub-footer-social-link:hover { background: var(--accent); color: var(--color-text-inverse); border-color: var(--accent); }
+.cpub-footer-col { display: flex; flex-direction: column; gap: 6px; }
+.cpub-footer-col-title { font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-faint); margin-bottom: 4px; }
+.cpub-footer-link { font-size: 12px; color: var(--text-dim); text-decoration: none; transition: color 0.12s; }
+.cpub-footer-link:hover { color: var(--text); }
+.cpub-footer-bottom { max-width: 1200px; margin: 0 auto; padding: 16px 32px; border-top: 2px solid var(--border); font-size: 10px; font-family: var(--font-mono); color: var(--text-faint); }
 
-/* ─── SEARCH BUTTON ─── */
-.cpub-search-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: var(--surface2);
-  border: 2px solid var(--border2);
-  color: var(--text-dim);
-  font-size: 12px;
-  min-width: 180px;
-  text-decoration: none;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.cpub-search-btn:hover {
-  border-color: var(--accent-border);
-  color: var(--text);
-}
-
-.cpub-search-btn i {
-  font-size: 11px;
-}
-
-.cpub-kbd {
-  margin-left: auto;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 2px 6px;
-  background: var(--surface3);
-  border: 2px solid var(--border2);
-  color: var(--text-faint);
-}
-
-/* ─── ICON BUTTON ─── */
-.cpub-icon-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 2px solid transparent;
-  color: var(--text-dim);
-  font-size: 13px;
-  position: relative;
-  transition: all 0.15s;
-  text-decoration: none;
-}
-
-.cpub-icon-btn:hover {
-  background: var(--surface2);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-.cpub-notif-dot {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 1.5px solid var(--surface);
-}
-
-/* ─── NEW BUTTON ─── */
-.cpub-btn-new {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: var(--accent);
-  border: 2px solid var(--border);
-  color: var(--color-text-inverse);
-  font-size: 12px;
-  font-weight: 600;
-  transition: all 0.15s;
-  box-shadow: 2px 2px 0 var(--border);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.cpub-btn-new:hover {
-  box-shadow: 4px 4px 0 var(--border);
-  transform: translate(-1px, -1px);
-}
-
-/* ─── USER AVATAR ─── */
-.cpub-avatar-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-.cpub-user-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--purple-bg);
-  border: 2px solid var(--purple);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--purple);
-  font-family: var(--font-mono);
-}
-
-.cpub-user-menu-wrapper {
-  position: relative;
-}
-
-.cpub-user-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 180px;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  box-shadow: 4px 4px 0 var(--border);
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  padding: 4px 0;
-}
-
-.cpub-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-size: 12px;
-  color: var(--text-dim);
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  width: 100%;
-  text-align: left;
-  transition: all 0.15s;
-}
-
-.cpub-dropdown-item:hover {
-  background: var(--surface2);
-  color: var(--text);
-}
-
-.cpub-dropdown-item i {
-  width: 14px;
-  text-align: center;
-  font-size: 11px;
-}
-
-/* ─── MAIN ─── */
-#main-content {
-  margin-top: 48px;
-}
-
-/* ─── RESPONSIVE ─── */
 @media (max-width: 768px) {
-  .cpub-topbar-nav {
-    display: none;
-  }
-
-  .cpub-search-btn {
-    min-width: auto;
-    padding: 6px 8px;
-  }
-
-  .cpub-search-text {
-    display: none;
-  }
-
-  .cpub-kbd {
-    display: none;
-  }
+  .cpub-topbar-nav { display: none; }
+  .cpub-search-btn { min-width: auto; padding: 6px 8px; }
+  .cpub-search-text, .cpub-kbd, .cpub-new-text { display: none; }
+  .cpub-mobile-toggle { display: flex; }
+  .cpub-mobile-menu { display: block; }
+  .cpub-footer-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
 }
+@media (max-width: 480px) { .cpub-footer-inner { grid-template-columns: 1fr; } }
 </style>

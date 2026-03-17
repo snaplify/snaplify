@@ -177,6 +177,7 @@ export async function createContest(
 export async function updateContest(
   db: DB,
   slug: string,
+  userId: string,
   data: Partial<CreateContestInput>,
 ): Promise<ContestDetail | null> {
   const existing = await db
@@ -186,6 +187,7 @@ export async function updateContest(
     .limit(1);
 
   if (existing.length === 0) return null;
+  if (existing[0]!.createdById !== userId) return null;
 
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (data.title !== undefined) updates.title = data.title;
@@ -228,30 +230,49 @@ export async function submitContestEntry(
   contestId: string,
   contentId: string,
   userId: string,
-): Promise<ContestEntryItem> {
+): Promise<ContestEntryItem | null> {
+  // Validate contest exists and is active
+  const contest = await db
+    .select({ id: contests.id, status: contests.status })
+    .from(contests)
+    .where(eq(contests.id, contestId))
+    .limit(1);
+
+  if (contest.length === 0) return null;
+  if (contest[0]!.status !== 'active') return null;
+
+  // Validate content exists, is published, and user owns it
+  const content = await db
+    .select({ id: contentItems.id, authorId: contentItems.authorId, status: contentItems.status })
+    .from(contentItems)
+    .where(eq(contentItems.id, contentId))
+    .limit(1);
+
+  if (content.length === 0) return null;
+  if (content[0]!.status !== 'published') return null;
+  if (content[0]!.authorId !== userId) return null;
+
   const [row] = await db
     .insert(contestEntries)
-    .values({
-      contestId,
-      contentId,
-      userId,
-    })
+    .values({ contestId, contentId, userId })
+    .onConflictDoNothing()
     .returning();
 
-  // Increment entry count
+  if (!row) return null;
+
   await db
     .update(contests)
     .set({ entryCount: sql`${contests.entryCount} + 1` })
     .where(eq(contests.id, contestId));
 
   return {
-    id: row!.id,
-    contestId: row!.contestId,
-    contentId: row!.contentId,
-    userId: row!.userId,
-    score: row!.score,
-    rank: row!.rank,
-    submittedAt: row!.submittedAt,
+    id: row.id,
+    contestId: row.contestId,
+    contentId: row.contentId,
+    userId: row.userId,
+    score: row.score,
+    rank: row.rank,
+    submittedAt: row.submittedAt,
   };
 }
 
@@ -260,30 +281,128 @@ export async function judgeContestEntry(
   entryId: string,
   score: number,
   judgeId: string,
-): Promise<void> {
-  // Append judge score to the judgeScores array
+  feedback?: string,
+): Promise<{ judged: boolean; error?: string }> {
+  // Get the entry and its contest
   const existing = await db
-    .select()
+    .select({
+      entry: contestEntries,
+      contestJudges: contests.judges,
+      contestStatus: contests.status,
+    })
     .from(contestEntries)
+    .innerJoin(contests, eq(contestEntries.contestId, contests.id))
     .where(eq(contestEntries.id, entryId))
     .limit(1);
 
-  if (existing.length === 0) return;
+  if (existing.length === 0) return { judged: false, error: 'Entry not found' };
 
-  const entry = existing[0]!;
-  const scores = (entry.judgeScores ?? []) as Array<{ judgeId: string; score: number }>;
-  const existingIdx = scores.findIndex((s) => s.judgeId === judgeId);
-  if (existingIdx >= 0) {
-    scores[existingIdx] = { judgeId, score };
-  } else {
-    scores.push({ judgeId, score });
+  const row = existing[0]!;
+
+  // Check contest is in judging phase
+  if (row.contestStatus !== 'judging') {
+    return { judged: false, error: 'Contest is not in judging phase' };
   }
 
-  // Calculate average score
+  // Check judge authorization
+  const judges = (row.contestJudges ?? []) as string[];
+  if (!judges.includes(judgeId)) {
+    return { judged: false, error: 'Not authorized to judge this contest' };
+  }
+
+  const entry = row.entry;
+  const scores = (entry.judgeScores ?? []) as Array<{ judgeId: string; score: number; feedback?: string }>;
+  const existingIdx = scores.findIndex((s) => s.judgeId === judgeId);
+  if (existingIdx >= 0) {
+    scores[existingIdx] = { judgeId, score, feedback };
+  } else {
+    scores.push({ judgeId, score, feedback });
+  }
+
   const avgScore = Math.round(scores.reduce((sum, s) => sum + s.score, 0) / scores.length);
 
   await db
     .update(contestEntries)
     .set({ judgeScores: scores, score: avgScore })
     .where(eq(contestEntries.id, entryId));
+
+  return { judged: true };
+}
+
+// --- Contest Management ---
+
+export async function deleteContest(
+  db: DB,
+  contestId: string,
+  userId: string,
+): Promise<boolean> {
+  const contest = await db
+    .select({ createdById: contests.createdById })
+    .from(contests)
+    .where(eq(contests.id, contestId))
+    .limit(1);
+
+  if (contest.length === 0) return false;
+  if (contest[0]!.createdById !== userId) return false;
+
+  await db.delete(contests).where(eq(contests.id, contestId));
+  return true;
+}
+
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  upcoming: ['active'],
+  active: ['judging'],
+  judging: ['completed'],
+  completed: [],
+};
+
+export async function transitionContestStatus(
+  db: DB,
+  contestId: string,
+  userId: string,
+  newStatus: string,
+): Promise<{ transitioned: boolean; error?: string }> {
+  const contest = await db
+    .select({ createdById: contests.createdById, status: contests.status })
+    .from(contests)
+    .where(eq(contests.id, contestId))
+    .limit(1);
+
+  if (contest.length === 0) return { transitioned: false, error: 'Contest not found' };
+  if (contest[0]!.createdById !== userId) return { transitioned: false, error: 'Not the contest owner' };
+
+  const currentStatus = contest[0]!.status;
+  const allowed = VALID_TRANSITIONS[currentStatus] ?? [];
+
+  if (!allowed.includes(newStatus)) {
+    return { transitioned: false, error: `Cannot transition from ${currentStatus} to ${newStatus}` };
+  }
+
+  await db
+    .update(contests)
+    .set({
+      status: newStatus as 'upcoming' | 'active' | 'judging' | 'completed',
+      updatedAt: new Date(),
+    })
+    .where(eq(contests.id, contestId));
+
+  return { transitioned: true };
+}
+
+export async function calculateContestRanks(
+  db: DB,
+  contestId: string,
+): Promise<void> {
+  const entries = await db
+    .select({ id: contestEntries.id, score: contestEntries.score })
+    .from(contestEntries)
+    .where(eq(contestEntries.contestId, contestId))
+    .orderBy(desc(contestEntries.score));
+
+  for (let i = 0; i < entries.length; i++) {
+    await db
+      .update(contestEntries)
+      .set({ rank: i + 1 })
+      .where(eq(contestEntries.id, entries[i]!.id));
+  }
 }

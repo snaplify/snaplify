@@ -34,57 +34,26 @@ declare module "nitropack/types" {
     '/api/admin/users/:id/status': {
       'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/admin/users/[id]/status.put').default>>>>
     }
-    '/api/communities/:slug': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug].get').default>>>>
-    }
-    '/api/communities/:slug/bans': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/bans.get').default>>>>
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/bans.post').default>>>>
-    }
-    '/api/communities/:slug/bans/:userId': {
-      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/bans/[userId].delete').default>>>>
-    }
-    '/api/communities/:slug/invites': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/invites.get').default>>>>
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/invites.post').default>>>>
-    }
-    '/api/communities/:slug/join': {
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/join.post').default>>>>
-    }
-    '/api/communities/:slug/leave': {
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/leave.post').default>>>>
-    }
-    '/api/communities/:slug/members': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/members.get').default>>>>
-    }
-    '/api/communities/:slug/members/:userId': {
-      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/members/[userId].delete').default>>>>
-      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/members/[userId].put').default>>>>
-    }
-    '/api/communities/:slug/posts/:postId': {
-      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/posts/[postId].delete').default>>>>
-    }
-    '/api/communities/:slug/posts/:postId/replies': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/posts/[postId]/replies.get').default>>>>
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/posts/[postId]/replies.post').default>>>>
-    }
-    '/api/communities/:slug/posts': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/posts/index.get').default>>>>
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/posts/index.post').default>>>>
-    }
-    '/api/communities/:slug/share': {
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/[slug]/share.post').default>>>>
-    }
-    '/api/communities': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/index.get').default>>>>
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/communities/index.post').default>>>>
-    }
     '/api/content/:id': {
       'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id].delete').default>>>>
       'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id].put').default>>>>
     }
+    '/api/content/:id/products': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products.get').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products.post').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products.put').default>>>>
+    }
+    '/api/content/:id/products/:productId': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products/[productId].delete').default>>>>
+    }
     '/api/content/:id/publish': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/publish.post').default>>>>
+    }
+    '/api/content/:id/report': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/report.post').default>>>>
+    }
+    '/api/content/:id/versions': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/versions.get').default>>>>
     }
     '/api/content/:id/view': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/view.post').default>>>>
@@ -97,6 +66,7 @@ declare module "nitropack/types" {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/index.post').default>>>>
     }
     '/api/contests/:slug': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug].delete').default>>>>
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug].get').default>>>>
       'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug].put').default>>>>
     }
@@ -106,6 +76,9 @@ declare module "nitropack/types" {
     }
     '/api/contests/:slug/judge': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug]/judge.post').default>>>>
+    }
+    '/api/contests/:slug/transition': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug]/transition.post').default>>>>
     }
     '/api/contests': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/index.get').default>>>>
@@ -136,8 +109,72 @@ declare module "nitropack/types" {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/index.get').default>>>>
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/index.post').default>>>>
     }
+    '/api/files/:id': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/files/[id].delete').default>>>>
+    }
+    '/api/files/mine': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/files/mine.get').default>>>>
+    }
+    '/api/files/upload': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/files/upload.post').default>>>>
+    }
     '/api/health': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/health.get').default>>>>
+    }
+    '/api/hubs/:slug': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug].get').default>>>>
+    }
+    '/api/hubs/:slug/bans': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/bans.get').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/bans.post').default>>>>
+    }
+    '/api/hubs/:slug/bans/:userId': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/bans/[userId].delete').default>>>>
+    }
+    '/api/hubs/:slug/feed.xml': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/feed.xml.get').default>>>>
+    }
+    '/api/hubs/:slug/gallery': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/gallery.get').default>>>>
+    }
+    '/api/hubs/:slug/invites': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/invites.get').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/invites.post').default>>>>
+    }
+    '/api/hubs/:slug/join': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/join.post').default>>>>
+    }
+    '/api/hubs/:slug/leave': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/leave.post').default>>>>
+    }
+    '/api/hubs/:slug/members': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/members.get').default>>>>
+    }
+    '/api/hubs/:slug/members/:userId': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/members/[userId].delete').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/members/[userId].put').default>>>>
+    }
+    '/api/hubs/:slug/posts/:postId': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/posts/[postId].delete').default>>>>
+    }
+    '/api/hubs/:slug/posts/:postId/replies': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/posts/[postId]/replies.get').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/posts/[postId]/replies.post').default>>>>
+    }
+    '/api/hubs/:slug/posts': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/posts/index.get').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/posts/index.post').default>>>>
+    }
+    '/api/hubs/:slug/products': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/products.get').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/products.post').default>>>>
+    }
+    '/api/hubs/:slug/share': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/share.post').default>>>>
+    }
+    '/api/hubs': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/index.get').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/index.post').default>>>>
     }
     '/api/learn/:slug': {
       'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug].delete').default>>>>
@@ -198,11 +235,34 @@ declare module "nitropack/types" {
     '/api/notifications/read': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/notifications/read.post').default>>>>
     }
+    '/api/notifications/stream': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/notifications/stream.get').default>>>>
+    }
+    '/api/products/:id': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/products/[id].delete').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/products/[id].put').default>>>>
+    }
+    '/api/products/:slug': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/products/[slug].get').default>>>>
+    }
+    '/api/products/:slug/content': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/products/[slug]/content.get').default>>>>
+    }
+    '/api/products': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/products/index.get').default>>>>
+    }
+    '/api/profile': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/profile.get').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/profile.put').default>>>>
+    }
     '/api/search': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/search.get').default>>>>
     }
     '/api/social/bookmark': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/social/bookmark.post').default>>>>
+    }
+    '/api/social/bookmarks': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/social/bookmarks.get').default>>>>
     }
     '/api/social/comments': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/social/comments.get').default>>>>
@@ -224,6 +284,19 @@ declare module "nitropack/types" {
     '/api/users/:username/content': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/users/[username]/content.get').default>>>>
     }
+    '/api/users/:username/feed.xml': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/users/[username]/feed.xml.get').default>>>>
+    }
+    '/api/users/:username/follow': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/users/[username]/follow.delete').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/users/[username]/follow.post').default>>>>
+    }
+    '/api/users/:username/followers': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/users/[username]/followers.get').default>>>>
+    }
+    '/api/users/:username/following': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/users/[username]/following.get').default>>>>
+    }
     '/api/videos/:id': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/videos/[id].get').default>>>>
     }
@@ -240,11 +313,20 @@ declare module "nitropack/types" {
     '/.well-known/webfinger': {
       'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/.well-known/webfinger').default>>>>
     }
+    '/feed.xml': {
+      'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/feed.xml').default>>>>
+    }
     '/inbox': {
       'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/inbox').default>>>>
     }
     '/nodeinfo/2.1': {
       'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/nodeinfo/2.1').default>>>>
+    }
+    '/robots.txt': {
+      'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/robots.txt').default>>>>
+    }
+    '/sitemap.xml': {
+      'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/sitemap.xml').default>>>>
     }
     '/users/:username': {
       'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/users/[username]').default>>>>

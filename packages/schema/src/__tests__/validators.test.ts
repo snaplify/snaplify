@@ -7,7 +7,7 @@ import {
   updateProfileSchema,
   createContentSchema,
   createCommentSchema,
-  createCommunitySchema,
+  createHubSchema,
   createPostSchema,
   createLearningPathSchema,
   createLessonSchema,
@@ -131,11 +131,10 @@ describe('createContentSchema', () => {
   });
 
   it('should accept all content types', () => {
-    for (const type of ['project', 'article', 'guide', 'blog', 'explainer']) {
+    for (const type of ['project', 'article', 'blog', 'explainer']) {
       const result = createContentSchema.safeParse({
         type,
         title: 'Test',
-        slug: 'test',
       });
       expect(result.success).toBe(true);
     }
@@ -145,7 +144,6 @@ describe('createContentSchema', () => {
     const result = createContentSchema.safeParse({
       type: 'invalid',
       title: 'Test',
-      slug: 'test',
     });
     expect(result.success).toBe(false);
   });
@@ -154,7 +152,6 @@ describe('createContentSchema', () => {
     const result = createContentSchema.safeParse({
       type: 'project',
       title: 'Test',
-      slug: 'test',
       tags: Array.from({ length: 21 }, (_, i) => `tag-${i}`),
     });
     expect(result.success).toBe(false);
@@ -191,19 +188,17 @@ describe('createCommentSchema', () => {
   });
 });
 
-describe('createCommunitySchema', () => {
+describe('createHubSchema', () => {
   it('should accept valid community', () => {
-    const result = createCommunitySchema.safeParse({
+    const result = createHubSchema.safeParse({
       name: 'Robotics Club',
-      slug: 'robotics-club',
     });
     expect(result.success).toBe(true);
   });
 
   it('should default join policy to open', () => {
-    const result = createCommunitySchema.parse({
+    const result = createHubSchema.parse({
       name: 'Test',
-      slug: 'test',
     });
     expect(result.joinPolicy).toBe('open');
   });
@@ -212,7 +207,7 @@ describe('createCommunitySchema', () => {
 describe('createPostSchema', () => {
   it('should accept valid post', () => {
     const result = createPostSchema.safeParse({
-      communityId: '550e8400-e29b-41d4-a716-446655440000',
+      hubId: '550e8400-e29b-41d4-a716-446655440000',
       content: 'Hello community!',
     });
     expect(result.success).toBe(true);
@@ -220,7 +215,7 @@ describe('createPostSchema', () => {
 
   it('should default type to text', () => {
     const result = createPostSchema.parse({
-      communityId: '550e8400-e29b-41d4-a716-446655440000',
+      hubId: '550e8400-e29b-41d4-a716-446655440000',
       content: 'Hello',
     });
     expect(result.type).toBe('text');
@@ -231,7 +226,6 @@ describe('createLearningPathSchema', () => {
   it('should accept valid learning path', () => {
     const result = createLearningPathSchema.safeParse({
       title: 'Intro to Robotics',
-      slug: 'intro-to-robotics',
       estimatedHours: 20,
     });
     expect(result.success).toBe(true);
@@ -240,7 +234,6 @@ describe('createLearningPathSchema', () => {
   it('should reject negative hours', () => {
     const result = createLearningPathSchema.safeParse({
       title: 'Test',
-      slug: 'test',
       estimatedHours: -5,
     });
     expect(result.success).toBe(false);
@@ -253,7 +246,6 @@ describe('createLessonSchema', () => {
       const result = createLessonSchema.safeParse({
         moduleId: '550e8400-e29b-41d4-a716-446655440000',
         title: 'Test Lesson',
-        slug: 'test-lesson',
         type,
       });
       expect(result.success).toBe(true);

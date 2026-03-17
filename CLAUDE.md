@@ -15,7 +15,7 @@ The full implementation plan is at `docs/plan.md`. The restructure plan is at `d
 3. **No hardcoded color or font** in any `@commonpub/ui` or `@commonpub/docs` component — always `var(--*)`
 4. **Docs stored as raw markdown** — never TipTap JSON
 5. **Communities local-only in v1** — AP Group only after real moderation experience
-6. **"Hub" is retired** — the concept is Community
+6. **"Hub" is the umbrella concept** — three types: community, product, company. Products are normalized entities in the `products` table, not JSONB blobs. No `guide` content type — use article or explainer.
 7. **Convex is not self-hostable** — the answer is Postgres
 8. **Better Auth is a library** — no separate auth service
 9. **AP actor SSO = Model B** — shared auth DB = Model C (operator opt-in only)

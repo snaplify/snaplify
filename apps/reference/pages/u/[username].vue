@@ -83,6 +83,11 @@ const p = computed(() => profile.value);
   <div v-if="p" class="cpub-profile">
     <!-- Hero -->
     <section class="cpub-profile-hero">
+      <!-- Banner -->
+      <div class="cpub-profile-banner">
+        <div class="cpub-profile-banner-grid" />
+      </div>
+
       <div class="cpub-profile-hero-inner">
         <div class="cpub-profile-hero-top">
           <div class="cpub-profile-avatar-wrap">
@@ -271,17 +276,38 @@ const p = computed(() => profile.value);
 </template>
 
 <style scoped>
+/* Profile Banner */
+.cpub-profile-banner {
+  height: 180px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 50%, var(--teal) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.cpub-profile-banner-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.3;
+}
+
 /* Profile Hero */
 .cpub-profile-hero {
   background: var(--surface2);
   border-bottom: 2px solid var(--border);
-  padding: 40px 0 0;
+  padding: 0;
 }
 
 .cpub-profile-hero-inner {
   max-width: 1080px;
   margin: 0 auto;
   padding: 0 32px;
+  margin-top: -48px;
+  position: relative;
+  z-index: 1;
 }
 
 .cpub-profile-hero-top {
@@ -289,6 +315,7 @@ const p = computed(() => profile.value);
   align-items: flex-start;
   gap: 24px;
   margin-bottom: 24px;
+  padding-top: 16px;
 }
 
 .cpub-profile-avatar-wrap {
@@ -297,15 +324,16 @@ const p = computed(() => profile.value);
 }
 
 .cpub-profile-avatar {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   background: var(--surface);
-  border: 2px solid var(--border);
+  border: 4px solid var(--surface);
+  box-shadow: 0 0 0 2px var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 40px;
   font-weight: 700;
   color: var(--accent);
   font-family: var(--font-mono);
@@ -423,7 +451,7 @@ const p = computed(() => profile.value);
   display: flex;
   gap: 0;
   border-top: 2px solid var(--border);
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .cpub-profile-stat {

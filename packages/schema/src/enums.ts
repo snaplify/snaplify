@@ -10,7 +10,6 @@ export const contentStatusEnum = pgEnum('content_status', ['draft', 'published',
 export const contentTypeEnum = pgEnum('content_type', [
   'project',
   'article',
-  'guide',
   'blog',
   'explainer',
 ]);
@@ -25,7 +24,6 @@ export const likeTargetTypeEnum = pgEnum('like_target_type', [
   'explainer',
   'comment',
   'post',
-  'guide',
 ]);
 export const commentTargetTypeEnum = pgEnum('comment_target_type', [
   'project',
@@ -71,23 +69,42 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'mention',
   'contest',
   'certificate',
-  'community',
+  'hub',
   'system',
 ]);
 
-// --- Community ---
-export const communityRoleEnum = pgEnum('community_role', [
+// --- Hubs ---
+export const hubTypeEnum = pgEnum('hub_type', ['community', 'product', 'company']);
+export const hubPrivacyEnum = pgEnum('hub_privacy', ['public', 'unlisted', 'private']);
+export const hubRoleEnum = pgEnum('hub_role', [
   'owner',
   'admin',
   'moderator',
   'member',
 ]);
-export const communityJoinPolicyEnum = pgEnum('community_join_policy', [
+export const hubJoinPolicyEnum = pgEnum('hub_join_policy', [
   'open',
   'approval',
   'invite',
 ]);
+export const hubMemberStatusEnum = pgEnum('hub_member_status', ['pending', 'active']);
 export const postTypeEnum = pgEnum('post_type', ['text', 'link', 'share', 'poll']);
+
+// --- Products ---
+export const productStatusEnum = pgEnum('product_status', ['active', 'discontinued', 'preview']);
+export const productCategoryEnum = pgEnum('product_category', [
+  'microcontroller',
+  'sbc',
+  'sensor',
+  'actuator',
+  'display',
+  'communication',
+  'power',
+  'mechanical',
+  'software',
+  'tool',
+  'other',
+]);
 
 // --- Learning ---
 export const lessonTypeEnum = pgEnum('lesson_type', [

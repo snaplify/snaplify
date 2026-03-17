@@ -1,18 +1,25 @@
 import { toggleBookmark } from '@commonpub/server';
+import { bookmarkTargetTypeEnum } from '@commonpub/schema';
+import { z } from 'zod';
 
-const VALID_TARGET_TYPES = ['project', 'article', 'blog', 'explainer', 'learning_path'];
+const toggleBookmarkSchema = z.object({
+  targetType: z.enum(['project', 'article', 'blog', 'explainer', 'learning_path']),
+  targetId: z.string().uuid(),
+});
 
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const body = await readBody(event);
 
-  if (!body?.targetType || !VALID_TARGET_TYPES.includes(body.targetType)) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid target type' });
-  }
-  if (!body?.targetId || typeof body.targetId !== 'string') {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid target ID' });
+  const parsed = toggleBookmarkSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed',
+      data: { errors: parsed.error.flatten().fieldErrors },
+    });
   }
 
-  return toggleBookmark(db, user.id, body.targetType, body.targetId);
+  return toggleBookmark(db, user.id, parsed.data.targetType, parsed.data.targetId);
 });

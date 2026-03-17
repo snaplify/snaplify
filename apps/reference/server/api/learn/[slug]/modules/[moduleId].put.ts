@@ -1,4 +1,5 @@
 import { updateModule } from '@commonpub/server';
+import { updateModuleSchema } from '@commonpub/schema';
 
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
@@ -6,5 +7,14 @@ export default defineEventHandler(async (event) => {
   const moduleId = getRouterParam(event, 'moduleId')!;
   const body = await readBody(event);
 
-  return updateModule(db, moduleId, user.id, body);
+  const parsed = updateModuleSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed',
+      data: { errors: parsed.error.flatten().fieldErrors },
+    });
+  }
+
+  return updateModule(db, moduleId, user.id, parsed.data);
 });

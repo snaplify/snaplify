@@ -21,7 +21,6 @@ export interface UserProfile {
   createdAt: Date;
   stats: {
     projects: number;
-    guides: number;
     explainers: number;
     articles: number;
     followers: number;
@@ -112,9 +111,9 @@ export interface UpdateContentInput {
   tags?: string[];
 }
 
-// --- Community Types ---
+// --- Hub Types ---
 
-export interface CommunityListItem {
+export interface HubListItem {
   id: string;
   name: string;
   slug: string;
@@ -129,31 +128,31 @@ export interface CommunityListItem {
   createdBy: UserRef;
 }
 
-export interface CommunityDetail extends CommunityListItem {
+export interface HubDetail extends HubListItem {
   rules: string | null;
   updatedAt: Date;
   currentUserRole: string | null;
   isBanned: boolean;
 }
 
-export interface CommunityFilters {
+export interface HubFilters {
   search?: string;
   joinPolicy?: string;
   limit?: number;
   offset?: number;
 }
 
-export interface CommunityMemberItem {
-  communityId: string;
+export interface HubMemberItem {
+  hubId: string;
   userId: string;
   role: string;
   joinedAt: Date;
   user: UserRef;
 }
 
-export interface CommunityPostItem {
+export interface HubPostItem {
   id: string;
-  communityId: string;
+  hubId: string;
   type: string;
   content: string;
   isPinned: boolean;
@@ -166,14 +165,14 @@ export interface CommunityPostItem {
   sharedContent?: unknown;
 }
 
-export interface CommunityPostFilters {
-  communityId?: string;
+export interface HubPostFilters {
+  hubId?: string;
   type?: string;
   limit?: number;
   offset?: number;
 }
 
-export interface CommunityReplyItem {
+export interface HubReplyItem {
   id: string;
   postId: string;
   content: string;
@@ -182,10 +181,10 @@ export interface CommunityReplyItem {
   updatedAt: Date;
   parentId: string | null;
   author: UserRef;
-  replies?: CommunityReplyItem[];
+  replies?: HubReplyItem[];
 }
 
-export interface CommunityInviteItem {
+export interface HubInviteItem {
   id: string;
   token: string;
   maxUses: number | null;
@@ -195,7 +194,7 @@ export interface CommunityInviteItem {
   createdBy: UserRef;
 }
 
-export interface CommunityBanItem {
+export interface HubBanItem {
   id: string;
   reason: string | null;
   expiresAt: Date | null;

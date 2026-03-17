@@ -33,7 +33,7 @@ export async function listNotifications(
     conditions.push(
       eq(
         notifications.type,
-        filters.type as 'like' | 'comment' | 'follow' | 'mention' | 'contest' | 'certificate' | 'community' | 'system',
+        filters.type as 'like' | 'comment' | 'follow' | 'mention' | 'contest' | 'certificate' | 'hub' | 'system',
       ),
     );
   }
@@ -134,7 +134,7 @@ export async function createNotification(
     .insert(notifications)
     .values({
       userId: input.userId,
-      type: input.type as 'like' | 'comment' | 'follow' | 'mention' | 'contest' | 'certificate' | 'community' | 'system',
+      type: input.type as 'like' | 'comment' | 'follow' | 'mention' | 'contest' | 'certificate' | 'hub' | 'system',
       title: input.title,
       message: input.message,
       link: input.link ?? null,

@@ -102,7 +102,8 @@ onMounted(() => {
             :read-time="readTime"
           />
           <EngagementBar
-            :content-id="enrichedContent.id"
+            :target-type="enrichedContent.type"
+            :target-id="enrichedContent.id"
             :like-count="enrichedContent.likeCount ?? 0"
             :comment-count="enrichedContent.commentCount ?? 0"
           />
@@ -122,7 +123,7 @@ onMounted(() => {
         </div>
 
         <AuthorCard :author="enrichedContent.author" />
-        <CommentSection :content-id="enrichedContent.id" />
+        <CommentSection :target-type="enrichedContent.type" :target-id="enrichedContent.id" />
       </div>
     </article>
 

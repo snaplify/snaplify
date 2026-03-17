@@ -29,6 +29,16 @@ export const users = pgTable('users', {
   profileVisibility: profileVisibilityEnum('profile_visibility').default('public').notNull(),
   skills: jsonb('skills').$type<string[]>(),
   theme: varchar('theme', { length: 64 }),
+  pronouns: varchar('pronouns', { length: 32 }),
+  timezone: varchar('timezone', { length: 64 }),
+  emailNotifications: jsonb('email_notifications').$type<{
+    digest?: 'daily' | 'weekly' | 'none';
+    likes?: boolean;
+    comments?: boolean;
+    follows?: boolean;
+    mentions?: boolean;
+  }>(),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
