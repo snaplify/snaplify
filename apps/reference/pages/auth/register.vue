@@ -13,6 +13,7 @@ const email = ref('');
 const password = ref('');
 const error = ref('');
 const loading = ref(false);
+const registered = ref(false);
 
 async function handleSubmit(): Promise<void> {
   error.value = '';
@@ -20,7 +21,7 @@ async function handleSubmit(): Promise<void> {
 
   try {
     await signUp(email.value, password.value, username.value);
-    await navigateTo('/');
+    registered.value = true;
   } catch (err: unknown) {
     const message = (err as { data?: { message?: string } })?.data?.message;
     error.value = message || 'Registration failed. Please try again.';
@@ -32,6 +33,19 @@ async function handleSubmit(): Promise<void> {
 
 <template>
   <div class="register-page">
+    <!-- Email verification message -->
+    <div v-if="registered" class="register-success">
+      <div class="register-success-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+      <h1 class="register-title">Check your email</h1>
+      <p class="register-success-msg">
+        We sent a verification link to <strong>{{ email }}</strong>. Click the link to activate your account.
+      </p>
+      <NuxtLink to="/auth/login" class="submit-btn" style="display: inline-block; text-align: center; text-decoration: none; margin-top: 16px;">
+        Go to Login
+      </NuxtLink>
+    </div>
+
+    <template v-else>
     <h1 class="register-title">Create account</h1>
 
     <form class="register-form" @submit.prevent="handleSubmit" aria-label="Registration form">
@@ -85,6 +99,7 @@ async function handleSubmit(): Promise<void> {
       Already have an account?
       <NuxtLink to="/auth/login">Log in</NuxtLink>
     </p>
+    </template>
   </div>
 </template>
 
@@ -194,5 +209,27 @@ async function handleSubmit(): Promise<void> {
 
 .register-footer a:hover {
   text-decoration: underline;
+}
+
+.register-success {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.register-success-icon {
+  font-size: 36px;
+  color: var(--green);
+  margin-bottom: 16px;
+}
+
+.register-success-msg {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+.register-success-msg strong {
+  color: var(--text);
 }
 </style>

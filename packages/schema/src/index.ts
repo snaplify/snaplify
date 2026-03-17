@@ -39,3 +39,6 @@ export * from './admin.js';
 
 // Validators
 export * from './validators.js';
+
+// OpenAPI
+export { generateOpenAPISpec } from './openapi.js';

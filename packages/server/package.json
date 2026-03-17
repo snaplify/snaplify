@@ -27,13 +27,15 @@
     "@commonpub/learning": "workspace:*",
     "@commonpub/protocol": "workspace:*",
     "@commonpub/schema": "workspace:*",
-    "drizzle-orm": "^0.41.0",
+    "drizzle-orm": "^0.45.1",
     "isomorphic-dompurify": "^3.3.0",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.3.16",
     "@types/node": "^25.5.0",
     "@types/sharp": "^0.32.0",
+    "drizzle-kit": "^0.31.10",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   }

@@ -191,7 +191,7 @@ const activeHeroCat = ref('All');
 /* HERO */
 .cpub-learn-hero { background: var(--surface); border-bottom: 2px solid var(--border); padding: 36px 32px 28px; }
 .cpub-learn-hero-inner { max-width: 960px; margin: 0 auto; }
-.cpub-hero-eyebrow { font-size: 10px; font-family: var(--font-mono); color: var(--accent); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; }
+/* cpub-hero-eyebrow → global components.css */
 .cpub-hero-title { font-size: 28px; font-weight: 700; line-height: 1.15; margin-bottom: 10px; letter-spacing: -.03em; }
 .cpub-hero-sub { font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 520px; margin-bottom: 24px; }
 .cpub-hero-cats { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -210,36 +210,14 @@ const activeHeroCat = ref('All');
 .cpub-page { max-width: 960px; margin: 0 auto; padding: 28px 32px; }
 .cpub-sidebar { width: 240px; background: var(--surface); border-left: 2px solid var(--border); flex-shrink: 0; overflow-y: auto; padding: 20px 0; }
 
-/* PRIMITIVES */
-.cpub-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-family: var(--font-mono); padding: 2px 8px; border-radius: 0; border: 1px solid var(--border2); color: var(--text-dim); background: var(--surface2); }
-.cpub-tag-accent { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
-.cpub-tag-green { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
-.cpub-tag-yellow { border-color: var(--yellow-border); color: var(--yellow); background: var(--yellow-bg); }
-.cpub-tag-red { border-color: var(--red-border); color: var(--red); background: var(--red-bg); }
-.cpub-tag-purple { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
-.cpub-tag-teal { border-color: var(--teal-border); color: var(--teal); background: var(--teal-bg); }
-
-.cpub-btn { font-family: var(--font-sans); font-size: 12px; padding: 7px 16px; border-radius: var(--radius); border: 2px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.cpub-btn:hover { background: var(--surface2); }
-.cpub-btn-primary { background: var(--accent); border-color: var(--border); color: var(--color-text-inverse); box-shadow: 4px 4px 0 var(--border); }
-.cpub-btn-primary:hover { opacity: .9; }
-.cpub-btn-sm { padding: 5px 12px; font-size: 11px; }
+/* PRIMITIVES (page-specific) */
 .cpub-btn-xs { padding: 3px 8px; font-size: 10px; font-family: var(--font-mono); }
 .cpub-btn-progress { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
-
-.cpub-link { font-size: 11px; color: var(--accent); font-family: var(--font-mono); text-decoration: none; }
-.cpub-link:hover { text-decoration: underline; }
-
-.cpub-divider { border: none; border-top: 2px solid var(--border); margin: 28px 0; }
 
 .cpub-progress-track { height: 4px; background: var(--surface3); border-radius: 0; overflow: hidden; border: 1px solid var(--border2); }
 .cpub-progress-fill { height: 100%; border-radius: 0; background: var(--accent); }
 
-/* SECTION HEADS */
-.cpub-sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-.cpub-sec-head h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
-.cpub-sec-sub { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); }
-.cpub-sec-head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+/* cpub-sec-sub, cpub-sec-head-right → global components.css */
 
 /* MY LEARNING */
 .cpub-ip-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
@@ -349,8 +327,7 @@ const activeHeroCat = ref('All');
 .cpub-cert-name { font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .cpub-cert-date { font-size: 10px; font-family: var(--font-mono); color: var(--text-faint); }
 
-/* EMPTY STATE */
-.cpub-empty-state { text-align: center; padding: 48px 16px; }
+/* EMPTY STATE (page-specific) */
 .cpub-empty-icon { font-size: 32px; color: var(--text-faint); margin-bottom: 12px; }
 .cpub-empty-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
 .cpub-empty-sub { font-size: 12px; color: var(--text-dim); }

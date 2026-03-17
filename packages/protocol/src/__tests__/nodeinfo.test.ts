@@ -9,7 +9,7 @@ function createTestConfig(federation = false) {
       description: 'A test instance',
     },
     features: {
-      communities: true,
+      hubs: true,
       docs: true,
       video: true,
       contests: false,
@@ -80,6 +80,7 @@ describe('buildNodeInfoResponse', () => {
     const features = (result.metadata as any).features;
     expect(features.communities).toBe(true);
     expect(features.contests).toBe(false);
+    expect(features.learning).toBe(true);
   });
 
   it('should include instance name in metadata', () => {

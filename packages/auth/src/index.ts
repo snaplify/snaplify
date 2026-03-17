@@ -1,5 +1,5 @@
 export { createAuth } from './createAuth.js';
-export type { AuthInstance } from './createAuth.js';
+export type { AuthInstance, AuthEmailSender } from './createAuth.js';
 export { createAuthMiddleware, createAuthHook } from './hooks.js';
 export type { CreateAuthMiddlewareOptions, AuthMiddleware, AuthLocals } from './hooks.js';
 export { authGuard, adminGuard, roleGuard } from './guards.js';

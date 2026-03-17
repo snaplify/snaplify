@@ -23,12 +23,20 @@ const activeFilter = ref('');
 const sortOption = ref('recent');
 
 const { data: categories } = await useFetch<CategoryItem[]>('/api/videos/categories');
+const page = ref(1);
+const pageSize = 20;
+
+// Reset page on filter change
+watch([activeFilter, sortOption], () => { page.value = 1; });
+
 const { data: videosData, pending: loadingVideos } = useFetch<{ items: VideoItem[]; total: number }>('/api/videos', {
   query: computed(() => ({
     categoryId: activeFilter.value || undefined,
-    limit: 20,
+    sort: sortOption.value,
+    limit: pageSize,
+    offset: (page.value - 1) * pageSize,
   })),
-  watch: [activeFilter],
+  watch: [activeFilter, sortOption, page],
 });
 
 const videos = computed(() => videosData.value?.items ?? []);
@@ -60,16 +68,16 @@ function formatDate(dateStr: string): string {
     <!-- HERO -->
     <div class="cpub-video-hero">
       <div class="cpub-video-hero-inner">
-        <div class="cpub-hero-eyebrow"><i class="fa fa-play-circle"></i> &nbsp;Video Hub</div>
+        <div class="cpub-hero-eyebrow"><i class="fa-solid fa-play-circle"></i> &nbsp;Video Hub</div>
         <div class="cpub-hero-row">
           <h1 class="cpub-hero-title">Video Hub</h1>
           <span class="cpub-tag cpub-tag-live"><i class="fa-solid fa-circle" style="font-size:8px;"></i> 3 Live Now</span>
         </div>
         <p class="cpub-hero-sub">Tutorials, conference talks, project demos, and live build streams from the edge AI community.</p>
         <div class="cpub-hero-actions">
-          <button class="cpub-btn cpub-btn-primary"><i class="fa fa-upload"></i> Upload Video</button>
-          <button class="cpub-btn"><i class="fa-solid fa-video"></i> Go Live</button>
-          <button class="cpub-btn"><i class="fa fa-list-ul"></i> My Playlists</button>
+          <button class="cpub-btn cpub-btn-primary" disabled title="Coming soon"><i class="fa-solid fa-upload"></i> Upload Video</button>
+          <button class="cpub-btn" disabled title="Coming soon"><i class="fa-solid fa-video"></i> Go Live</button>
+          <button class="cpub-btn" disabled title="Coming soon"><i class="fa-solid fa-list-ul"></i> My Playlists</button>
         </div>
       </div>
     </div>
@@ -165,22 +173,9 @@ function formatDate(dateStr: string): string {
 
           <!-- Real data -->
           <div v-else-if="videos.length" class="cpub-video-grid">
-            <div v-for="v in videos" :key="v.id" class="cpub-vcard">
-              <div class="cpub-vcard-thumb" style="background: var(--surface2)">
-                <div class="cpub-vcard-thumb-overlay"></div>
-                <div class="cpub-vcard-thumb-icon"><i class="fa-solid fa-play"></i></div>
-                <div class="cpub-vcard-play"><div class="cpub-vcard-play-btn"><i class="fa fa-play"></i></div></div>
-                <div class="cpub-vcard-duration">{{ formatDuration(v.duration) }}</div>
-              </div>
-              <div class="cpub-vcard-body">
-                <div class="cpub-vcard-title">{{ v.title }}</div>
-                <div class="cpub-vcard-stats">
-                  <span><i class="fa-solid fa-eye"></i> {{ v.viewCount.toLocaleString() }}</span>
-                  <span>·</span>
-                  <span>{{ formatDate(v.createdAt) }}</span>
-                </div>
-              </div>
-            </div>
+            <NuxtLink v-for="v in videos" :key="v.id" :to="`/videos/${v.id}`" style="text-decoration: none;">
+              <VideoCard :video="v" />
+            </NuxtLink>
           </div>
 
           <!-- Empty state -->
@@ -188,6 +183,17 @@ function formatDate(dateStr: string): string {
             <div class="cpub-empty-icon"><i class="fa-solid fa-film"></i></div>
             <p class="cpub-empty-title">No videos yet</p>
             <p class="cpub-empty-sub">Be the first to upload a video to the community.</p>
+          </div>
+
+          <!-- Pagination -->
+          <div v-if="totalVideos > pageSize" class="cpub-pagination">
+            <button class="cpub-page-btn" :disabled="page <= 1" @click="page--">
+              <i class="fa-solid fa-chevron-left" style="font-size: 10px"></i>
+            </button>
+            <span class="cpub-page-info">Page {{ page }} of {{ Math.ceil(totalVideos / pageSize) }}</span>
+            <button class="cpub-page-btn" :disabled="page >= Math.ceil(totalVideos / pageSize)" @click="page++">
+              <i class="fa-solid fa-chevron-right" style="font-size: 10px"></i>
+            </button>
           </div>
         </div>
 
@@ -233,26 +239,13 @@ function formatDate(dateStr: string): string {
 /* HERO */
 .cpub-video-hero { background: var(--surface); border-bottom: 2px solid var(--border); padding: 32px 32px 28px; }
 .cpub-video-hero-inner { max-width: 1200px; margin: 0 auto; }
-.cpub-hero-eyebrow { font-size: 10px; font-family: var(--font-mono); color: var(--accent); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; }
+/* cpub-hero-eyebrow → global components.css */
 .cpub-hero-row { display: flex; align-items: center; gap: 16px; margin-bottom: 4px; }
 .cpub-hero-title { font-size: 28px; font-weight: 700; letter-spacing: -.03em; font-family: var(--font-mono); }
 .cpub-hero-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 18px; }
 .cpub-hero-actions { display: flex; align-items: center; gap: 10px; }
 
-/* BUTTONS */
-.cpub-btn { font-family: var(--font-mono); font-size: 12px; padding: 8px 16px; border-radius: var(--radius); border: 2px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.cpub-btn:hover { background: var(--surface2); }
-.cpub-btn-primary { background: var(--accent); border-color: var(--border); color: var(--color-text-inverse); box-shadow: 4px 4px 0 var(--border); }
-.cpub-btn-primary:hover { opacity: .9; }
-
-/* TAGS */
-.cpub-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-family: var(--font-mono); padding: 2px 8px; border-radius: var(--radius); border: 2px solid var(--border2); color: var(--text-dim); background: var(--surface2); }
-.cpub-tag-accent { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
-.cpub-tag-green { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
-.cpub-tag-purple { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
-.cpub-tag-teal { border-color: var(--teal-border); color: var(--teal); background: var(--teal-bg); }
-.cpub-tag-yellow { border-color: var(--yellow-border); color: var(--yellow); background: var(--yellow-bg); }
-.cpub-tag-red { border-color: var(--red-border); color: var(--red); background: var(--red-bg); }
+/* TAGS (page-specific) */
 .cpub-tag-live { background: var(--red); border-color: var(--red); color: var(--color-text-inverse); font-family: var(--font-mono); animation: cpub-livepulse 2s infinite; }
 @keyframes cpub-livepulse { 0%,100% { opacity: 1; } 50% { opacity: .75; } }
 
@@ -268,13 +261,7 @@ function formatDate(dateStr: string): string {
 /* LAYOUT */
 .cpub-page-wrap { max-width: 1200px; margin: 0 auto; padding: 28px 32px; }
 .cpub-main-grid { display: grid; grid-template-columns: 1fr 300px; gap: 28px; align-items: start; }
-.cpub-divider { border: none; border-top: 2px solid var(--border); }
-
-/* SECTION HEAD */
-.cpub-sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.cpub-sec-head h2 { font-size: 14px; font-weight: 700; font-family: var(--font-mono); }
-.cpub-sec-sub { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); }
-.cpub-sec-head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+/* cpub-sec-sub, cpub-sec-head-right → global components.css */
 .cpub-view-all-link { font-size: 11px; color: var(--accent); font-family: var(--font-mono); text-decoration: none; }
 .cpub-view-all-link:hover { text-decoration: underline; }
 
@@ -367,8 +354,10 @@ function formatDate(dateStr: string): string {
 .cpub-creator-sub-btn:hover { background: var(--surface2); }
 .cpub-subbed { border-color: var(--green); color: var(--green); background: var(--green-bg); }
 
-/* EMPTY STATE */
-.cpub-empty-state { text-align: center; padding: 48px 16px; }
+/* PAGINATION (page-specific) */
+.cpub-page-info { font-size: 11px; font-family: var(--font-mono); color: var(--text-dim); }
+
+/* EMPTY STATE (page-specific) */
 .cpub-empty-icon { font-size: 32px; color: var(--text-faint); margin-bottom: 12px; }
 .cpub-empty-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
 .cpub-empty-sub { font-size: 12px; color: var(--text-dim); }

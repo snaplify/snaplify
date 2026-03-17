@@ -59,7 +59,7 @@ const visibility = computed(() => (props.metadata.visibility as string) || 'publ
 function onVisibilityUpdate(val: string): void { updateMeta('visibility', val); }
 
 const checklist = computed(() => [
-  { label: 'Has cover image', pass: !!(props.metadata.coverImage) },
+  { label: 'Has cover image', pass: !!(props.metadata.coverImageUrl) },
   { label: 'Has description', pass: !!((props.metadata.description as string)?.length) },
   { label: 'Has tags', pass: !!(tags.value.length) },
   { label: 'Has difficulty set', pass: !!(props.metadata.difficulty) },
@@ -67,6 +67,29 @@ const checklist = computed(() => [
   { label: 'Has cost estimate', pass: !!(props.metadata.estimatedCost) },
 ]);
 const checklistDone = computed(() => checklist.value.filter((c) => c.pass).length);
+
+// --- Canvas toolbar ---
+const viewportMode = ref<'desktop' | 'tablet' | 'mobile'>('desktop');
+const canvasMaxWidth = computed(() => {
+  if (viewportMode.value === 'mobile') return '375px';
+  if (viewportMode.value === 'tablet') return '768px';
+  return '820px';
+});
+
+// --- Status bar ---
+const wordCount = computed(() => {
+  let count = 0;
+  for (const block of props.blockEditor.blocks.value) {
+    const html = (block.content.html as string) || '';
+    const text = (block.content.text as string) || '';
+    const code = (block.content.code as string) || '';
+    const instructions = (block.content.instructions as string) || '';
+    const combined = html.replace(/<[^>]*>/g, ' ') + ' ' + text + ' ' + code + ' ' + instructions;
+    count += combined.split(/\s+/).filter((w) => w.length > 0).length;
+  }
+  return count;
+});
+const blockCount = computed(() => props.blockEditor.blocks.value.length);
 </script>
 
 <template>
@@ -76,10 +99,28 @@ const checklistDone = computed(() => checklist.value.filter((c) => c.pass).lengt
       <EditorsEditorBlocks :groups="blockTypes" :block-editor="blockEditor" />
     </aside>
 
-    <!-- CENTER: Block Canvas -->
-    <div class="cpub-pe-canvas">
-      <div class="cpub-pe-canvas-inner">
-        <EditorsBlockCanvas :block-editor="blockEditor" :block-types="blockTypes" />
+    <!-- CENTER: Canvas with toolbar -->
+    <div class="cpub-pe-center">
+      <!-- Canvas toolbar -->
+      <div class="cpub-pe-canvas-toolbar">
+        <div class="cpub-pe-viewport-tabs">
+          <button class="cpub-pe-viewport-tab" :class="{ active: viewportMode === 'desktop' }" title="Desktop" @click="viewportMode = 'desktop'"><i class="fa-solid fa-desktop"></i></button>
+          <button class="cpub-pe-viewport-tab" :class="{ active: viewportMode === 'tablet' }" title="Tablet" @click="viewportMode = 'tablet'"><i class="fa-solid fa-tablet-screen-button"></i></button>
+          <button class="cpub-pe-viewport-tab" :class="{ active: viewportMode === 'mobile' }" title="Mobile" @click="viewportMode = 'mobile'"><i class="fa-solid fa-mobile-screen"></i></button>
+        </div>
+      </div>
+
+      <div class="cpub-pe-canvas">
+        <div class="cpub-pe-canvas-inner" :style="{ maxWidth: canvasMaxWidth }">
+          <EditorsBlockCanvas :block-editor="blockEditor" :block-types="blockTypes" />
+        </div>
+      </div>
+
+      <!-- Status bar -->
+      <div class="cpub-pe-statusbar">
+        <div class="cpub-pe-status-item"><i class="fa-solid fa-layer-group"></i> <span>{{ blockCount }} blocks</span></div>
+        <div class="cpub-pe-status-sep" />
+        <div class="cpub-pe-status-item"><i class="fa-solid fa-align-justify"></i> <span>{{ wordCount.toLocaleString() }} words</span></div>
       </div>
     </div>
 
@@ -127,7 +168,7 @@ const checklistDone = computed(() => checklist.value.filter((c) => c.pass).lengt
 
         <EditorsEditorSection title="Cover Image" icon="fa-image" :open="openSections.cover" @toggle="toggleSection('cover')">
           <div class="cpub-ep-field">
-            <input class="cpub-ep-input" type="url" :value="metadata.coverImage" placeholder="https://..." @input="updateMeta('coverImage', ($event.target as HTMLInputElement).value)">
+            <input class="cpub-ep-input" type="url" :value="metadata.coverImageUrl" placeholder="https://..." @input="updateMeta('coverImageUrl', ($event.target as HTMLInputElement).value)">
           </div>
         </EditorsEditorSection>
 
@@ -150,8 +191,37 @@ const checklistDone = computed(() => checklist.value.filter((c) => c.pass).lengt
 <style scoped>
 .cpub-pe-shell { display: flex; flex: 1; overflow: hidden; }
 .cpub-pe-library { width: 220px; flex-shrink: 0; background: var(--surface); border-right: 2px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.cpub-pe-center { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .cpub-pe-canvas { flex: 1; overflow-y: auto; background: var(--bg); }
-.cpub-pe-canvas-inner { max-width: 820px; margin: 0 auto; }
+.cpub-pe-canvas-inner { margin: 0 auto; transition: max-width 0.2s; }
+
+/* Canvas toolbar */
+.cpub-pe-canvas-toolbar {
+  display: flex; align-items: center; gap: 2px; padding: 4px 12px;
+  background: var(--surface); border-bottom: 2px solid var(--border); flex-shrink: 0; min-height: 32px;
+  justify-content: flex-end;
+}
+.cpub-pe-viewport-tabs { display: flex; gap: 0; }
+.cpub-pe-viewport-tab {
+  width: 28px; height: 24px; display: flex; align-items: center; justify-content: center;
+  background: none; border: 2px solid var(--border); border-left-width: 0; color: var(--text-faint);
+  font-size: 10px; cursor: pointer;
+}
+.cpub-pe-viewport-tab:first-child { border-left-width: 2px; }
+.cpub-pe-viewport-tab.active { background: var(--border); color: var(--color-text-inverse); }
+.cpub-pe-viewport-tab:hover:not(.active) { background: var(--surface2); color: var(--text-dim); }
+
+/* Status bar */
+.cpub-pe-statusbar {
+  height: 26px; background: var(--surface); border-top: 2px solid var(--border);
+  display: flex; align-items: center; padding: 0 14px; gap: 18px; flex-shrink: 0;
+}
+.cpub-pe-status-item {
+  display: flex; align-items: center; gap: 5px; font-family: var(--font-mono);
+  font-size: 9px; color: var(--text-faint); white-space: nowrap;
+}
+.cpub-pe-status-item i { font-size: 8px; }
+.cpub-pe-status-sep { width: 2px; height: 12px; background: var(--border); }
 .cpub-pe-settings { width: 280px; flex-shrink: 0; background: var(--surface); border-left: 2px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
 .cpub-pe-settings-body { flex: 1; overflow-y: auto; }
 

@@ -1,0 +1,266 @@
+/* ═══ CommonPub Shared Component Styles ═══
+ * Canonical definitions for primitives used across all pages.
+ * Imported globally via nuxt.config.ts — DO NOT duplicate in scoped styles.
+ */
+
+/* ─── BUTTONS ─── */
+.cpub-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 14px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.cpub-btn:hover { background: var(--surface2); }
+.cpub-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cpub-btn-primary {
+  background: var(--accent);
+  color: var(--color-text-inverse);
+  box-shadow: 4px 4px 0 var(--border);
+}
+
+.cpub-btn-primary:hover {
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+.cpub-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cpub-btn-sm { padding: 4px 10px; font-size: 11px; }
+
+.cpub-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-faint);
+}
+
+.cpub-btn-ghost:hover { color: var(--text-dim); background: transparent; }
+
+/* ─── TAGS ─── */
+.cpub-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border: 1px solid var(--border2);
+  color: var(--text-dim);
+  background: var(--surface2);
+}
+
+.cpub-tag-accent { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
+.cpub-tag-green { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
+.cpub-tag-red { border-color: var(--red-border); color: var(--red); background: var(--red-bg); }
+.cpub-tag-yellow { border-color: var(--yellow-border); color: var(--yellow); background: var(--yellow-bg); }
+.cpub-tag-purple { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
+.cpub-tag-teal { border-color: var(--teal-border); color: var(--teal); background: var(--teal-bg); }
+
+.cpub-tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ─── EMPTY STATES ─── */
+.cpub-empty-state { text-align: center; padding: 48px 16px; }
+.cpub-empty-state-icon { font-size: 32px; color: var(--text-faint); margin-bottom: 12px; }
+.cpub-empty-state-title { font-size: 14px; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; }
+.cpub-empty-state-desc { font-size: 12px; color: var(--text-faint); }
+
+/* ─── SIDEBAR CARDS ─── */
+.cpub-sb-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 4px 4px 0 var(--border);
+}
+
+.cpub-sb-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border2);
+}
+
+/* ─── SECTION HEADERS ─── */
+.cpub-section-head,
+.cpub-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+
+.cpub-section-head h2,
+.cpub-section-head h3,
+.cpub-sec-head h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+/* ─── SECTION TITLE (large) ─── */
+.cpub-section-title-lg {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ─── PAGINATION ─── */
+.cpub-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.cpub-page-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.cpub-page-btn:hover:not(:disabled) { color: var(--text); background: var(--surface2); }
+.cpub-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.cpub-page-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+.cpub-page-ellipsis {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* ─── LINKS ─── */
+.cpub-link { color: var(--accent); text-decoration: none; }
+.cpub-link:hover { text-decoration: underline; }
+
+/* ─── BACK LINK ─── */
+.cpub-back-link {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.cpub-back-link:hover { color: var(--accent); }
+
+/* ─── HERO EYEBROW ─── */
+.cpub-hero-eyebrow {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ─── SECTION SUB / HEAD RIGHT ─── */
+.cpub-sec-sub { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); }
+.cpub-sec-head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+/* ─── FORM LAYOUT ─── */
+.cpub-form-error {
+  padding: 10px 14px;
+  background: var(--red-bg);
+  color: var(--red);
+  border: 2px solid var(--red);
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.cpub-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.cpub-form-label {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.cpub-form-hint {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+.cpub-input {
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.cpub-input:focus { border-color: var(--accent); }
+.cpub-input::placeholder { color: var(--text-faint); }
+
+.cpub-textarea {
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+  transition: border-color 0.15s;
+}
+
+.cpub-textarea:focus { border-color: var(--accent); }
+.cpub-textarea::placeholder { color: var(--text-faint); }
+
+/* ─── DIVIDERS ─── */
+.cpub-divider { border: none; border-top: 2px solid var(--border); }

@@ -63,7 +63,7 @@ function updateField(field: string, value: unknown): void {
 
 .cpub-step-num {
   width: 32px; height: 32px;
-  background: var(--accent); color: #fff;
+  background: var(--accent); color: var(--color-text-inverse);
   font-family: var(--font-mono); font-size: 14px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;

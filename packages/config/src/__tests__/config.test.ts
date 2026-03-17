@@ -22,7 +22,7 @@ describe('defineCommonPubConfig', () => {
 
     expect(config.features.content).toBe(true);
     expect(config.features.social).toBe(true);
-    expect(config.features.communities).toBe(true);
+    expect(config.features.hubs).toBe(true);
     expect(config.features.docs).toBe(true);
     expect(config.features.video).toBe(true);
     expect(config.features.contests).toBe(false);
@@ -85,7 +85,7 @@ describe('defineCommonPubConfig', () => {
 
     expect(config.features.contests).toBe(true);
     expect(config.features.federation).toBe(true);
-    expect(config.features.communities).toBe(true); // default preserved
+    expect(config.features.hubs).toBe(true); // default preserved
   });
 
   it('should default admin flag to false', () => {
@@ -117,7 +117,7 @@ describe('defineCommonPubConfig', () => {
   it('should apply default content types', () => {
     const { config } = defineCommonPubConfig({ instance: validInstance });
 
-    expect(config.instance.contentTypes).toEqual(['project', 'article', 'guide', 'blog']);
+    expect(config.instance.contentTypes).toEqual(['project', 'article', 'blog', 'explainer']);
   });
 
   it('should allow custom content types', () => {

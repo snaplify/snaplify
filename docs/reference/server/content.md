@@ -2,7 +2,7 @@
 
 > Database operations for creating, reading, updating, and deleting content items (articles, tutorials, snippets).
 
-**Source**: `apps/reference/src/lib/server/content.ts`
+**Source**: `packages/server/src/content.ts`
 
 ---
 
@@ -67,7 +67,7 @@ function getContentBySlug(
 ): Promise<ContentDetail | null>
 ```
 
-Fetches a single content item by its URL slug, including associated tags. Non-published content (draft or archived) is only returned if `requesterId` matches the author.
+Fetches a single content item by its URL slug, including associated tags, enriched author data, and related content. Non-published content (draft or archived) is only returned if `requesterId` matches the author.
 
 **Parameters**
 
@@ -78,6 +78,13 @@ Fetches a single content item by its URL slug, including associated tags. Non-pu
 | `requesterId` | `string` | Optional. ID of the requesting user (for draft access) |
 
 **Returns**: `ContentDetail | null`. Returns `null` if not found or if the item is unpublished and the requester is not the author.
+
+**Enriched data** (fetched in parallel via `Promise.all`):
+- `author.bio`, `author.headline` — from users table
+- `author.followerCount` — count from follows table where `followingId = author.id`
+- `author.articleCount` — count of published content by this author
+- `author.totalViews` — sum of `viewCount` across all author's content
+- `related` — up to 3 most recent published items of the same content type (excluding current item)
 
 ---
 

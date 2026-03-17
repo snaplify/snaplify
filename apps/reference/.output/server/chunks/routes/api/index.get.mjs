@@ -1,7 +1,7 @@
 import { d as defineEventHandler, u as useDB, g as getQuery, L as listContent } from '../../nitro/nitro.mjs';
-import 'drizzle-orm/pg-core';
+import { g as getOptionalUser } from '../../_/auth.mjs';
 import 'drizzle-orm';
-import 'zod';
+import 'drizzle-orm/pg-core';
 import 'jose';
 import 'node:fs';
 import 'node:fs/promises';
@@ -13,6 +13,7 @@ import 'node:https';
 import 'node:events';
 import 'node:buffer';
 import 'node:url';
+import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';
@@ -23,9 +24,13 @@ const index_get = defineEventHandler(async (event) => {
   var _a;
   const db = useDB();
   const query = getQuery(event);
+  const user = getOptionalUser(event);
+  const authorId = query.authorId;
+  const isOwnContent = authorId && (user == null ? void 0 : user.id) === authorId;
   return listContent(db, {
-    status: (_a = query.status) != null ? _a : "published",
+    status: isOwnContent ? query.status : (_a = query.status) != null ? _a : "published",
     type: query.type,
+    authorId,
     featured: query.featured === "true" ? true : void 0,
     difficulty: query.difficulty,
     search: query.search,

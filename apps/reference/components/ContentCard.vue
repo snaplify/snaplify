@@ -16,7 +16,6 @@ const props = defineProps<{
     title: string;
     description?: string;
     coverImageUrl?: string;
-    coverImage?: string;
     difficulty?: string;
     isFeatured?: boolean;
     author?: { username: string; displayName?: string | null; avatarUrl?: string | null };
@@ -28,7 +27,7 @@ const props = defineProps<{
   };
 }>();
 
-const cover = computed(() => props.item.coverImageUrl || props.item.coverImage);
+const cover = computed(() => props.item.coverImageUrl);
 
 const thumbIcons: Record<string, { icon: string; color: string }> = {
   project: { icon: 'fa-solid fa-microchip', color: 'var(--accent)' },

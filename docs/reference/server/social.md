@@ -1,8 +1,8 @@
 # Social Server Module
 
-> Database operations for likes, comments, and bookmarks across content, community posts, and comments.
+> Database operations for likes, comments, and bookmarks across content, hub posts, and comments.
 
-**Source**: `apps/reference/src/lib/server/social.ts`
+**Source**: `packages/server/src/social.ts`
 
 ---
 
@@ -28,7 +28,7 @@
 function toggleLike(
   db: NodePgDatabase,
   userId: string,
-  targetType: 'content' | 'comment' | 'communityPost',
+  targetType: 'content' | 'comment' | 'hubPost',
   targetId: string
 ): Promise<{ liked: boolean }>
 ```
@@ -41,7 +41,7 @@ The target table is resolved from `targetType`:
 |--------------|-------------|
 | `content` | `contentItems` |
 | `comment` | `comments` |
-| `communityPost` | `communityPosts` |
+| `post` | `hubPosts` |
 
 **Parameters**
 
@@ -64,7 +64,7 @@ The target table is resolved from `targetType`:
 function isLiked(
   db: NodePgDatabase,
   userId: string,
-  targetType: 'content' | 'comment' | 'communityPost',
+  targetType: 'content' | 'comment' | 'hubPost',
   targetId: string
 ): Promise<boolean>
 ```
@@ -89,7 +89,7 @@ Checks whether a like row exists for the given user and target.
 ```ts
 function listComments(
   db: NodePgDatabase,
-  targetType: 'content' | 'communityPost',
+  targetType: 'content' | 'hubPost',
   targetId: string
 ): Promise<CommentItem[]>
 ```
@@ -115,7 +115,7 @@ function createComment(
   db: NodePgDatabase,
   authorId: string,
   input: {
-    targetType: 'content' | 'communityPost';
+    targetType: 'content' | 'hubPost';
     targetId: string;
     parentId?: string;
     body: string;
@@ -172,7 +172,7 @@ Deletes a comment after verifying ownership. Decrements the denormalized `commen
 function toggleBookmark(
   db: NodePgDatabase,
   userId: string,
-  targetType: 'content' | 'communityPost',
+  targetType: 'content' | 'hubPost',
   targetId: string
 ): Promise<{ bookmarked: boolean }>
 ```

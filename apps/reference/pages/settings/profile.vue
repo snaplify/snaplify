@@ -24,8 +24,9 @@ interface ExperienceEntry {
 }
 
 const { user } = useAuth();
+const toast = useToast();
+const { extract: extractError } = useApiError();
 const saving = ref(false);
-const success = ref(false);
 
 const form = ref({
   displayName: '',
@@ -51,31 +52,44 @@ const avatarInput = ref<HTMLInputElement | null>(null);
 const bannerInput = ref<HTMLInputElement | null>(null);
 
 // Load current profile
-const { data: profile } = await useFetch('/api/users/me');
+const { data: profile } = await useFetch('/api/profile');
+
+interface UserProfile {
+  displayName: string | null;
+  username: string;
+  bio: string | null;
+  location: string | null;
+  website: string | null;
+  headline: string | null;
+  avatarUrl: string | null;
+  bannerUrl: string | null;
+  skills: Skill[];
+  socialLinks: Partial<SocialLinks> | null;
+  experience: ExperienceEntry[];
+}
 
 if (profile.value) {
-  const p = profile.value as Record<string, unknown>;
-  form.value.displayName = (p.displayName as string) || '';
-  form.value.username = (p.username as string) || '';
-  form.value.bio = (p.bio as string) || '';
-  form.value.location = (p.location as string) || '';
-  form.value.website = (p.website as string) || '';
-  form.value.headline = (p.headline as string) || '';
-  form.value.avatarUrl = (p.avatarUrl as string) || '';
-  form.value.bannerUrl = (p.bannerUrl as string) || '';
+  const p = profile.value as UserProfile;
+  form.value.displayName = p.displayName || '';
+  form.value.username = p.username || '';
+  form.value.bio = p.bio || '';
+  form.value.location = p.location || '';
+  form.value.website = p.website || '';
+  form.value.headline = p.headline || '';
+  form.value.avatarUrl = p.avatarUrl || '';
+  form.value.bannerUrl = p.bannerUrl || '';
 
   if (Array.isArray(p.skills)) {
-    skills.value = (p.skills as Skill[]).map((s) => ({ ...s }));
+    skills.value = p.skills.map((s) => ({ ...s }));
   }
-  if (p.socialLinks && typeof p.socialLinks === 'object') {
-    const sl = p.socialLinks as Record<string, string>;
-    socialLinks.value.github = sl.github || '';
-    socialLinks.value.twitter = sl.twitter || '';
-    socialLinks.value.linkedin = sl.linkedin || '';
-    socialLinks.value.website = sl.website || '';
+  if (p.socialLinks) {
+    socialLinks.value.github = p.socialLinks.github || '';
+    socialLinks.value.twitter = p.socialLinks.twitter || '';
+    socialLinks.value.linkedin = p.socialLinks.linkedin || '';
+    socialLinks.value.website = p.socialLinks.website || '';
   }
   if (Array.isArray(p.experience)) {
-    experience.value = (p.experience as ExperienceEntry[]).map((e) => ({ ...e }));
+    experience.value = p.experience.map((e) => ({ ...e }));
   }
 }
 
@@ -113,10 +127,10 @@ async function handleAvatarUpload(event: Event): Promise<void> {
   formData.append('file', file);
   formData.append('purpose', 'avatar');
   try {
-    const result = await $fetch<{ url: string }>('/api/uploads', { method: 'POST', body: formData });
+    const result = await $fetch<{ url: string }>('/api/files/upload', { method: 'POST', body: formData });
     form.value.avatarUrl = result.url;
-  } catch {
-    /* upload failed silently */
+  } catch (err: unknown) {
+    toast.error(extractError(err));
   }
 }
 
@@ -127,18 +141,17 @@ async function handleBannerUpload(event: Event): Promise<void> {
   formData.append('file', file);
   formData.append('purpose', 'banner');
   try {
-    const result = await $fetch<{ url: string }>('/api/uploads', { method: 'POST', body: formData });
+    const result = await $fetch<{ url: string }>('/api/files/upload', { method: 'POST', body: formData });
     form.value.bannerUrl = result.url;
-  } catch {
-    /* upload failed silently */
+  } catch (err: unknown) {
+    toast.error(extractError(err));
   }
 }
 
 async function handleSave(): Promise<void> {
   saving.value = true;
-  success.value = false;
   try {
-    await $fetch('/api/users/me', {
+    await $fetch('/api/profile', {
       method: 'PUT',
       body: {
         ...form.value,
@@ -147,9 +160,9 @@ async function handleSave(): Promise<void> {
         experience: experience.value.filter((e) => e.title.trim()),
       },
     });
-    success.value = true;
-  } catch {
-    /* save failed silently */
+    toast.success('Profile updated');
+  } catch (err: unknown) {
+    toast.error(extractError(err));
   } finally {
     saving.value = false;
   }
@@ -489,7 +502,6 @@ async function handleSave(): Promise<void> {
 
       <!-- Actions -->
       <div class="cpub-form-actions">
-        <div v-if="success" class="cpub-form-success" role="status">Profile updated.</div>
         <button type="submit" class="cpub-save-btn" :disabled="saving">
           {{ saving ? 'Saving...' : 'Save Changes' }}
         </button>
@@ -796,11 +808,6 @@ async function handleSave(): Promise<void> {
   align-items: center;
   gap: var(--space-3);
   padding-top: var(--space-4);
-}
-
-.cpub-form-success {
-  font-size: var(--text-sm);
-  color: var(--green);
 }
 
 .cpub-save-btn {

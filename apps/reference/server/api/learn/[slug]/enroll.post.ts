@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')!;
 
   const path = await getPathBySlug(db, slug);
-  if (!path) throw createError({ statusCode: 404, message: 'Path not found' });
+  if (!path) throw createError({ statusCode: 404, statusMessage: 'Path not found' });
 
   return enroll(db, user.id, path.id);
 });

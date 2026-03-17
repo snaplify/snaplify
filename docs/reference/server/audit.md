@@ -2,7 +2,7 @@
 
 > Audit log creation and querying for admin activity tracking.
 
-**Source**: `apps/reference/src/lib/server/audit.ts`
+**Source**: `packages/server/src/audit.ts`
 
 ---
 

@@ -3,8 +3,8 @@ export interface FeatureFlags {
   content: boolean;
   /** Enable social features (likes, comments, bookmarks) */
   social: boolean;
-  /** Enable community system (feeds, membership, moderation) */
-  communities: boolean;
+  /** Enable hub system (feeds, membership, moderation) */
+  hubs: boolean;
   /** Enable docs module (CodeMirror editor, versioning, search) */
   docs: boolean;
   /** Enable video content type */
@@ -54,7 +54,7 @@ export interface InstanceConfig {
   /** Maximum upload size in bytes (default: 10MB) */
   maxUploadSize?: number;
   /** Supported content types */
-  contentTypes?: Array<'project' | 'article' | 'guide' | 'blog' | 'explainer'>;
+  contentTypes?: Array<'project' | 'article' | 'blog' | 'explainer'>;
 }
 
 export interface CommonPubConfig {

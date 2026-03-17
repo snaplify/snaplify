@@ -19,10 +19,6 @@ function updateField(field: string, value: string): void {
   emit('update', { ...props.content, [field]: value });
 }
 
-function handleUrlPaste(): void {
-  // User can paste a URL into the placeholder
-}
-
 const uploading = ref(false);
 const uploadError = ref('');
 

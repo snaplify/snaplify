@@ -2,7 +2,7 @@
 
 > Sliding-window rate limiter with five tiers and Nitro server middleware integration.
 
-**Source**: `apps/reference/src/lib/server/rateLimit.ts`
+**Source**: `packages/server/src/rateLimit.ts`
 
 ---
 

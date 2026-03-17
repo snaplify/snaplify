@@ -42,8 +42,8 @@ input: {
     description: string;      // Required. Short description (1–500 chars)
     contactEmail?: string;    // Optional. Must be valid email
     maxUploadSize?: number;   // Optional. Bytes, default: 10MB (10_485_760)
-    contentTypes?: Array<'project' | 'article' | 'guide' | 'blog' | 'explainer'>;
-                              // Optional. Default: ['project', 'article', 'guide', 'blog']
+    contentTypes?: Array<'project' | 'article' | 'blog' | 'explainer'>;
+                              // Optional. Default: ['project', 'article', 'blog']
   };
   features?: Partial<FeatureFlags>;  // Optional. All flags have defaults
   auth?: Partial<AuthConfig>;        // Optional. All fields have defaults
@@ -84,12 +84,12 @@ const { config, warnings } = defineCommonPubConfig({
     description: 'A community for makers and hackers',
     contactEmail: 'admin@hack.build',
     maxUploadSize: 20 * 1024 * 1024, // 20MB
-    contentTypes: ['project', 'article', 'guide', 'blog'],
+    contentTypes: ['project', 'article', 'blog', 'explainer'],
   },
   features: {
     content: true,
     social: true,
-    communities: true,
+    hubs: true,
     docs: true,
     video: true,
     contests: false,
@@ -138,7 +138,7 @@ interface InstanceConfig {
   description: string;         // Short description for NodeInfo and meta tags
   contactEmail?: string;       // Contact email for the instance operator
   maxUploadSize?: number;      // Maximum upload size in bytes (default: 10MB)
-  contentTypes?: Array<'project' | 'article' | 'guide' | 'blog' | 'explainer'>;
+  contentTypes?: Array<'project' | 'article' | 'blog' | 'explainer'>;
 }
 ```
 
@@ -150,7 +150,7 @@ All flags are boolean. Default values shown.
 |------|---------|-------------|
 | `content` | `true` | Content system (CRUD, publishing, slugs) |
 | `social` | `true` | Social features (likes, comments, bookmarks) |
-| `communities` | `true` | Community system (feeds, membership, moderation) |
+| `hubs` | `true` | Hub system (community/product/company, feeds, membership, moderation) |
 | `docs` | `true` | Docs module (CodeMirror editor, versioning, search) |
 | `video` | `true` | Video content type |
 | `contests` | `false` | Contest system |
@@ -205,8 +205,8 @@ const instanceConfigSchema = z.object({
   contactEmail: z.string().email().optional(),
   maxUploadSize: z.number().int().positive().default(10 * 1024 * 1024),
   contentTypes: z.array(
-    z.enum(['project', 'article', 'guide', 'blog', 'explainer'])
-  ).default(['project', 'article', 'guide', 'blog']),
+    z.enum(['project', 'article', 'blog', 'explainer'])
+  ).default(['project', 'article', 'blog']),
 });
 ```
 
@@ -216,7 +216,7 @@ const instanceConfigSchema = z.object({
 const featureFlagsSchema = z.object({
   content: z.boolean().default(true),
   social: z.boolean().default(true),
-  communities: z.boolean().default(true),
+  hubs: z.boolean().default(true),
   docs: z.boolean().default(true),
   video: z.boolean().default(true),
   contests: z.boolean().default(false),

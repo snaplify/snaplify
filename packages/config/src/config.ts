@@ -24,7 +24,7 @@ export function defineCommonPubConfig(input: {
     description: string;
     contactEmail?: string;
     maxUploadSize?: number;
-    contentTypes?: Array<'project' | 'article' | 'guide' | 'blog' | 'explainer'>;
+    contentTypes?: Array<'project' | 'article' | 'blog' | 'explainer'>;
   };
   features?: Partial<CommonPubConfig['features']>;
   auth?: Partial<CommonPubConfig['auth']>;

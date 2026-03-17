@@ -2,7 +2,7 @@
 
 > Server-side functions for learning paths, modules, lessons, enrollment, progress tracking, and certificate issuance.
 
-**Source**: `apps/reference/src/lib/server/learning.ts`
+**Source**: `packages/server/src/learning.ts`
 
 ---
 

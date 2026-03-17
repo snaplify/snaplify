@@ -56,13 +56,13 @@ export const { config, warnings } = defineCommonPubConfig({
     description: 'A community for makers and hackers',
     contactEmail: 'admin@hack.build',
     maxUploadSize: 10 * 1024 * 1024, // 10MB (default)
-    contentTypes: ['project', 'article', 'guide', 'blog'],
+    contentTypes: ['project', 'article', 'blog', 'explainer'],
   },
 
   features: {
     content: true,       // Content CRUD, publishing, slugs
     social: true,        // Likes, comments, bookmarks
-    communities: true,   // Community feeds, membership, moderation
+    hubs: true,          // Hub system (community/product/company types)
     docs: true,          // Documentation sites with versioning
     video: true,         // Video content type
     contests: false,     // Contest system (opt-in)
@@ -122,7 +122,7 @@ pnpm --filter @commonpub/schema db:push    # Apply schema to database
 pnpm --filter @commonpub/schema db:migrate  # Run migration files
 ```
 
-The schema creates all 41 tables and 24 enums.
+The schema creates all 52 tables and 30 enums.
 
 ---
 
@@ -134,7 +134,7 @@ See [Feature Flags Guide](./guides/feature-flags.md) for complete details.
 |------|---------|-----------------|
 | `content` | on | Content system — required by most other features |
 | `social` | on | Likes, comments, bookmarks, follows, notifications |
-| `communities` | on | Community feeds, membership, moderation (local-only) |
+| `hubs` | on | Hub system — community/product/company types, feeds, membership, moderation (local-only) |
 | `docs` | on | Documentation sites with CodeMirror, versioning, search |
 | `video` | on | Video content embedding |
 | `contests` | off | Contest/competition system |
@@ -193,17 +193,21 @@ Content is stored as `BlockTuple[]` in the `contentItems.content` jsonb column. 
 
 ---
 
-## 9. Community Setup
+## 9. Hub Setup
 
-1. **Create**: `/communities/create` → `createCommunity()` → creator becomes owner
-2. **Join Policy**: Set `joinPolicy` to `open` (anyone), `approval` (admin approves), or `invite` (token required)
-3. **Invite**: Admins create invite tokens with optional max uses and expiry
-4. **Posts**: Members create text/link/share/poll posts → moderators can pin/lock
-5. **Moderation**: Moderators can kick members, admins can ban (with optional expiry)
-6. **Roles**: `member` → `moderator` → `admin` → `owner` (hierarchical permissions)
-7. **Content Sharing**: Share existing content items into a community
+Hubs come in three types: community (maker groups), product (hardware/software), and company (organizations).
 
-**v1 Limitation**: Communities are local-only. No federation support.
+1. **Create**: `/hubs/create` → `createHub()` → creator becomes owner
+2. **Hub Type**: Set `hubType` to `community`, `product`, or `company`
+3. **Join Policy**: Set `joinPolicy` to `open` (anyone), `approval` (admin approves), or `invite` (token required)
+4. **Invite**: Admins create invite tokens with optional max uses and expiry
+5. **Posts**: Members create text/link/share/poll posts → moderators can pin/lock
+6. **Moderation**: Moderators can kick members, admins can ban (with optional expiry)
+7. **Roles**: `member` → `moderator` → `admin` → `owner` (hierarchical permissions)
+8. **Content Sharing**: Share existing content items into a hub
+9. **Products**: Company hubs can list products; product hubs auto-populate gallery via BOM
+
+**v1 Limitation**: Hubs are local-only. No AP Group federation support.
 
 ---
 
@@ -283,7 +287,7 @@ See [Federation Guide](./guides/federation.md) for full details.
 
 ### Token Overrides
 
-Override any of the 142 CSS tokens via the admin panel or programmatically:
+Override any of the 136 CSS tokens via the admin panel or programmatically:
 
 ```typescript
 import { applyThemeToElement, validateTokenOverrides } from '@commonpub/ui';
@@ -304,7 +308,7 @@ Enable with `features: { admin: true }`. Requires `user.role` of `admin` or `sta
 
 | Page | Purpose |
 |------|---------|
-| `/admin` | Platform stats (users, content, communities, reports) |
+| `/admin` | Platform stats (users, content, hubs, reports) |
 | `/admin/users` | List, search, change roles/status, delete users |
 | `/admin/reports` | Review and resolve user reports |
 | `/admin/audit` | View audit log of admin actions |

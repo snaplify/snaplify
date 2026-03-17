@@ -77,6 +77,54 @@ const filteredContent = computed(() => {
 });
 
 const p = computed(() => profile.value);
+
+const { isAuthenticated, user } = useAuth();
+const toast = useToast();
+const isOwnProfile = computed(() => user.value?.username === username);
+const following = ref(false);
+const followLoading = ref(false);
+
+async function toggleFollow(): Promise<void> {
+  if (!isAuthenticated.value) {
+    await navigateTo(`/auth/login?redirect=/u/${username}`);
+    return;
+  }
+  followLoading.value = true;
+  try {
+    if (following.value) {
+      await $fetch(`/api/users/${username}/follow`, { method: 'DELETE' });
+      following.value = false;
+      toast.success('Unfollowed');
+    } else {
+      await $fetch(`/api/users/${username}/follow`, { method: 'POST' });
+      following.value = true;
+      toast.success('Following!');
+    }
+  } catch {
+    toast.error('Failed to update follow');
+  } finally {
+    followLoading.value = false;
+  }
+}
+
+function handleMessage(): void {
+  navigateTo('/messages');
+}
+
+async function handleShare(): Promise<void> {
+  const url = `${window.location.origin}/u/${username}`;
+  if (navigator.share) {
+    await navigator.share({ title: p.value?.displayName || username, url }).catch(() => {});
+  } else {
+    await navigator.clipboard.writeText(url);
+    toast.success('Link copied to clipboard');
+  }
+}
+
+const showMenu = ref(false);
+function toggleMenu(): void {
+  showMenu.value = !showMenu.value;
+}
 </script>
 
 <template>
@@ -119,11 +167,27 @@ const p = computed(() => profile.value);
               <span v-for="tag in p.tags" :key="tag" class="cpub-tag">{{ tag }}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 16px">
-              <div class="cpub-profile-actions">
-                <button class="cpub-btn cpub-btn-primary"><i class="fa-solid fa-user-plus"></i> Follow</button>
-                <button class="cpub-btn"><i class="fa-solid fa-envelope"></i> Message</button>
-                <button class="cpub-btn cpub-btn-sm"><i class="fa-solid fa-share-nodes"></i></button>
-                <button class="cpub-btn cpub-btn-sm"><i class="fa-solid fa-ellipsis"></i></button>
+              <div v-if="!isOwnProfile" class="cpub-profile-actions">
+                <button
+                  :class="['cpub-btn', following ? '' : 'cpub-btn-primary']"
+                  :disabled="followLoading"
+                  @click="toggleFollow"
+                >
+                  <i :class="following ? 'fa-solid fa-user-check' : 'fa-solid fa-user-plus'"></i>
+                  {{ following ? 'Following' : 'Follow' }}
+                </button>
+                <button class="cpub-btn" @click="handleMessage"><i class="fa-solid fa-envelope"></i> Message</button>
+                <button class="cpub-btn cpub-btn-sm" aria-label="Share profile" @click="handleShare"><i class="fa-solid fa-share-nodes"></i></button>
+                <div style="position: relative; display: inline-block;">
+                  <button class="cpub-btn cpub-btn-sm" aria-label="More options" @click="toggleMenu"><i class="fa-solid fa-ellipsis"></i></button>
+                  <div v-if="showMenu" class="cpub-dropdown" @click="showMenu = false">
+                    <button class="cpub-dropdown-item"><i class="fa-solid fa-flag"></i> Report</button>
+                    <button class="cpub-dropdown-item"><i class="fa-solid fa-ban"></i> Block</button>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="cpub-profile-actions">
+                <NuxtLink to="/settings/profile" class="cpub-btn"><i class="fa-solid fa-pen"></i> Edit Profile</NuxtLink>
               </div>
               <div class="cpub-profile-social">
                 <a v-if="p.github" :href="`https://github.com/${p.github}`" class="cpub-social-btn" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
@@ -136,12 +200,7 @@ const p = computed(() => profile.value);
           </div>
         </div>
         <!-- Stats -->
-        <div class="cpub-profile-stats">
-          <div v-for="stat in profileStats" :key="stat.label" class="cpub-profile-stat">
-            <span class="cpub-profile-stat-val">{{ stat.value }}</span>
-            <span class="cpub-profile-stat-label">{{ stat.label }}</span>
-          </div>
-        </div>
+        <StatBar :stats="profileStats" />
       </div>
     </section>
 
@@ -603,38 +662,6 @@ const p = computed(() => profile.value);
   margin-bottom: 8px;
 }
 
-/* Tags */
-.cpub-tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.cpub-tag {
-  display: inline-flex;
-  align-items: center;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 2px 8px;
-  border: 1px solid var(--border2);
-  color: var(--text-dim);
-  background: var(--surface2);
-}
-
-/* Section heads */
-.cpub-sec-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--border);
-}
-
-.cpub-sec-head h2 {
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-family: var(--font-mono);
-  color: var(--text-dim);
-}
-
 /* About grid */
 .cpub-about-grid {
   display: grid;
@@ -679,34 +706,6 @@ const p = computed(() => profile.value);
 .cpub-tl-company { font-size: 11px; color: var(--accent); font-family: var(--font-mono); margin-bottom: 4px; }
 .cpub-tl-desc { font-size: 11px; color: var(--text-dim); line-height: 1.55; }
 
-/* Buttons */
-.cpub-btn {
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 12px;
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.cpub-btn:hover { background: var(--surface2); }
-
-.cpub-btn-primary {
-  background: var(--accent);
-  color: var(--color-text-inverse);
-  box-shadow: 4px 4px 0 var(--border);
-}
-
-.cpub-btn-primary:hover { background: var(--color-primary-hover); }
-
-.cpub-btn-sm { padding: 4px 10px; font-size: 11px; }
-
 /* Skill bars */
 .cpub-skill-bar-row {
   display: flex;
@@ -739,25 +738,6 @@ const p = computed(() => profile.value);
   font-family: var(--font-mono);
   width: 28px;
   text-align: right;
-}
-
-/* Sidebar cards */
-.cpub-sb-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 4px 4px 0 var(--border);
-}
-
-.cpub-sb-title {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-faint);
-  font-family: var(--font-mono);
-  margin-bottom: 12px;
 }
 
 .cpub-mini-project {
@@ -793,9 +773,35 @@ const p = computed(() => profile.value);
   gap: 16px;
 }
 
-/* Empty state */
-.cpub-empty-state { text-align: center; padding: 32px 16px; }
-.cpub-empty-state-title { font-size: 13px; color: var(--text-dim); }
+.cpub-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 4px 4px 0 var(--border);
+  z-index: 100;
+  min-width: 140px;
+}
+
+.cpub-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cpub-dropdown-item:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
 
 @media (max-width: 768px) {
   .cpub-profile-hero-top {

@@ -1,8 +1,7 @@
-import { d as defineEventHandler, u as useDB, a as getRouterParam, aR as getPathBySlug, f as createError, aX as enroll } from '../../../../nitro/nitro.mjs';
+import { d as defineEventHandler, u as useDB, a as getRouterParam, aX as getPathBySlug, f as createError, aY as enroll } from '../../../../nitro/nitro.mjs';
 import { a as requireAuth } from '../../../../_/auth.mjs';
-import 'drizzle-orm/pg-core';
 import 'drizzle-orm';
-import 'zod';
+import 'drizzle-orm/pg-core';
 import 'jose';
 import 'node:fs';
 import 'node:fs/promises';
@@ -14,6 +13,7 @@ import 'node:https';
 import 'node:events';
 import 'node:buffer';
 import 'node:url';
+import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';
@@ -25,7 +25,7 @@ const enroll_post = defineEventHandler(async (event) => {
   const db = useDB();
   const slug = getRouterParam(event, "slug");
   const path = await getPathBySlug(db, slug);
-  if (!path) throw createError({ statusCode: 404, message: "Path not found" });
+  if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
   return enroll(db, user.id, path.id);
 });
 

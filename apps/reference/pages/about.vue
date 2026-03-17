@@ -94,10 +94,5 @@ useSeoMeta({
 .cpub-about-cta p { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; }
 .cpub-about-cta-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
 
-.cpub-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; font-size: 12px; font-weight: 500; border: 2px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; cursor: pointer; transition: all 0.15s; }
-.cpub-btn:hover { background: var(--surface2); box-shadow: 2px 2px 0 var(--border); }
-.cpub-btn-primary { background: var(--accent); color: var(--color-text-inverse); box-shadow: 4px 4px 0 var(--border); }
-.cpub-btn-primary:hover { box-shadow: 6px 6px 0 var(--border); transform: translate(-1px, -1px); }
-
 @media (max-width: 768px) { .cpub-about-grid { grid-template-columns: 1fr; } }
 </style>

@@ -5,7 +5,9 @@ const route = useRoute();
 const contentType = computed(() => route.params.type as string);
 const slug = computed(() => route.params.slug as string);
 
-const { data: content } = await useFetch(() => `/api/content/${slug.value}`);
+// Pass cookies so SSR can resolve auth (needed to view own drafts)
+const reqHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
+const { data: content } = await useFetch(() => `/api/content/${slug.value}`, { headers: reqHeaders });
 
 useSeoMeta({
   title: () => content.value?.title ? `${content.value.title} — CommonPub` : 'CommonPub',
@@ -82,8 +84,8 @@ onMounted(() => {
 
     <!-- Fallback: generic view for unknown types -->
     <article v-else class="cpub-view">
-      <div class="cpub-cover" v-if="enrichedContent.coverImage">
-        <img :src="enrichedContent.coverImage" :alt="enrichedContent.title" />
+      <div class="cpub-cover" v-if="enrichedContent.coverImageUrl">
+        <img :src="enrichedContent.coverImageUrl" :alt="enrichedContent.title" />
       </div>
       <div class="cpub-cover cpub-cover-placeholder" v-else>
         <span class="cpub-cover-label">{{ contentType }}</span>
@@ -110,10 +112,8 @@ onMounted(() => {
         </header>
 
         <div class="cpub-view-body">
-          <template v-if="enrichedContent.content && Array.isArray(enrichedContent.content) && enrichedContent.content.length > 0">
-            <ClientOnly>
-              <CpubEditor :model-value="enrichedContent.content as BlockTuple[]" :editable="false" />
-            </ClientOnly>
+          <template v-if="enrichedContent.content && Array.isArray(enrichedContent.content) && (enrichedContent.content as unknown[]).length > 0">
+            <BlockContentRenderer :blocks="(enrichedContent.content as [string, Record<string, unknown>][])" />
           </template>
           <p v-else class="cpub-view-empty">No content body yet.</p>
         </div>
@@ -133,7 +133,7 @@ onMounted(() => {
         <h2 class="cpub-view-related-title">Related {{ contentType }}s</h2>
         <div class="cpub-view-related-grid">
           <ContentCard
-            v-for="item in related.items.filter((i: any) => i.id !== enrichedContent.id).slice(0, 3)"
+            v-for="item in related.items.filter((i: Record<string, unknown>) => i.id !== enrichedContent.id).slice(0, 3)"
             :key="item.id"
             :item="item"
           />

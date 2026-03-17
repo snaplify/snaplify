@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}));
 
   const lesson = await getLessonBySlug(db, slug, lessonSlug);
-  if (!lesson) throw createError({ statusCode: 404, message: 'Lesson not found' });
+  if (!lesson) throw createError({ statusCode: 404, statusMessage: 'Lesson not found' });
 
   return markLessonComplete(db, user.id, lesson.id, body?.quizScore, body?.quizPassed);
 });

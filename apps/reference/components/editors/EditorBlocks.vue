@@ -43,7 +43,7 @@ function insertBlock(block: BlockDef): void {
 <template>
   <div class="cpub-block-library">
     <div class="cpub-bl-search">
-      <i class="fa fa-magnifying-glass cpub-bl-search-icon"></i>
+      <i class="fa-solid fa-magnifying-glass cpub-bl-search-icon"></i>
       <input
         v-model="blockSearch"
         type="text"

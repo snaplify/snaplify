@@ -42,6 +42,55 @@ const { data: contests } = await useFetch('/api/contests', {
 });
 
 const heroDismissed = ref(false);
+
+const { isAuthenticated } = useAuth();
+const toast = useToast();
+
+// Load more state
+const feedOffset = ref(0);
+const loadingMore = ref(false);
+const allLoaded = ref(false);
+
+async function loadMore(): Promise<void> {
+  loadingMore.value = true;
+  try {
+    const nextOffset = (feed.value?.items?.length ?? 0);
+    const more = await $fetch<{ items: Array<Record<string, unknown>> }>('/api/content', {
+      query: {
+        ...contentQuery.value,
+        offset: nextOffset,
+      },
+    });
+    if (more.items?.length) {
+      if (feed.value?.items) {
+        feed.value.items.push(...(more.items as typeof feed.value.items));
+      }
+    }
+    if (!more.items?.length || more.items.length < 12) {
+      allLoaded.value = true;
+    }
+  } catch {
+    toast.error('Failed to load more');
+  } finally {
+    loadingMore.value = false;
+  }
+}
+
+// Reset load more when tab changes
+watch(activeTab, () => { allLoaded.value = false; });
+
+async function handleHubJoin(hubSlug: string): Promise<void> {
+  if (!isAuthenticated.value) {
+    await navigateTo(`/auth/login?redirect=/`);
+    return;
+  }
+  try {
+    await $fetch(`/api/hubs/${hubSlug}/join`, { method: 'POST' });
+    toast.success('Joined hub!');
+  } catch {
+    toast.error('Failed to join hub');
+  }
+}
 </script>
 
 <template>
@@ -142,9 +191,10 @@ const heroDismissed = ref(false);
           <p class="cpub-empty-state-desc">Be the first to create something!</p>
         </div>
 
-        <div class="cpub-load-more-row">
-          <button class="cpub-btn-load-more">
-            <i class="fa-solid fa-rotate"></i> Load more
+        <div v-if="!allLoaded && feed?.items?.length" class="cpub-load-more-row">
+          <button class="cpub-btn-load-more" :disabled="loadingMore" @click="loadMore">
+            <i :class="loadingMore ? 'fa-solid fa-circle-notch fa-spin' : 'fa-solid fa-rotate'"></i>
+            {{ loadingMore ? 'Loading...' : 'Load more' }}
           </button>
         </div>
       </main>
@@ -200,7 +250,7 @@ const heroDismissed = ref(false);
               <NuxtLink :to="`/hubs/${hub.slug}`" class="cpub-hub-name">{{ hub.name }}</NuxtLink>
               <div class="cpub-hub-members">{{ hub.memberCount ?? 0 }} members</div>
             </div>
-            <button class="cpub-btn-join">Join</button>
+            <button class="cpub-btn-join" @click.prevent="handleHubJoin(hub.slug)">Join</button>
           </div>
         </div>
 
@@ -340,31 +390,6 @@ const heroDismissed = ref(false);
 }
 
 .cpub-hero-actions { display: flex; gap: 8px; }
-
-.cpub-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.15s;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.cpub-btn:hover { background: var(--surface2); box-shadow: 2px 2px 0 var(--border); }
-
-.cpub-btn-primary {
-  background: var(--accent);
-  color: var(--color-text-inverse);
-  box-shadow: 2px 2px 0 var(--border);
-}
-
-.cpub-btn-primary:hover { box-shadow: 4px 4px 0 var(--border); transform: translate(-1px, -1px); }
 
 .cpub-hero-meta {
   display: flex;
@@ -598,13 +623,6 @@ const heroDismissed = ref(false);
   display: flex;
   flex-direction: column;
   gap: 18px;
-}
-
-.cpub-sb-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  padding: 18px 20px;
-  box-shadow: 4px 4px 0 var(--border);
 }
 
 .cpub-sb-head {

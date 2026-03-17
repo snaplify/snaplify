@@ -19,8 +19,8 @@
 1. **No remote content persistence** — Inbound Create/Update/Delete/Like/Announce are logged but NOT stored locally
 2. **No cross-publishing** — Content has a single origin instance
 3. **No server mirroring** — No content sync between instances
-4. **No federated communities** — Communities are local-only (standing rule #5)
-5. **No cross-instance community interaction** — Cannot join or post in remote communities
+4. **No federated hubs** — Hubs are local-only (standing rule #5)
+5. **No cross-instance hub interaction** — Cannot join or post in remote hubs
 6. **No activity delivery** — Activities are logged in the `activities` table but not yet delivered to remote inboxes via HTTP
 7. **No HTTP Signature signing on outbound requests** — Verification of inbound signatures is implemented
 
@@ -28,17 +28,17 @@
 
 ## FAQ: Cross-Publishing, Mirroring, and Cross-Site Interaction
 
-### Can communities mirror projects/communities from another site?
+### Can hubs mirror projects from another site?
 
-**No.** Communities are local-only in v1 (standing rule #5). There is no AP Group support and no remote content persistence. Inbound Create/Update/Delete activities are stub handlers that log the activity but do not store the content locally.
+**No.** Hubs are local-only in v1 (standing rule #5). There is no AP Group support and no remote content persistence. Inbound Create/Update/Delete activities are stub handlers that log the activity but do not store the content locally.
 
 ### Can I publish projects to multiple sites?
 
 **No.** Content has a single origin instance. Federation is outbound-only: when you publish locally, a Create activity (AP Article) is logged. There is no cross-posting or multi-origin storage mechanism.
 
-### Can I interact with communities/hubs from different sites?
+### Can I interact with hubs from different sites?
 
-**No.** Communities are local to each instance. Users can follow remote *users* and like federated *content*, but cannot join or post in remote communities.
+**No.** Hubs are local to each instance. Users can follow remote *users* and like federated *content*, but cannot join or post in remote hubs.
 
 ### Can I at server level say "this server mirrors that one"?
 
@@ -85,7 +85,7 @@ These are all post-v1.0.0 features requiring significant protocol work:
 
 | AP Type | CommonPub Type | Builder |
 |---------|--------------|---------|
-| Article | project, article, guide, blog | `contentToArticle(item, author, domain)` |
+| Article | project, article, blog, explainer | `contentToArticle(item, author, domain)` |
 | Note | comment, short post | `contentToNote(comment, author, domain, parentUri)` |
 | Tombstone | deleted content | Via Delete activity |
 
@@ -296,7 +296,7 @@ The following phases describe what needs to be built to achieve full federation.
 | F2 | Activity Delivery | Activities actually arrive at remote inboxes | F1 | Medium-Large |
 | F3 | Inbound Content Persistence | Remote articles/notes in local feeds | — | Medium |
 | F4 | Remote Content Interaction | Like/comment on remote content | F1, F2, F3 | Medium |
-| F5 | AP Group Support | Federated communities | F1–F4 | Large |
+| F5 | AP Group Support | Federated hubs | F1–F4 | Large |
 | F6 | Cross-Publishing API | Publish to multiple origins | F1, F2, F8 | Medium-Large |
 | F7 | Server Mirroring | Full content sync between instances | F1–F3, F6 | Large |
 | F8 | OAuth2 Callback (consumer) | Complete cross-instance account linking | — | Small |
@@ -374,20 +374,20 @@ The following phases describe what needs to be built to achieve full federation.
 
 ### F5 — AP Group Support
 
-**What it enables:** Federated communities — users on Instance A can join and participate in communities hosted on Instance B.
+**What it enables:** Federated hubs — users on Instance A can join and participate in hubs hosted on Instance B.
 
 **Schema changes:**
-- Add `apType` column to `communities` table (default `'Group'`)
-- Add `remoteMembers` table for tracking remote community participants
+- Add `apType` column to `hubs` table (default `'Group'`)
+- Add `remoteMembers` table for tracking remote hub participants
 - Add AP endpoints for Group actors (inbox, outbox, followers)
 
 **Functions to implement:**
-- `communityToGroup(community, domain): APGroup` — build Group actor document
+- `hubToGroup(hub, domain): APGroup` — build Group actor document
 - Group inbox handler — process Join, Leave, Create (posts) from remote users
-- `federatePostToCommunity(db, postId, communityId): Promise<void>` — deliver posts to community followers
-- Community WebFinger support (`@community-slug@instance`)
+- `federatePostToHub(db, postId, hubId): Promise<void>` — deliver posts to hub followers
+- Hub WebFinger support (`@hub-slug@instance`)
 
-**Protocol work:** Implement FEP-1b12 (Groups) or Lemmy-compatible Group federation. Handle Group forwarding (community re-distributes posts to all members).
+**Protocol work:** Implement FEP-1b12 (Groups) or Lemmy-compatible Group federation. Handle Group forwarding (hub re-distributes posts to all members).
 
 **Estimated complexity:** Large — significant protocol work, new actor type, group forwarding logic.
 

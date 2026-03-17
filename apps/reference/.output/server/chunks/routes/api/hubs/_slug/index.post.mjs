@@ -1,8 +1,7 @@
-import { d as defineEventHandler, u as useDB, a as getRouterParam, c as readBody, am as getHubBySlug, f as createError, aI as createPostSchema, aJ as createPost } from '../../../../nitro/nitro.mjs';
+import { d as defineEventHandler, u as useDB, a as getRouterParam, c as readBody, an as getHubBySlug, f as createError, aM as createPostSchema, aN as createPost } from '../../../../nitro/nitro.mjs';
 import { a as requireAuth } from '../../../../_/auth.mjs';
-import 'drizzle-orm/pg-core';
 import 'drizzle-orm';
-import 'zod';
+import 'drizzle-orm/pg-core';
 import 'jose';
 import 'node:fs';
 import 'node:fs/promises';
@@ -14,6 +13,7 @@ import 'node:https';
 import 'node:events';
 import 'node:buffer';
 import 'node:url';
+import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';
@@ -37,7 +37,7 @@ const index_post = defineEventHandler(async (event) => {
       data: { errors: parsed.error.flatten().fieldErrors }
     });
   }
-  return createPost(db, user.id, { hubId: community.id, ...body });
+  return createPost(db, user.id, parsed.data);
 });
 
 export { index_post as default };

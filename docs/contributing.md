@@ -11,7 +11,7 @@ cd commonpub
 pnpm install
 
 # Start local infrastructure
-docker compose -f deploy/docker-compose.yml up -d
+docker compose up -d
 
 # Copy env
 cp .env.example .env

@@ -22,14 +22,11 @@ WCAG 2.1 AA (Standing Rule 8)
 
 ### Theme Contrast Verification
 
-All 4 themes verified against WCAG 2.1 AA (4.5:1 for normal text, 3:1 for large text):
+Base theme verified against WCAG 2.1 AA (4.5:1 for normal text, 3:1 for large text):
 
 | Theme     | Status |
 | --------- | ------ |
-| base      | Pass   |
-| deepwood  | Pass   |
-| hackbuild | Pass   |
-| deveco    | Pass   |
+| base (light/dark) | Pass |
 
 ## Component Standards
 

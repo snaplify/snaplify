@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const featureFlagsSchema = z.object({
   content: z.boolean().default(true),
   social: z.boolean().default(true),
-  communities: z.boolean().default(true),
+  hubs: z.boolean().default(true),
   docs: z.boolean().default(true),
   video: z.boolean().default(true),
   contests: z.boolean().default(false),
@@ -44,8 +44,8 @@ export const instanceConfigSchema = z.object({
     .positive()
     .default(10 * 1024 * 1024),
   contentTypes: z
-    .array(z.enum(['project', 'article', 'guide', 'blog', 'explainer']))
-    .default(['project', 'article', 'guide', 'blog']),
+    .array(z.enum(['project', 'article', 'blog', 'explainer']))
+    .default(['project', 'article', 'blog', 'explainer']),
 });
 
 export const configSchema = z.object({

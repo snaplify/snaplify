@@ -16,22 +16,30 @@ const showNewDialog = ref(false);
 const newRecipient = ref('');
 const newMessage = ref('');
 
+const msgError = ref('');
+
 async function startConversation(): Promise<void> {
   if (!newRecipient.value.trim()) return;
-  const conv = await $fetch<{ id: string }>('/api/messages', {
-    method: 'POST',
-    body: { participants: [newRecipient.value.trim()] },
-  });
-  if (newMessage.value.trim()) {
-    await $fetch(`/api/messages/${conv.id}`, {
+  msgError.value = '';
+  try {
+    const conv = await $fetch<{ id: string }>('/api/messages', {
       method: 'POST',
-      body: { body: newMessage.value.trim() },
+      body: { participants: [newRecipient.value.trim()] },
     });
+    if (newMessage.value.trim()) {
+      await $fetch(`/api/messages/${conv.id}`, {
+        method: 'POST',
+        body: { body: newMessage.value.trim() },
+      });
+    }
+    showNewDialog.value = false;
+    newRecipient.value = '';
+    newMessage.value = '';
+    await navigateTo(`/messages/${conv.id}`);
+  } catch (err: unknown) {
+    const fetchErr = err as { data?: { statusMessage?: string }; message?: string };
+    msgError.value = fetchErr?.data?.statusMessage || fetchErr?.message || 'Failed to start conversation';
   }
-  showNewDialog.value = false;
-  newRecipient.value = '';
-  newMessage.value = '';
-  await navigateTo(`/messages/${conv.id}`);
 }
 </script>
 
@@ -186,7 +194,7 @@ async function startConversation(): Promise<void> {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay-bg, rgba(0, 0, 0, 0.4));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -271,19 +279,4 @@ async function startConversation(): Promise<void> {
   border-top: 2px solid var(--border);
 }
 
-.cpub-btn {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-}
-
-.cpub-btn:hover { background: var(--surface2); }
-.cpub-btn-sm { padding: 5px 12px; font-size: 11px; }
-.cpub-btn-primary { background: var(--accent); color: #fff; font-weight: 600; }
-.cpub-btn-primary:hover { opacity: 0.9; }
-.cpub-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

@@ -35,13 +35,16 @@ declare module "nitropack/types" {
       'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/admin/users/[id]/status.put').default>>>>
     }
     '/api/content/:id': {
-      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id].delete').default>>>>
-      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id].put').default>>>>
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/index.delete').default>>>>
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/index.get').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/index.put').default>>>>
+    }
+    '/api/content/:id/products-sync': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products-sync.post').default>>>>
     }
     '/api/content/:id/products': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products.get').default>>>>
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products.post').default>>>>
-      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products.put').default>>>>
     }
     '/api/content/:id/products/:productId': {
       'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/products/[productId].delete').default>>>>
@@ -58,21 +61,18 @@ declare module "nitropack/types" {
     '/api/content/:id/view': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[id]/view.post').default>>>>
     }
-    '/api/content/:slug': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/[slug].get').default>>>>
-    }
     '/api/content': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/index.get').default>>>>
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/content/index.post').default>>>>
     }
-    '/api/contests/:slug': {
-      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug].delete').default>>>>
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug].get').default>>>>
-      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug].put').default>>>>
-    }
     '/api/contests/:slug/entries': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug]/entries.get').default>>>>
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug]/entries.post').default>>>>
+    }
+    '/api/contests/:slug': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug]/index.delete').default>>>>
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug]/index.get').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug]/index.put').default>>>>
     }
     '/api/contests/:slug/judge': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/[slug]/judge.post').default>>>>
@@ -85,9 +85,9 @@ declare module "nitropack/types" {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/contests/index.post').default>>>>
     }
     '/api/docs/:siteSlug': {
-      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/[siteSlug].delete').default>>>>
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/[siteSlug].get').default>>>>
-      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/[siteSlug].put').default>>>>
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/[siteSlug]/index.delete').default>>>>
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/[siteSlug]/index.get').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/[siteSlug]/index.put').default>>>>
     }
     '/api/docs/:siteSlug/nav': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/docs/[siteSlug]/nav.get').default>>>>
@@ -121,9 +121,6 @@ declare module "nitropack/types" {
     '/api/health': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/health.get').default>>>>
     }
-    '/api/hubs/:slug': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug].get').default>>>>
-    }
     '/api/hubs/:slug/bans': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/bans.get').default>>>>
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/bans.post').default>>>>
@@ -136,6 +133,11 @@ declare module "nitropack/types" {
     }
     '/api/hubs/:slug/gallery': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/gallery.get').default>>>>
+    }
+    '/api/hubs/:slug': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/index.delete').default>>>>
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/index.get').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/index.put').default>>>>
     }
     '/api/hubs/:slug/invites': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/[slug]/invites.get').default>>>>
@@ -176,11 +178,6 @@ declare module "nitropack/types" {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/index.get').default>>>>
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/hubs/index.post').default>>>>
     }
-    '/api/learn/:slug': {
-      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug].delete').default>>>>
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug].get').default>>>>
-      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug].put').default>>>>
-    }
     '/api/learn/:slug/:lessonSlug': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug]/[lessonSlug].get').default>>>>
     }
@@ -189,6 +186,11 @@ declare module "nitropack/types" {
     }
     '/api/learn/:slug/enroll': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug]/enroll.post').default>>>>
+    }
+    '/api/learn/:slug': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug]/index.delete').default>>>>
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug]/index.get').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug]/index.put').default>>>>
     }
     '/api/learn/:slug/lessons': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/learn/[slug]/lessons.post').default>>>>
@@ -219,6 +221,9 @@ declare module "nitropack/types" {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/messages/[conversationId].get').default>>>>
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/messages/[conversationId].post').default>>>>
     }
+    '/api/messages/:conversationId/stream': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/messages/[conversationId]/stream.get').default>>>>
+    }
     '/api/messages': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/messages/index.get').default>>>>
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/messages/index.post').default>>>>
@@ -238,6 +243,9 @@ declare module "nitropack/types" {
     '/api/notifications/stream': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/notifications/stream.get').default>>>>
     }
+    '/api/openapi': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/openapi.get').default>>>>
+    }
     '/api/products/:id': {
       'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/products/[id].delete').default>>>>
       'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/products/[id].put').default>>>>
@@ -256,7 +264,10 @@ declare module "nitropack/types" {
       'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/profile.put').default>>>>
     }
     '/api/search': {
-      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/search.get').default>>>>
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/search/index.get').default>>>>
+    }
+    '/api/search/trending': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/search/trending.get').default>>>>
     }
     '/api/social/bookmark': {
       'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/social/bookmark.post').default>>>>
@@ -297,11 +308,19 @@ declare module "nitropack/types" {
     '/api/users/:username/following': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/users/[username]/following.get').default>>>>
     }
+    '/api/users': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/users/index.get').default>>>>
+    }
     '/api/videos/:id': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/videos/[id].get').default>>>>
     }
     '/api/videos/categories': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/videos/categories.get').default>>>>
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/videos/categories.post').default>>>>
+    }
+    '/api/videos/categories/:id': {
+      'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/videos/categories/[id].delete').default>>>>
+      'put': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/videos/categories/[id].put').default>>>>
     }
     '/api/videos': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/videos/index.get').default>>>>

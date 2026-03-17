@@ -38,7 +38,7 @@ export function buildNodeInfoResponse(options: BuildNodeInfoOptions): NodeInfoRe
       nodeName: config.instance.name,
       nodeDescription: config.instance.description,
       features: {
-        communities: config.features.communities,
+        communities: config.features.hubs,
         docs: config.features.docs,
         video: config.features.video,
         contests: config.features.contests,

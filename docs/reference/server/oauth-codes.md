@@ -2,7 +2,7 @@
 
 > Database-backed authorization code store for OAuth flows with single-use consumption and automatic expiry cleanup.
 
-**Source**: `apps/reference/src/lib/server/oauthCodes.ts`
+**Source**: `packages/server/src/oauthCodes.ts`
 **Table**: `oauth_codes` (defined in `@commonpub/schema`)
 
 ---

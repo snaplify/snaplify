@@ -2,7 +2,7 @@
 
 > Server-side functions for documentation sites, versioned pages, navigation, and full-text search.
 
-**Source**: `apps/reference/src/lib/server/docs.ts`
+**Source**: `packages/server/src/docs.ts`
 
 ---
 

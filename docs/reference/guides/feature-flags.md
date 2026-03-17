@@ -1,8 +1,8 @@
 # Feature Flags
 
-> All 10 feature flags, what each controls, default values, and dependencies.
+> All feature flags, what each controls, default values, and dependencies.
 
-CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire subsystems. Every server module, route, and API endpoint checks the relevant flag via `locals.config.features.*` before executing.
+CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire subsystems. Server middleware and API endpoints check flags via `useCommonPubConfig().features.*` before executing.
 
 ---
 
@@ -13,16 +13,13 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 **Controls**: The entire content management system.
 
 **Enables**:
-- Content CRUD (`createContent`, `updateContent`, `deleteContent`, `publishContent`)
+- Content CRUD (create, update, delete, publish)
 - Content routes: `/create`, `/[type]/[slug]`, `/[type]/[slug]/edit`
-- Content listing pages: `/projects`, `/articles`, `/blog`, `/guides`
+- Content listing and discovery
 - Dashboard content management: `/dashboard`
-- View count tracking
-- Content forking
-- Tag management
-- SEO metadata and preview tokens
+- View count tracking, tag management, SEO metadata
 
-**Dependencies**: Required by `social` (likes/comments target content), `communities` (content sharing), `federation` (content federation).
+**Dependencies**: Required by `social` (likes/comments target content), `hubs` (content sharing), `federation` (content federation).
 
 ---
 
@@ -37,28 +34,29 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 - Follow system: `follows` table
 - Notification system: `notifications` table
 - Report system: `reports` table
-- Like/comment counts on content
 
 **Dependencies**: Requires `content` for content-targeted interactions.
 
 ---
 
-### `communities` (default: `true`)
+### `hubs` (default: `true`)
 
-**Controls**: Community system (local-only in v1).
+**Controls**: Hub system — community, product, and company hubs (local-only in v1).
 
 **Enables**:
-- Community CRUD and listing: `/communities`, `/communities/create`
-- Community detail: `/communities/[slug]`
+- Hub CRUD and listing: `/hubs`, `/hubs/create`
+- Hub detail: `/hubs/[slug]`
+- Hub types: community, product, company
 - Membership management: join, leave, roles
-- Community posts and replies
+- Hub posts and replies
 - Member moderation: kick, ban, unban
 - Invite system (token-based)
-- Content sharing to communities
-- Community settings: `/communities/[slug]/settings`
-- Dashboard communities: `/dashboard/communities`
+- Content sharing to hubs
+- Hub settings: `/hubs/[slug]/settings`
+- Product catalog (company/product hubs)
+- Hub gallery (projects using products)
 
-**v1 Limitation**: Communities are local-only. No AP Group support, no cross-instance community interaction.
+**v1 Limitation**: Hubs are local-only. No AP Group support, no cross-instance hub interaction.
 
 ---
 
@@ -67,14 +65,12 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 **Controls**: Documentation site module.
 
 **Enables**:
-- Docs site CRUD: `/docs/create`, `/docs/[siteSlug]/edit`
+- Docs site CRUD
 - Version management (create, set default, delete)
 - Page management (create, edit, reorder, delete)
 - Navigation tree editor
 - Markdown rendering with CodeMirror editor
-- Full-text search: `GET /api/docs/search`
-- Public docs viewer: `/docs/[siteSlug]/[...pagePath]`
-- Dashboard docs: `/dashboard/docs`
+- Full-text search
 
 ---
 
@@ -86,6 +82,7 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 - `videos` and `videoCategories` tables
 - Video embed support (YouTube, Vimeo, other)
 - Video metadata (duration, thumbnail, view counts)
+- Video hub page: `/videos`
 
 ---
 
@@ -114,8 +111,6 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 - Enrollment and progress tracking
 - Lesson completion tracking
 - Certificate generation
-- Public certificate verification: `/certificates/[code]`
-- Dashboard learning: `/dashboard/learning`
 - Learning path listing: `/learn`
 - Lesson viewer: `/learn/[slug]/[lessonSlug]`
 
@@ -128,13 +123,10 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 **Controls**: Interactive explainer module system.
 
 **Enables**:
-- Explainer CRUD: `/explainers/create`, `/explainers/[slug]/edit`
 - Explainer content type in `contentItems`
 - Interactive section types: text, interactive, quiz, checkpoint
 - Quiz engine with scoring
 - Progress tracking
-- HTML export: `GET /api/explainers/[slug]/export`
-- Explainer listing: `/explainers`
 
 **Dependencies**: `learning` can use explainers as lesson types.
 
@@ -151,16 +143,12 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 - Inbox/outbox: `/users/[username]/inbox`, `/users/[username]/outbox`
 - Shared inbox: `/inbox`
 - Follow lifecycle (Follow/Accept/Reject/Undo)
-- Content federation (Create/Update/Delete activities)
-- Like federation
-- OAuth2 SSO (Model B): `/api/auth/oauth2/*`
+- OAuth2 SSO (Model B)
 - Keypair generation per user
 - Remote actor resolution and caching
-- Federation dashboard: `/dashboard/federation`
 - `remoteActors`, `activities`, `followRelationships`, `actorKeypairs` tables
-- `federatedAccounts`, `oauthClients` tables
 
-**Default off**: Federation requires trusted instances to be configured and is not needed for single-instance deployments.
+**Default off**: Federation requires trusted instances and is not needed for single-instance deployments.
 
 **v1 Limitation**: Inbound Create/Update/Delete/Like/Announce are logged but not processed (stubs). No remote content persistence.
 
@@ -171,16 +159,13 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 **Controls**: Admin panel and platform management.
 
 **Enables**:
-- Admin dashboard: `/admin` (platform stats)
-- User management: `/admin/users` (list, role changes, status changes)
-- Report moderation: `/admin/reports` (review, resolve, dismiss)
-- Audit logs: `/admin/audit`
-- Instance settings: `/admin/settings/theme`
-- Instance theme customization
-- Content removal by admins
-- User deletion by admins
+- Admin dashboard (platform stats)
+- User management (list, role changes, status changes)
+- Report moderation (review, resolve, dismiss)
+- Audit logs
+- Instance settings and theme customization
 
-**Access**: Requires `user.role === 'admin'` or `'staff'`.
+**Access**: Requires `user.role === 'admin'`.
 
 ---
 
@@ -190,7 +175,7 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 |------|---------|-----------|
 | `content` | `true` | Core feature, required by most other systems |
 | `social` | `true` | Expected baseline for community sites |
-| `communities` | `true` | Primary use case for CommonPub |
+| `hubs` | `true` | Primary use case for CommonPub |
 | `docs` | `true` | Documentation is a core maker need |
 | `video` | `true` | Low overhead, commonly needed |
 | `contests` | `false` | Niche feature, opt-in |
@@ -201,22 +186,23 @@ CommonPub uses feature flags (defined in `@commonpub/config`) to gate entire sub
 
 ## Flag Checking Pattern
 
-All feature flags are checked in server routes via `locals.config.features`:
+Feature flags are checked in Nitro server routes via the config:
 
 ```typescript
-// In +page.server.ts load function
-export const load: PageServerLoad = async ({ locals }) => {
-  if (!locals.config.features.communities) {
-    throw error(404, 'Communities are disabled');
+// In a Nitro API route
+export default defineEventHandler(async (event) => {
+  const config = useCommonPubConfig();
+  if (!config.features.hubs) {
+    throw createError({ statusCode: 404, statusMessage: 'Hubs are disabled' });
   }
-  // ... proceed with community data loading
-};
+  // ... proceed with hub data loading
+});
 ```
 
 Server modules also check flags internally before federation hooks:
 
 ```typescript
-// In server/content.ts
+// In packages/server/src/content.ts
 export async function publishContent(db, contentId, config) {
   // ... publish logic ...
   if (config.features.federation) {

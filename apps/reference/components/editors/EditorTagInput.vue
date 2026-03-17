@@ -35,7 +35,7 @@ function removeTag(idx: number): void {
       <span v-for="(tag, i) in tags" :key="i" class="cpub-tag-chip">
         {{ tag }}
         <button class="cpub-tag-remove" aria-label="Remove tag" @click="removeTag(i)">
-          <i class="fa fa-xmark"></i>
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </span>
     </div>

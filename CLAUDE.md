@@ -6,7 +6,7 @@ CommonPub is an open ActivityPub federation protocol and package suite for self-
 
 ## Master Plan
 
-The full implementation plan is at `docs/plan.md`. The restructure plan is at `docs/restructure/master-plan.md`.
+The implementation plan is at `docs/plan-v2.md`. Reference documentation is at `docs/reference/`. Session logs are in `docs/sessions/`.
 
 ## Standing Rules — MUST FOLLOW
 
@@ -14,7 +14,7 @@ The full implementation plan is at `docs/plan.md`. The restructure plan is at `d
 2. **No feature without a flag** in `commonpub.config.ts`
 3. **No hardcoded color or font** in any `@commonpub/ui` or `@commonpub/docs` component — always `var(--*)`
 4. **Docs stored as raw markdown** — never TipTap JSON
-5. **Communities local-only in v1** — AP Group only after real moderation experience
+5. **Hubs local-only in v1** — AP Group only after real moderation experience
 6. **"Hub" is the umbrella concept** — three types: community, product, company. Products are normalized entities in the `products` table, not JSONB blobs. No `guide` content type — use article or explainer.
 7. **Convex is not self-hostable** — the answer is Postgres
 8. **Better Auth is a library** — no separate auth service
@@ -116,7 +116,7 @@ pnpm typecheck        # Type-check all packages
 pnpm dev              # Start dev servers
 
 # Local infrastructure
-docker compose -f deploy/docker-compose.yml up -d
+docker compose up -d
 ```
 
 ## Testing

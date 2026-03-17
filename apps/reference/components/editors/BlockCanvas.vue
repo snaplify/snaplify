@@ -23,6 +23,7 @@ import CalloutBlock from './blocks/CalloutBlock.vue';
 import DividerBlock from './blocks/DividerBlock.vue';
 import VideoBlock from './blocks/VideoBlock.vue';
 import EmbedBlock from './blocks/EmbedBlock.vue';
+import GalleryBlock from './blocks/GalleryBlock.vue';
 import PartsListBlock from './blocks/PartsListBlock.vue';
 import BuildStepBlock from './blocks/BuildStepBlock.vue';
 import ToolListBlock from './blocks/ToolListBlock.vue';
@@ -35,7 +36,7 @@ const BLOCK_COMPONENTS: Record<string, Component> = {
   code_block: CodeBlock,
   codeBlock: CodeBlock,
   image: ImageBlock,
-  gallery: ImageBlock,
+  gallery: GalleryBlock,
   blockquote: QuoteBlock,
   callout: CalloutBlock,
   horizontal_rule: DividerBlock,
@@ -126,24 +127,29 @@ function getActiveEditor(): unknown {
   return ref?.getEditor?.() ?? null;
 }
 
+/** TipTap editor chain interface for toolbar commands */
+interface TipTapChainable {
+  focus: () => TipTapChainable;
+  toggleMark: (mark: string) => TipTapChainable;
+  unsetLink: () => TipTapChainable;
+  extendMarkRange: (type: string) => TipTapChainable;
+  setLink: (attrs: { href: string }) => TipTapChainable;
+  run: () => void;
+}
+
+interface TipTapEditor {
+  chain: () => TipTapChainable;
+  isActive: (name: string) => boolean;
+}
+
 function toggleMark(mark: string): void {
-  const editor = getActiveEditor() as { chain: () => { focus: () => { toggleMark: (m: string) => { run: () => void } } } } | null;
+  const editor = getActiveEditor() as TipTapEditor | null;
   if (!editor) return;
   editor.chain().focus().toggleMark(mark).run();
 }
 
 function toggleLink(): void {
-  const editor = getActiveEditor() as {
-    isActive: (name: string) => boolean;
-    chain: () => {
-      focus: () => {
-        unsetLink: () => { run: () => void };
-        extendMarkRange: (type: string) => {
-          setLink: (attrs: { href: string }) => { run: () => void };
-        };
-      };
-    };
-  } | null;
+  const editor = getActiveEditor() as TipTapEditor | null;
   if (!editor) return;
   if (editor.isActive('link')) {
     editor.chain().focus().unsetLink().run();

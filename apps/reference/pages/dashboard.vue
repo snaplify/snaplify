@@ -6,42 +6,71 @@ useSeoMeta({
   description: 'Your personal CommonPub dashboard.',
 });
 
+interface DashContentItem {
+  id: string;
+  type: string;
+  title: string;
+  slug: string;
+  status: string;
+  createdAt: string;
+  viewCount: number;
+  likeCount: number;
+}
+
+interface BookmarkItem {
+  id: string;
+  content: {
+    type: string;
+    title: string;
+    slug: string;
+    author?: { username: string; displayName: string | null };
+  } | null;
+}
+
+interface Enrollment {
+  pathId: string;
+  pathSlug: string;
+  pathTitle: string;
+  progress: number;
+  completedAt: string | null;
+}
+
 const { user } = useAuth();
 
 const activeTab = ref<'content' | 'bookmarks' | 'learning'>('content');
 
 // My content (all statuses)
-const { data: myContent } = await useFetch('/api/content', {
+const { data: myContent, status: contentStatus } = await useFetch<{ items: DashContentItem[] }>('/api/content', {
   query: { authorId: user.value?.id },
 });
 
 // Bookmarks
-const { data: bookmarkData } = await useFetch('/api/social/bookmarks', {
+const { data: bookmarkData } = await useFetch<{ items: BookmarkItem[] }>('/api/social/bookmarks', {
   query: { limit: 10 },
   lazy: true,
 });
 
 // Learning enrollments
-const { data: enrollments } = await useFetch('/api/learn/enrollments', {
+const { data: enrollments } = await useFetch<Enrollment[]>('/api/learn/enrollments', {
   lazy: true,
 });
 
 // Notification count
-const { data: notifCount } = await useFetch('/api/notifications/count', {
+const { data: notifCount } = await useFetch<{ count: number }>('/api/notifications/count', {
   lazy: true,
 });
 
 const drafts = computed(() =>
-  (myContent.value?.items ?? []).filter((i: Record<string, unknown>) => i.status === 'draft'),
+  (myContent.value?.items ?? []).filter((i) => i.status === 'draft'),
 );
 const published = computed(() =>
-  (myContent.value?.items ?? []).filter((i: Record<string, unknown>) => i.status === 'published'),
+  (myContent.value?.items ?? []).filter((i) => i.status === 'published'),
 );
 const totalViews = computed(() =>
-  published.value.reduce((sum: number, item: Record<string, unknown>) => sum + ((item.viewCount as number) ?? 0), 0),
+  published.value.reduce((sum, item) => sum + (item.viewCount ?? 0), 0),
 );
 const totalLikes = computed(() =>
-  published.value.reduce((sum: number, item: Record<string, unknown>) => sum + ((item.likeCount as number) ?? 0), 0),
+  published.value.reduce((sum, item) => sum + (item.likeCount ?? 0), 0),
 );
 </script>
 
@@ -73,7 +102,7 @@ const totalLikes = computed(() =>
         <span class="cpub-dash-stat-l">Likes</span>
       </div>
       <div class="cpub-dash-stat">
-        <span class="cpub-dash-stat-n">{{ (notifCount as any)?.count ?? 0 }}</span>
+        <span class="cpub-dash-stat-n">{{ notifCount?.count ?? 0 }}</span>
         <span class="cpub-dash-stat-l">Unread</span>
       </div>
     </div>
@@ -100,21 +129,27 @@ const totalLikes = computed(() =>
       </button>
     </div>
 
+    <!-- Loading state -->
+    <div v-if="contentStatus === 'pending'" class="cpub-dash-panel" style="padding: 32px; text-align: center;">
+      <i class="fa-solid fa-circle-notch fa-spin" style="color: var(--text-faint); font-size: 16px;"></i>
+      <p style="font-size: 12px; color: var(--text-faint); margin-top: 8px;">Loading your content...</p>
+    </div>
+
     <!-- Content tab -->
-    <div v-if="activeTab === 'content'" class="cpub-dash-panel">
+    <div v-else-if="activeTab === 'content'" class="cpub-dash-panel">
       <!-- Drafts section -->
       <div v-if="drafts.length" class="cpub-dash-section">
         <h2 class="cpub-dash-section-title">Drafts</h2>
         <div class="cpub-dash-list">
           <div v-for="item in drafts" :key="item.id" class="cpub-dash-row">
-            <NuxtLink :to="`/${(item as any).type}/${(item as any).slug}/edit`" class="cpub-dash-row-title">
-              {{ (item as any).title }}
+            <NuxtLink :to="`/${item.type}/${item.slug}/edit`" class="cpub-dash-row-title">
+              {{ item.title }}
             </NuxtLink>
             <span class="cpub-dash-row-meta">
-              <ContentTypeBadge :type="(item as any).type" />
-              <time>{{ new Date((item as any).createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}</time>
+              <ContentTypeBadge :type="item.type" />
+              <time>{{ new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}</time>
             </span>
-            <NuxtLink :to="`/${(item as any).type}/${(item as any).slug}/edit`" class="cpub-dash-row-action" aria-label="Edit">
+            <NuxtLink :to="`/${item.type}/${item.slug}/edit`" class="cpub-dash-row-action" aria-label="Edit">
               <i class="fa-solid fa-pen"></i>
             </NuxtLink>
           </div>
@@ -126,15 +161,15 @@ const totalLikes = computed(() =>
         <h2 class="cpub-dash-section-title">Published</h2>
         <div class="cpub-dash-list">
           <div v-for="item in published" :key="item.id" class="cpub-dash-row">
-            <NuxtLink :to="`/${(item as any).type}/${(item as any).slug}`" class="cpub-dash-row-title">
-              {{ (item as any).title }}
+            <NuxtLink :to="`/${item.type}/${item.slug}`" class="cpub-dash-row-title">
+              {{ item.title }}
             </NuxtLink>
             <span class="cpub-dash-row-meta">
-              <ContentTypeBadge :type="(item as any).type" />
-              <span><i class="fa-regular fa-eye"></i> {{ ((item as any).viewCount ?? 0).toLocaleString() }}</span>
-              <span><i class="fa-regular fa-heart"></i> {{ (item as any).likeCount ?? 0 }}</span>
+              <ContentTypeBadge :type="item.type" />
+              <span><i class="fa-regular fa-eye"></i> {{ (item.viewCount ?? 0).toLocaleString() }}</span>
+              <span><i class="fa-regular fa-heart"></i> {{ item.likeCount ?? 0 }}</span>
             </span>
-            <NuxtLink :to="`/${(item as any).type}/${(item as any).slug}/edit`" class="cpub-dash-row-action" aria-label="Edit">
+            <NuxtLink :to="`/${item.type}/${item.slug}/edit`" class="cpub-dash-row-action" aria-label="Edit">
               <i class="fa-solid fa-pen"></i>
             </NuxtLink>
           </div>
@@ -146,7 +181,7 @@ const totalLikes = computed(() =>
     <!-- Bookmarks tab -->
     <div v-if="activeTab === 'bookmarks'" class="cpub-dash-panel">
       <div class="cpub-dash-list">
-        <div v-for="bm in (bookmarkData as any)?.items ?? []" :key="bm.id" class="cpub-dash-row">
+        <div v-for="bm in bookmarkData?.items ?? []" :key="bm.id" class="cpub-dash-row">
           <template v-if="bm.content">
             <NuxtLink :to="`/${bm.content.type}/${bm.content.slug}`" class="cpub-dash-row-title">
               {{ bm.content.title }}
@@ -160,7 +195,7 @@ const totalLikes = computed(() =>
             <span class="cpub-dash-row-title cpub-dash-row-removed">Removed content</span>
           </template>
         </div>
-        <p v-if="!(bookmarkData as any)?.items?.length" class="cpub-dash-empty">
+        <p v-if="!bookmarkData?.items?.length" class="cpub-dash-empty">
           No bookmarks yet. Bookmark content you want to revisit!
         </p>
       </div>
@@ -169,7 +204,7 @@ const totalLikes = computed(() =>
     <!-- Learning tab -->
     <div v-if="activeTab === 'learning'" class="cpub-dash-panel">
       <div class="cpub-dash-list">
-        <div v-for="enrollment in (enrollments as any) ?? []" :key="enrollment.pathId" class="cpub-dash-row">
+        <div v-for="enrollment in enrollments ?? []" :key="enrollment.pathId" class="cpub-dash-row">
           <NuxtLink :to="`/learn/${enrollment.pathSlug}`" class="cpub-dash-row-title">
             {{ enrollment.pathTitle }}
           </NuxtLink>
@@ -182,7 +217,7 @@ const totalLikes = computed(() =>
             </span>
           </span>
         </div>
-        <p v-if="!(enrollments as any)?.length" class="cpub-dash-empty">
+        <p v-if="!enrollments?.length" class="cpub-dash-empty">
           Not enrolled in any learning paths. <NuxtLink to="/learn" class="cpub-link">Browse paths</NuxtLink>
         </p>
       </div>
@@ -213,7 +248,7 @@ const totalLikes = computed(() =>
   gap: 6px;
   padding: 6px 16px;
   background: var(--accent);
-  color: #fff;
+  color: var(--color-text-inverse);
   border: 2px solid var(--border);
   font-size: 12px;
   font-weight: 600;
@@ -405,15 +440,6 @@ const totalLikes = computed(() =>
   text-align: center;
   font-size: 13px;
   color: var(--text-faint);
-}
-
-.cpub-link {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.cpub-link:hover {
-  text-decoration: underline;
 }
 
 @media (max-width: 640px) {

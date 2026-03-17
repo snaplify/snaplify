@@ -20,5 +20,5 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return createPost(db, user.id, { hubId: community.id, ...body });
+  return createPost(db, user.id, parsed.data);
 });

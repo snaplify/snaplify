@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+/** Optional URL field that also accepts empty strings (treated as undefined) */
+const optionalUrl = (maxLen?: number) => {
+  const base = maxLen ? z.string().url().max(maxLen) : z.string().url();
+  return z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+    base.optional(),
+  );
+};
+
 // --- Auth validators ---
 
 export const usernameSchema = z
@@ -19,13 +28,13 @@ export const bioSchema = z.string().max(2000).optional();
 
 export const socialLinksSchema = z
   .object({
-    github: z.string().url().optional(),
-    twitter: z.string().url().optional(),
-    linkedin: z.string().url().optional(),
-    youtube: z.string().url().optional(),
-    instagram: z.string().url().optional(),
-    mastodon: z.string().url().optional(),
-    discord: z.string().optional(),
+    github: optionalUrl(),
+    twitter: optionalUrl(),
+    linkedin: optionalUrl(),
+    youtube: optionalUrl(),
+    instagram: optionalUrl(),
+    mastodon: optionalUrl(),
+    discord: optionalUrl(),
   })
   .optional();
 
@@ -40,7 +49,7 @@ export const updateProfileSchema = z.object({
   bio: bioSchema,
   headline: z.string().max(255).optional(),
   location: z.string().max(128).optional(),
-  website: z.string().url().max(512).optional(),
+  website: optionalUrl(512),
   socialLinks: socialLinksSchema,
   skills: z.array(z.string().max(64)).max(50).optional(),
   pronouns: z.string().max(32).optional(),
@@ -76,14 +85,20 @@ export const createContentSchema = z.object({
   subtitle: z.string().max(255).optional(),
   description: z.string().max(2000).optional(),
   content: z.unknown().optional(),
-  coverImageUrl: z.string().url().optional(),
+  coverImageUrl: optionalUrl(),
   category: z.string().max(64).optional(),
   difficulty: difficultySchema.optional(),
   buildTime: z.string().max(64).optional(),
   estimatedCost: z.string().max(64).optional(),
-  estimatedMinutes: z.number().int().positive().optional(),
+  estimatedMinutes: z.preprocess(
+    (val) => (val === '' || val === null ? undefined : val),
+    z.number().int().positive().optional(),
+  ),
   visibility: z.enum(['public', 'members', 'private']).optional(),
-  seoDescription: z.string().max(320).optional(),
+  seoDescription: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+    z.string().max(320).optional(),
+  ),
   licenseType: z.string().max(32).optional(),
   series: z.string().max(128).optional(),
   sections: z.unknown().optional(),
@@ -129,7 +144,7 @@ export const createHubSchema = z.object({
   hubType: hubTypeSchema.default('community'),
   joinPolicy: z.enum(['open', 'approval', 'invite']).default('open'),
   privacy: z.enum(['public', 'unlisted', 'private']).default('public'),
-  website: z.string().url().max(512).optional(),
+  website: optionalUrl(512),
   categories: z.array(z.string().max(64)).max(20).optional(),
   parentHubId: z.string().uuid().optional(),
 });
@@ -187,9 +202,9 @@ export const createProductSchema = z.object({
     ])
     .optional(),
   specs: z.record(z.string(), z.string()).optional(),
-  imageUrl: z.string().url().optional(),
-  purchaseUrl: z.string().url().optional(),
-  datasheetUrl: z.string().url().optional(),
+  imageUrl: optionalUrl(),
+  purchaseUrl: optionalUrl(),
+  datasheetUrl: optionalUrl(),
   pricing: z
     .object({
       min: z.number().optional(),
@@ -216,7 +231,7 @@ export const createContestSchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().max(10000).optional(),
   rules: z.string().max(10000).optional(),
-  bannerUrl: z.string().url().optional(),
+  bannerUrl: optionalUrl(),
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
   judgingEndDate: z.string().datetime().optional(),
@@ -251,9 +266,9 @@ export const createVideoSchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().max(5000).optional(),
   url: z.string().url(),
-  embedUrl: z.string().url().optional(),
+  embedUrl: optionalUrl(),
   platform: z.enum(['youtube', 'vimeo', 'other']).default('other'),
-  thumbnailUrl: z.string().url().optional(),
+  thumbnailUrl: optionalUrl(),
   duration: z.string().max(16).optional(),
 });
 
@@ -270,7 +285,7 @@ export const createLearningPathSchema = z.object({
   description: z.string().max(2000).optional(),
   difficulty: difficultySchema.optional(),
   estimatedHours: z.number().positive().max(9999).optional(),
-  coverImageUrl: z.string().url().optional(),
+  coverImageUrl: optionalUrl(),
 });
 
 export const updateLearningPathSchema = createLearningPathSchema.partial();
@@ -369,11 +384,11 @@ export const followRelationshipStatusSchema = z.enum(['pending', 'accepted', 're
 export const createRemoteActorSchema = z.object({
   actorUri: actorUriSchema,
   inbox: z.string().url(),
-  outbox: z.string().url().optional(),
+  outbox: optionalUrl(),
   publicKeyPem: z.string().optional(),
   preferredUsername: z.string().max(64).optional(),
   displayName: z.string().max(128).optional(),
-  avatarUrl: z.string().url().optional(),
+  avatarUrl: optionalUrl(),
   instanceDomain: z.string().min(1).max(255),
 });
 

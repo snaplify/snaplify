@@ -7,14 +7,64 @@ definePageMeta({ middleware: 'auth' });
 
 const { user } = useAuth();
 
-const { data: messages, refresh } = await useFetch(`/api/messages/${conversationId}`, {
-  default: () => [] as Array<{
-    id: string;
-    senderId: string;
-    body: string;
-    createdAt: string;
-    readAt: string | null;
-  }>,
+interface ConversationInfo {
+  id: string;
+  participants: string[];
+}
+
+const { data: convInfo } = await useFetch<ConversationInfo>(`/api/messages/${conversationId}/info`, {
+  default: () => ({ id: conversationId, participants: [] }),
+});
+
+interface MessageData {
+  id: string;
+  senderId: string;
+  body: string;
+  createdAt: string;
+  readAt: string | null;
+}
+
+const { data: initialMessages, refresh } = await useFetch<MessageData[]>(`/api/messages/${conversationId}`, {
+  default: () => [],
+});
+
+const messages = ref<MessageData[]>([...(initialMessages.value ?? [])]);
+
+// SSE real-time stream
+let eventSource: EventSource | null = null;
+
+onMounted(() => {
+  eventSource = new EventSource(`/api/messages/${conversationId}/stream`);
+
+  eventSource.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'init') {
+        messages.value = data.messages;
+      } else if (data.type === 'new') {
+        for (const msg of data.messages) {
+          if (!messages.value.some((m) => m.id === msg.id)) {
+            messages.value.push(msg);
+          }
+        }
+      }
+    } catch { /* ignore parse errors */ }
+  };
+
+  eventSource.onerror = () => {
+    // Connection lost — will auto-reconnect via EventSource spec
+  };
+});
+
+onUnmounted(() => {
+  eventSource?.close();
+  eventSource = null;
+});
+
+const participantLabel = computed(() => {
+  const parts = convInfo.value?.participants ?? [];
+  if (!parts.length) return 'Conversation';
+  return parts.join(', ');
 });
 
 async function handleSend(text: string): Promise<void> {
@@ -22,7 +72,12 @@ async function handleSend(text: string): Promise<void> {
     method: 'POST',
     body: { body: text },
   });
-  refresh();
+  // SSE will pick up the new message, but also do an immediate refresh for responsiveness
+  refresh().then((result) => {
+    if (result?.data?.value) {
+      messages.value = result.data.value;
+    }
+  });
 }
 </script>
 
@@ -32,11 +87,11 @@ async function handleSend(text: string): Promise<void> {
       <NuxtLink to="/messages" class="cpub-btn cpub-btn-sm cpub-btn-ghost">
         <i class="fa-solid fa-arrow-left"></i> Back
       </NuxtLink>
-      <span style="font-size: 13px; font-weight: 600">Conversation</span>
+      <span style="font-size: 13px; font-weight: 600">{{ participantLabel }}</span>
     </div>
     <MessageThread
       :messages="messages"
-      :current-user-id="(user as any)?.id || ''"
+      :current-user-id="user?.id ?? ''"
       @send="handleSend"
     />
   </div>

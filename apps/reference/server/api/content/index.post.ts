@@ -15,5 +15,5 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return createContent(db, user.id, body);
+  return createContent(db, user.id, parsed.data);
 });

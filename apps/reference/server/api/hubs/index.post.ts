@@ -15,5 +15,5 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return createHub(db, user.id, body);
+  return createHub(db, user.id, parsed.data);
 });

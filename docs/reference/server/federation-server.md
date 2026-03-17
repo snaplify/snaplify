@@ -2,7 +2,7 @@
 
 > Database operations for ActivityPub federation: keypair management, remote actor resolution, follow relationships, and activity logging.
 
-**Source**: `apps/reference/src/lib/server/federation.ts`
+**Source**: `packages/server/src/federation.ts`
 
 ---
 

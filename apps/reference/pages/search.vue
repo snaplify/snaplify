@@ -13,7 +13,6 @@ const viewMode = ref<'grid' | 'list'>('grid');
 
 // Advanced filters
 const diffFilters = ref<string[]>([]);
-const tagInput = ref('');
 const activeTags = ref<string[]>([]);
 const dateFrom = ref('');
 const dateTo = ref('');
@@ -31,11 +30,24 @@ const typePills = [
   { value: 'people', label: 'People', icon: 'fa-solid fa-user' },
 ];
 
+const page = ref(1);
+const pageSize = 24;
+
+// Reset page when search params change
+watch([query, activeType, sortBy], () => { page.value = 1; });
+
 const searchQuery = computed(() => ({
   q: query.value || undefined,
   type: activeType.value === 'all' ? undefined : activeType.value,
   sort: sortBy.value,
-  limit: 24,
+  limit: pageSize,
+  offset: (page.value - 1) * pageSize,
+  difficulty: diffFilters.value.length ? diffFilters.value.join(',') : undefined,
+  tags: activeTags.value.length ? activeTags.value.join(',') : undefined,
+  dateFrom: dateFrom.value || undefined,
+  dateTo: dateTo.value || undefined,
+  author: authorFilter.value || undefined,
+  community: communityFilter.value || undefined,
 }));
 
 const { data: results, status } = await useFetch('/api/search', {
@@ -55,24 +67,6 @@ const activeFilterCount = computed(() => {
   if (communityFilter.value) n++;
   return n;
 });
-
-function toggleDiff(val: string): void {
-  const idx = diffFilters.value.indexOf(val);
-  if (idx >= 0) diffFilters.value.splice(idx, 1);
-  else diffFilters.value.push(val);
-}
-
-function addTag(): void {
-  const t = tagInput.value.trim();
-  if (t && !activeTags.value.includes(t)) {
-    activeTags.value.push(t);
-  }
-  tagInput.value = '';
-}
-
-function removeTag(tag: string): void {
-  activeTags.value = activeTags.value.filter(t => t !== tag);
-}
 
 function toggleSidebarTag(tag: string): void {
   if (activeTags.value.includes(tag)) {
@@ -116,6 +110,32 @@ const { data: trendingSearches } = await useFetch<TrendingSearch[]>('/api/search
   default: () => [],
   server: false,
 });
+
+const totalPages = computed(() => {
+  const total = results.value?.total ?? 0;
+  return Math.max(1, Math.ceil(total / pageSize));
+});
+
+const visiblePages = computed(() => {
+  const tp = totalPages.value;
+  const current = page.value;
+  const pages: number[] = [];
+  const start = Math.max(1, current - 2);
+  const end = Math.min(tp, current + 2);
+  for (let i = start; i <= end; i++) pages.push(i);
+  return pages;
+});
+
+function applyFilters(): void {
+  page.value = 1;
+  // searchQuery recomputes automatically since all refs are reactive
+}
+
+function setCategory(label: string): void {
+  query.value = label;
+  activeType.value = 'all';
+  page.value = 1;
+}
 
 interface CommunityListItem { id: string; name: string; slug: string; memberCount: number }
 const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[] }>('/api/hubs', {
@@ -166,12 +186,15 @@ const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[]
             </button>
 
             <div class="cpub-filter-right">
-              <select v-model="sortBy" class="cpub-sort-select" aria-label="Sort results">
-                <option value="relevance">Relevance</option>
-                <option value="recent">Latest</option>
-                <option value="popular">Most Popular</option>
-                <option value="likes">Most Liked</option>
-              </select>
+              <SortSelect
+                v-model="sortBy"
+                :options="[
+                  { value: 'relevance', label: 'Relevance' },
+                  { value: 'recent', label: 'Latest' },
+                  { value: 'popular', label: 'Most Popular' },
+                  { value: 'likes', label: 'Most Liked' },
+                ]"
+              />
               <button
                 class="cpub-adv-filter-btn"
                 :class="{ open: advOpen }"
@@ -187,70 +210,17 @@ const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[]
         </div>
 
         <!-- ADVANCED FILTERS PANEL -->
-        <div v-if="advOpen" class="cpub-adv-panel">
-          <div class="cpub-adv-grid">
-            <!-- Difficulty -->
-            <div class="cpub-adv-section">
-              <label class="cpub-adv-label">Difficulty</label>
-              <div class="cpub-checkbox-group">
-                <label v-for="d in ['Beginner', 'Intermediate', 'Advanced']" :key="d" class="cpub-check-item">
-                  <input
-                    type="checkbox"
-                    :checked="diffFilters.includes(d.toLowerCase())"
-                    @change="toggleDiff(d.toLowerCase())"
-                  />
-                  <span>{{ d }}</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Tags -->
-            <div class="cpub-adv-section">
-              <label class="cpub-adv-label">Tags</label>
-              <input
-                v-model="tagInput"
-                class="cpub-adv-input"
-                type="text"
-                placeholder="Add tag&hellip;"
-                @keyup.enter="addTag"
-              />
-              <div class="cpub-tag-chips">
-                <span
-                  v-for="tag in activeTags"
-                  :key="tag"
-                  class="cpub-tag-chip active"
-                >
-                  {{ tag }} <span class="cpub-rm" @click="removeTag(tag)">&times;</span>
-                </span>
-              </div>
-            </div>
-
-            <!-- Date Range -->
-            <div class="cpub-adv-section">
-              <label class="cpub-adv-label">Date Range</label>
-              <input v-model="dateFrom" class="cpub-adv-input" type="text" placeholder="From: yyyy-mm-dd" />
-              <input v-model="dateTo" class="cpub-adv-input" type="text" placeholder="To: yyyy-mm-dd" />
-            </div>
-
-            <!-- Author / Community -->
-            <div class="cpub-adv-section">
-              <label class="cpub-adv-label">Author</label>
-              <input v-model="authorFilter" class="cpub-adv-input" type="text" placeholder="Username or name&hellip;" />
-              <label class="cpub-adv-label" style="margin-top: 10px">Community</label>
-              <input v-model="communityFilter" class="cpub-adv-input" type="text" placeholder="Community name&hellip;" />
-            </div>
-
-            <!-- Actions -->
-            <div class="cpub-adv-actions">
-              <button class="cpub-btn cpub-btn-primary cpub-btn-sm">
-                <i class="fa-solid fa-check"></i> Apply Filters
-              </button>
-              <button class="cpub-btn cpub-btn-ghost cpub-btn-sm" @click="clearAll">
-                Clear All
-              </button>
-            </div>
-          </div>
-        </div>
+        <SearchFilters
+          v-if="advOpen"
+          v-model:diff-filters="diffFilters"
+          v-model:active-tags="activeTags"
+          v-model:date-from="dateFrom"
+          v-model:date-to="dateTo"
+          v-model:author-filter="authorFilter"
+          v-model:community-filter="communityFilter"
+          @apply="applyFilters"
+          @clear="clearAll"
+        />
 
         <!-- RESULTS HEADER -->
         <div v-if="query" class="cpub-results-header">
@@ -295,15 +265,38 @@ const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[]
           </div>
 
           <!-- PAGINATION -->
-          <div class="cpub-pagination">
-            <button class="cpub-page-btn cpub-page-wide" aria-label="Previous page">
+          <div v-if="totalPages > 1" class="cpub-pagination">
+            <button
+              class="cpub-page-btn cpub-page-wide"
+              :disabled="page <= 1"
+              aria-label="Previous page"
+              @click="page = Math.max(1, page - 1)"
+            >
               <i class="fa-solid fa-chevron-left" style="font-size: 10px"></i>
             </button>
-            <button class="cpub-page-btn active">1</button>
-            <button class="cpub-page-btn">2</button>
-            <button class="cpub-page-btn">3</button>
-            <span class="cpub-page-ellipsis">&hellip;</span>
-            <button class="cpub-page-btn cpub-page-wide" aria-label="Next page">
+            <template v-if="visiblePages[0] > 1">
+              <button class="cpub-page-btn" @click="page = 1">1</button>
+              <span v-if="visiblePages[0] > 2" class="cpub-page-ellipsis">&hellip;</span>
+            </template>
+            <button
+              v-for="p in visiblePages"
+              :key="p"
+              class="cpub-page-btn"
+              :class="{ active: page === p }"
+              @click="page = p"
+            >
+              {{ p }}
+            </button>
+            <template v-if="visiblePages[visiblePages.length - 1] < totalPages">
+              <span v-if="visiblePages[visiblePages.length - 1] < totalPages - 1" class="cpub-page-ellipsis">&hellip;</span>
+              <button class="cpub-page-btn" @click="page = totalPages">{{ totalPages }}</button>
+            </template>
+            <button
+              class="cpub-page-btn cpub-page-wide"
+              :disabled="page >= totalPages"
+              aria-label="Next page"
+              @click="page = Math.min(totalPages, page + 1)"
+            >
               <i class="fa-solid fa-chevron-right" style="font-size: 10px"></i>
             </button>
           </div>
@@ -317,74 +310,16 @@ const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[]
       </div>
 
       <!-- ── SIDEBAR ── -->
-      <aside class="cpub-sidebar-col">
-        <!-- Trending Searches -->
-        <div class="cpub-sb-block">
-          <div class="cpub-sb-heading">Trending Searches</div>
-          <ul class="cpub-pop-search-list">
-            <li
-              v-for="(item, idx) in trendingSearches?.slice(0, 8) ?? []"
-              :key="idx"
-              class="cpub-pop-search-item"
-              @click="query = item.query"
-            >
-              <span class="cpub-pop-rank" :class="{ top: idx < 3 }">{{ idx + 1 }}</span>
-              <span class="cpub-pop-query">{{ item.query }}</span>
-              <span v-if="item.trend" class="cpub-pop-trend" :class="item.trend > 0 ? 'trend-up' : 'trend-down'">
-                <i :class="item.trend > 0 ? 'fa-solid fa-arrow-trend-up' : 'fa-solid fa-minus'" style="font-size: 9px"></i>
-                <template v-if="item.trend > 0">+{{ item.trend }}%</template>
-              </span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Suggested Tags -->
-        <div class="cpub-sb-block">
-          <div class="cpub-sb-heading">Suggested Tags</div>
-          <div class="cpub-tag-cloud">
-            <span
-              v-for="tag in suggestedTags"
-              :key="tag"
-              class="cpub-s-tag"
-              :class="{ active: activeTags.includes(tag) }"
-              @click="toggleSidebarTag(tag)"
-            >
-              {{ tag }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Browse by Category -->
-        <div class="cpub-sb-block">
-          <div class="cpub-sb-heading">Browse by Category</div>
-          <p class="cpub-no-results-note">Not finding what you need? Try browsing a category directly.</p>
-          <div class="cpub-cat-grid">
-            <div v-for="cat in categories" :key="cat.label" class="cpub-cat-cell">
-              <span class="cpub-cat-icon"><i :class="cat.icon"></i></span>
-              <span class="cpub-cat-label">{{ cat.label }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Related Communities -->
-        <div v-if="relatedCommunities?.items?.length" class="cpub-sb-block">
-          <div class="cpub-sb-heading">Related Communities</div>
-          <div class="cpub-related-hubs">
-            <div v-for="hub in relatedCommunities.items" :key="hub.id" class="cpub-related-hub-item">
-              <div class="cpub-related-hub-icon">
-                <i class="fa-solid fa-users"></i>
-              </div>
-              <div class="cpub-related-hub-info">
-                <NuxtLink :to="`/hubs/${hub.slug}`" class="cpub-related-hub-name">{{ hub.name }}</NuxtLink>
-                <div class="cpub-related-hub-members">{{ hub.memberCount ?? 0 }} members</div>
-              </div>
-              <button class="cpub-btn-join-sm">
-                <i class="fa-solid fa-plus" style="font-size: 8px"></i> Join
-              </button>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <SearchSidebar
+        :active-tags="activeTags"
+        :suggested-tags="suggestedTags"
+        :categories="categories"
+        :trending-searches="trendingSearches"
+        :related-hubs="relatedCommunities?.items ?? []"
+        @search="(q) => query = q"
+        @toggle-tag="toggleSidebarTag"
+        @set-category="setCategory"
+      />
     </div>
   </div>
 </template>
@@ -607,152 +542,7 @@ const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[]
   justify-content: center;
 }
 
-/* ── ADVANCED FILTERS PANEL ── */
-.cpub-adv-panel {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-top: none;
-  padding: 24px 32px 28px;
-  margin-bottom: 24px;
-  box-shadow: 4px 4px 0 var(--border);
-}
-
-.cpub-adv-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr) auto;
-  gap: 20px;
-  align-items: start;
-}
-
-.cpub-adv-label {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-faint);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 10px;
-}
-
-.cpub-checkbox-group { display: flex; flex-direction: column; gap: 7px; }
-
-.cpub-check-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.cpub-check-item input[type="checkbox"] {
-  width: 13px;
-  height: 13px;
-  accent-color: var(--accent);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.cpub-check-item span {
-  font-size: 12px;
-  color: var(--text-dim);
-  user-select: none;
-}
-
-.cpub-check-item input:checked + span { color: var(--text); }
-
-.cpub-adv-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 2px solid var(--border);
-  padding: 7px 10px;
-  font-size: 12px;
-  color: var(--text);
-  font-family: system-ui, -apple-system, sans-serif;
-  outline: none;
-  margin-bottom: 6px;
-  transition: border-color 0.15s;
-}
-
-.cpub-adv-input:focus { border-color: var(--accent); }
-.cpub-adv-input::placeholder { color: var(--text-faint); }
-
-.cpub-tag-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 6px;
-}
-
-.cpub-tag-chip {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 3px 8px;
-  border: 2px solid var(--border2);
-  background: var(--surface2);
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: default;
-}
-
-.cpub-tag-chip.active {
-  background: var(--accent-bg);
-  border-color: var(--accent-border);
-  color: var(--accent);
-}
-
-.cpub-rm {
-  font-size: 11px;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.cpub-adv-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  justify-content: flex-end;
-  padding-top: 20px;
-}
-
-.cpub-btn {
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 12px;
-  padding: 7px 16px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-  white-space: nowrap;
-}
-
-.cpub-btn:hover { background: var(--surface3); }
-
-.cpub-btn-primary {
-  background: var(--accent);
-  color: var(--color-text-inverse);
-  box-shadow: 2px 2px 0 var(--border);
-}
-
-.cpub-btn-primary:hover { box-shadow: 4px 4px 0 var(--border); }
-
-.cpub-btn-ghost {
-  background: transparent;
-  border-color: transparent;
-  color: var(--text-faint);
-}
-
-.cpub-btn-ghost:hover { color: var(--text-dim); background: transparent; }
-
-.cpub-btn-sm {
-  font-size: 11px;
-  font-family: var(--font-mono);
-}
+/* Advanced filter panel and sidebar styles moved to SearchFilters.vue and SearchSidebar.vue */
 
 /* ── RESULTS HEADER ── */
 .cpub-results-header {
@@ -807,283 +597,9 @@ const { data: relatedCommunities } = await useFetch<{ items: CommunityListItem[]
   grid-template-columns: 1fr;
 }
 
-/* ── EMPTY STATE ── */
-.cpub-empty-state {
-  text-align: center;
-  padding: 48px 24px;
-}
-
-.cpub-empty-state-icon {
-  font-size: 32px;
-  color: var(--text-faint);
-  margin-bottom: 12px;
-}
-
-.cpub-empty-state-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-dim);
-  margin-bottom: 6px;
-}
-
-.cpub-empty-state-desc {
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
-/* ── PAGINATION ── */
-.cpub-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 8px;
-  margin-bottom: 16px;
-}
-
-.cpub-page-btn {
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text-dim);
-  font-size: 12px;
-  font-family: var(--font-mono);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-}
-
-.cpub-page-btn:hover {
-  color: var(--text);
-  background: var(--surface2);
-}
-
-.cpub-page-btn.active {
-  border-color: var(--accent);
-  background: var(--accent-bg);
-  color: var(--accent);
-  box-shadow: 2px 2px 0 var(--border);
-}
-
+/* ── PAGINATION (page-specific override) ── */
 .cpub-page-wide { width: auto; padding: 0 12px; }
 
-.cpub-page-ellipsis {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  color: var(--text-faint);
-  font-family: var(--font-mono);
-}
-
-/* ── SIDEBAR ── */
-.cpub-sb-block {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  padding: 20px;
-  margin-bottom: 18px;
-  box-shadow: 4px 4px 0 var(--border);
-}
-
-.cpub-sb-heading {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: var(--text-faint);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--border);
-}
-
-/* Trending Searches */
-.cpub-pop-search-list { list-style: none; }
-
-.cpub-pop-search-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border2);
-  cursor: pointer;
-}
-
-.cpub-pop-search-item:last-child { border-bottom: none; }
-
-.cpub-pop-rank {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-faint);
-  min-width: 16px;
-  text-align: right;
-}
-
-.cpub-pop-rank.top { color: var(--accent); }
-
-.cpub-pop-query {
-  flex: 1;
-  font-size: 12px;
-  color: var(--text-dim);
-  transition: color 0.15s;
-}
-
-.cpub-pop-search-item:hover .cpub-pop-query { color: var(--text); }
-
-.cpub-pop-trend {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.trend-up { color: var(--green); }
-.trend-down { color: var(--text-faint); }
-
-/* Suggested Tags */
-.cpub-tag-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.cpub-s-tag {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 4px 10px;
-  border: 2px solid var(--border);
-  background: var(--surface2);
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.cpub-s-tag:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-bg);
-}
-
-.cpub-s-tag.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-bg);
-}
-
-/* Categories */
-.cpub-no-results-note {
-  font-size: 11px;
-  color: var(--text-faint);
-  margin-bottom: 12px;
-  line-height: 1.55;
-}
-
-.cpub-cat-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-.cpub-cat-cell {
-  background: var(--surface2);
-  border: 2px solid var(--border);
-  padding: 10px;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  text-align: center;
-}
-
-.cpub-cat-cell:hover {
-  border-color: var(--accent);
-  background: var(--surface3);
-}
-
-.cpub-cat-icon {
-  font-size: 18px;
-  margin-bottom: 4px;
-  display: block;
-}
-
-.cpub-cat-label {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-faint);
-  line-height: 1.3;
-}
-
-/* Related Communities */
-.cpub-related-hubs {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cpub-related-hub-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border2);
-  cursor: pointer;
-}
-
-.cpub-related-hub-item:last-child { border-bottom: none; }
-
-.cpub-related-hub-icon {
-  font-size: 20px;
-  width: 32px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.cpub-related-hub-info { flex: 1; min-width: 0; }
-
-.cpub-related-hub-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 1px;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-decoration: none;
-}
-
-.cpub-related-hub-name:hover { color: var(--accent); }
-
-.cpub-related-hub-members {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-faint);
-}
-
-.cpub-btn-join-sm {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 3px 8px;
-  border: 2px solid var(--border);
-  background: var(--green-bg);
-  color: var(--green);
-  cursor: pointer;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  box-shadow: 1px 1px 0 var(--border);
-  transition: all 0.15s;
-}
-
-.cpub-btn-join-sm:hover {
-  background: var(--green-bg);
-  box-shadow: 2px 2px 0 var(--border);
-}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {

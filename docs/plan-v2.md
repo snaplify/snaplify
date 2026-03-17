@@ -704,30 +704,30 @@ For every `@commonpub/ui` component:
 ### 6.1 — Security
 - [x] CSP headers (implemented in security.ts)
 - [x] Rate limiting (implemented, needs per-endpoint tuning)
-- [ ] Input sanitization: DOMPurify on all editor HTML output before storage
-- [ ] File upload validation: MIME type whitelist, max size (10MB images, 100MB files)
-- [ ] CORS: configure allowed origins in config
+- [x] Input sanitization: DOMPurify on editor HTML output (session 036)
+- [x] File upload validation: MIME type whitelist, max size (session 036)
+- [x] CORS: configured in nuxt.config.ts routeRules (session 040)
 - [ ] Session rotation on role/status change
-- [ ] Audit log for all admin actions (mostly done)
+- [x] Audit log for all admin actions
 
 ### 6.2 — Performance
 - [ ] DB indexes (Phase 1.3)
 - [ ] Connection pooling (Drizzle pool config or PgBouncer)
 - [ ] Cache headers: immutable for hashed assets, stale-while-revalidate for public content
 - [ ] Lazy-load: editors, explainer interactives, heavy components
-- [ ] Image optimization: WebP, responsive sizes (Phase 2.2)
-- [ ] Pagination: enforced on all list endpoints (Phase 3.3)
+- [x] Image optimization: WebP variants via sharp (session 036)
+- [x] Pagination: enforced on search, videos, content listings (session 040)
 - [ ] Meilisearch: for search pages when Postgres FTS becomes bottleneck
 
 ### 6.3 — Email
-- [ ] Transactional email adapter interface (SMTP, SendGrid, Postmark, SES)
-- [ ] Email verification on signup
-- [ ] Password reset flow
+- [x] Email adapter interface via Better Auth emailSender callbacks (session 039)
+- [x] Email verification on signup (session 039 — ConsoleEmailAdapter for dev)
+- [x] Password reset flow (session 039 — forgot-password/reset-password pages)
 - [ ] Notification digest emails (daily/weekly configurable per user)
 - [ ] Contest announcement emails
 - [ ] Certificate issuance emails
 - [ ] Simple template system (header + body + footer, CSS inline)
-- [ ] Configured via `commonpub.config.ts` email settings
+- [ ] Production email provider (Resend/SendGrid/SES)
 
 ### 6.4 — Observability
 - [ ] Structured logging (pino)
@@ -737,20 +737,21 @@ For every `@commonpub/ui` component:
 - [ ] Readiness check: DB connection + migration status
 
 ### 6.5 — Deployment
-- [ ] Docker Compose: Postgres 16 + Redis/Valkey + Meilisearch + app
-- [ ] `.env.example` with all required variables documented
+- [x] Docker Compose: Postgres 16 + Redis + Meilisearch (deploy/docker-compose.yml)
+- [x] `.env.example` with all required variables documented
 - [ ] Migration runner in CI pipeline
 - [ ] Backup/restore scripts for Postgres
-- [ ] Nginx config with SSL termination
+- [x] Nginx config with SSL termination (deploy/nginx.conf)
 - [ ] Systemd service file for bare-metal deploys
 
 ### 6.6 — Documentation
 - [ ] OpenAPI spec auto-generated from Zod schemas
-- [ ] Self-hosting guide (Docker + bare-metal)
-- [ ] Contributing guide (how to add a new content type, new hub type, new block type)
-- [ ] ADRs for: hub model, product catalog, BOM normalization, storage adapter
-- [ ] CommonPub config reference (all feature flags, all settings)
-- [ ] API endpoint reference
+- [x] Self-hosting guide (docs/deployment.md — Docker, DO App Platform, Supabase, generic Docker)
+- [x] Contributing guide (docs/contributing.md)
+- [x] Reference documentation (docs/reference/ — 30+ files covering all packages, server modules, guides)
+- [x] ADRs 001-026 covering all major architectural decisions
+- [x] Feature flags reference (docs/reference/guides/feature-flags.md)
+- [ ] API endpoint reference (auto-generated)
 
 ---
 
@@ -857,11 +858,12 @@ This is the path to the Hackster killer feature. Everything else can be parallel
 
 ---
 
-## CLAUDE.md Updates Required
+## CLAUDE.md Updates — DONE
 
-After Phase 1 Step A:
-- Rule #6: Change from "Hub is retired" → "Hub is the umbrella concept with types: community, product, company"
-- Add rule: "Products are normalized entities in the `products` table, not JSONB blobs"
-- Add rule: "No `guide` content type — use article or explainer"
-- Update architecture table: `community` → `hub` package references
-- Update file naming: `community.ts` → `hub.ts`
+All updates applied in sessions 028-040:
+- [x] Rule #6: "Hub is the umbrella concept" with three types
+- [x] Products in `products` table, not JSONB
+- [x] No `guide` content type
+- [x] Architecture table updated
+- [x] File naming updated (community.ts → hub.ts)
+- [x] Plan reference updated to plan-v2.md

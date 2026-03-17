@@ -4,8 +4,14 @@ import { username } from 'better-auth/plugins';
 import * as schema from '@commonpub/schema';
 import type { CreateAuthOptions } from './types.js';
 
+/** Callback type for sending auth-related emails */
+export interface AuthEmailSender {
+  sendVerificationEmail?: (email: string, url: string, token: string) => Promise<void>;
+  sendResetPasswordEmail?: (email: string, url: string, token: string) => Promise<void>;
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function createAuth({ config, db, secret, baseURL }: CreateAuthOptions) {
+export function createAuth({ config, db, secret, baseURL, emailSender }: CreateAuthOptions & { emailSender?: AuthEmailSender }) {
   const plugins = [username()];
 
   const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {};
@@ -45,7 +51,20 @@ export function createAuth({ config, db, secret, baseURL }: CreateAuthOptions) {
     },
     emailAndPassword: {
       enabled: config.auth.emailPassword,
+      sendResetPassword: emailSender?.sendResetPasswordEmail
+        ? async ({ user, url, token }) => {
+            await emailSender.sendResetPasswordEmail!(user.email, url, token);
+          }
+        : undefined,
     },
+    emailVerification: emailSender?.sendVerificationEmail
+      ? {
+          sendVerificationEmail: async ({ user, url, token }) => {
+            await emailSender.sendVerificationEmail!(user.email, url, token);
+          },
+          sendOnSignUp: true,
+        }
+      : undefined,
     session: {
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,

@@ -13,6 +13,8 @@
     "dev:infra": "docker compose up -d",
     "dev:app": "turbo run dev --filter=@commonpub/reference",
     "db:push": "pnpm --filter @commonpub/schema db:push",
+    "db:generate": "pnpm --filter @commonpub/schema drizzle-kit generate",
+    "db:migrate": "pnpm --filter @commonpub/schema drizzle-kit migrate",
     "test": "turbo run test",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",

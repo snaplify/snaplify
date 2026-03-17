@@ -1,123 +1,174 @@
-# Session 037 — Full Architecture Audit & Handoff
+# Session 037→041 — Full Architecture Audit & Handoff
 
-Date: 2026-03-16
+Date: 2026-03-16 → 2026-03-17
 
-## Critical Fix This Session
+## Current State (Session 041)
 
-**Block components were rendering as empty HTML elements.** `<component :is="'EditorsBlocksTextBlock'">` with a string doesn't work in Nuxt — auto-imports are compile-time only, not registered in Vue's runtime global registry. Fixed by direct ES module imports of all 14 block components in BlockCanvas.vue. Also fixed DOMPurify sanitizer using `require()` in ESM context — changed to async `import()`.
+**Tests:** 894/894 passing, 89 files, zero failures
+**Build:** All 13 packages build cleanly
 
-## Full Audit Results
+### What Was Done (Sessions 037-041)
 
-### Numbers
-- **45** pages — all present and functional (100%)
-- **122** API endpoints — 28/31 from plan Phase 3.1 implemented (90%)
-- **14** block type components — all with direct imports now
-- **4** specialized editors + **4** specialized view components
-- **50** DB tables, **17** indexes
-- **1,021+** tests pass
-- **11** build tasks, **12** test tasks — all green
+**037:** Fixed block editor (direct ES imports, not string names), DOMPurify async fix, full architecture audit
+**040:** Full sweep — 25+ broken flows fixed, toast system, all buttons wired, pagination, learn editor built, docs cleaned up
+**041:** Completed all remaining phases — integration tests (6/6 suites), shared CSS dedup, error handling migration, hardcoded color audit, nodeinfo test fix, `/api/users` endpoint
 
-### What's Actually Working End-to-End
-- Content CRUD (create/edit/save/publish/view) for all 4 types
-- Block editor with slash commands, floating toolbar, auto-save, keyboard nav
-- Product catalog + BOM autocomplete in parts list + gallery queries
-- Hub system with 3 types (community/product/company) + type-switched tabs
-- Learning paths with enrollment, progress, certificates
-- Docs sites with pages, navigation, search, versioning
-- Contests with state machine, entries, judging
-- Social (likes, comments, bookmarks, follows, reports)
-- File uploads with image processing (sharp WebP thumbnails)
-- Storage adapter (local filesystem or S3/DO Spaces/MinIO via env)
-- Dashboard with content/bookmarks/learning tabs
-- Notifications (SSE stream), messages (polling)
-- Federation infrastructure (AP actors, WebFinger, NodeInfo, RSS, sitemap)
-- Profile editor matching mockup (banner/avatar upload, skills, social links, experience)
-- Admin panel (users, reports, audit, settings, content moderation)
+### Pages (50+ total — ALL functional)
+```
+/                           Homepage with hero, feed, contests, stats
+/explore                    Discovery with content/hubs/learn/people tabs
+/search                     Global search with advanced filters + pagination
+/feed                       Authenticated user's feed
+/about                      About page
+/create                     Content type selector
+/dashboard                  Stats, content/bookmarks/learning tabs
 
-### What's Missing vs hack-build Reference
+/[type]/index               Content listing by type
+/[type]/[slug]              Content view (4 specialized views)
+/[type]/[slug]/edit         Content editor (4 specialized editors + auto-save)
 
-| hack-build Feature | CommonPub Status |
-|-------------------|-----------------|
-| 13 block types | 14 block types (we have more) |
-| MarkdownBlock | ❌ Missing |
-| ExplainerSectionBlock (collapsible) | ❌ Missing |
-| GalleryBlock (multi-image grid) | ⚠️ Mapped to ImageBlock |
-| Pinia editor store | Using composable instead (equivalent) |
-| Password recovery flow | ❌ Missing pages |
-| Email verification flow | ❌ Missing pages |
-| Contest judge page | ❌ Missing (API exists) |
-| Admin featured management | ❌ Missing page |
-| 25+ pages | 45 pages (we have more) |
-| 27 DB tables | 50 DB tables (we have more) |
-| Docs site | ✅ We have it, they don't |
-| Federation | ✅ We have it, they don't |
+/hubs/index                 Hub listing
+/hubs/create                Hub creation
+/hubs/[slug]                Hub detail (3 type variants)
+/hubs/[slug]/members        Members management
+/hubs/[slug]/settings       Hub settings (full form)
 
-### Editor Gaps vs Mockups
+/learn/index                Learning paths
+/learn/create               Path creation
+/learn/[slug]               Path detail with modules
+/learn/[slug]/edit          Path editor (module/lesson CRUD)
+/learn/[slug]/[lessonSlug]  Lesson viewer with progress tracking
 
-**ALL editors missing:**
-- Canvas toolbar (zoom controls, viewport toggles, block navigation)
-- Assets/Files tab in left panel
+/contests/index             Contest listing
+/contests/[slug]            Contest detail with entries
+/contests/[slug]/judge      Judge scoring interface
 
-**Article editor (~60% vs mockup):**
-- Missing: Structure tab, Assets tab, search in block library
+/docs/index                 Docs sites listing
+/docs/[siteSlug]            Docs site home
+/docs/[siteSlug]/edit       Docs editor
+/docs/[siteSlug]/[...path]  Docs page viewer
 
-**Blog editor (~50% vs mockup):**
-- Missing: Title/subtitle editable fields in canvas, author byline section, author/social sections in right panel
+/videos/index               Video listing with categories + pagination
+/videos/[id]                Video detail with embed
 
-**Explainer editor (~75% vs mockup):**
-- Missing: Assets tab
+/messages/index             Conversations list
+/messages/[conversationId]  Message thread with participant names
 
-**Project editor (~90% vs mockup):**
-- Matches well — has parts list, difficulty, build time, checklist
+/notifications              Notification list with tabs
+/u/[username]               User profile (Follow/Message/Share/Menu all wired)
+/tags/[slug]                Tag content listing
 
-**Profile editor (100% vs mockup):**
-- Fully matches at `settings/profile.vue`
+/auth/login                 Login (with redirect param)
+/auth/register              Registration (with email verification flow)
+/auth/forgot-password       Password recovery
+/auth/reset-password        Password reset
+/auth/verify-email          Email verification
 
-### Missing API Endpoints (4)
-1. `POST /api/videos/categories` — admin create category
-2. `PUT /api/videos/categories/:id` — admin update category
-3. `DELETE /api/videos/categories/:id` — admin delete category
-4. `GET /api/content/:id/versions/:versionId` — get specific version
+/settings/index             Settings home
+/settings/profile           Profile editor (matches mockup)
+/settings/account           Account settings
+/settings/notifications     Notification preferences
+/settings/appearance        Theme settings
 
-### Missing Pages
-- `/forgot-password` — password recovery
-- `/reset-password` — password reset via token
-- `/verify-email` — email verification
-- Contest judge page (dedicated UI for scoring entries)
-- Admin featured management page
-- Video hub page (per mockup `16-video-hub.html`)
-- Learning certificate page
+/admin/index                Admin dashboard
+/admin/users                User management
+/admin/content              Content moderation
+/admin/reports              Report handling
+/admin/audit                Audit log
+/admin/settings             Instance settings
 
-### What's Deferred (Correctly)
-- Federation delivery (per rule #10)
-- Meilisearch integration
-- WebSocket messaging (have polling)
-- Editor consolidation (Phase 4.4 — EditorShell exists, not wired)
+error.vue                   Custom error page
+```
 
-## Priority Order for Next Work
+### API Endpoints (123+ total)
+All CRUD for: content, hubs, products, contests, learning, docs, videos, messages, notifications, social (likes/comments/bookmarks/follows/reports), files, admin, profile, users, search, stats, health.
 
-### P0 — Blocking
-1. ~~Save clears content~~ — Fixed (component resolution + sanitizer)
+Federation routes: `.well-known/nodeinfo`, `.well-known/webfinger`, `nodeinfo/2.1`, AP actor endpoints, inbox/outbox stubs, RSS feeds (3), sitemap, robots.txt.
 
-### P1 — Editor Functionality
-2. Blog editor: add title/subtitle/byline fields in canvas
-3. Article editor: add Structure tab
-4. All editors: search in block library (EditorBlocks already has search UI but it may not filter the left panel vs the picker)
+### Components (54 total)
+**Block editor (14 block types):**
+TextBlock, HeadingBlock, CodeBlock, ImageBlock, QuoteBlock, CalloutBlock, DividerBlock, VideoBlock, EmbedBlock, PartsListBlock, BuildStepBlock, ToolListBlock, DownloadsBlock, QuizBlock
 
-### P2 — Missing Core Pages
-5. Password recovery + reset pages
-6. Email verification page
-7. Contest judge page
+**Editor infrastructure (8):**
+BlockCanvas, BlockWrapper, BlockInsertZone, BlockPicker, EditorBlocks, EditorSection, EditorTagInput, EditorVisibility
 
-### P3 — Missing API
-8. Video category CRUD (3 endpoints)
-9. Get specific content version endpoint
+**Specialized editors (4):**
+ArticleEditor, BlogEditor, ExplainerEditor, ProjectEditor
 
-### P4 — Feature Parity with hack-build
-10. MarkdownBlock (full markdown editor)
-11. GalleryBlock (multi-image grid, not just single image)
+**View components (4):**
+ArticleView, BlogView, ExplainerView, ProjectView
 
-### P5 — Polish
-12. Canvas toolbar (zoom, viewport toggles)
-13. Assets tab in editors
-14. Editor consolidation into EditorShell
+**General components (26):**
+AnnouncementBand, AppToast, AuthorCard, AuthorRow, CommentSection, ContentCard, ContentTypeBadge, CountdownTimer, CpubEditor, DiscussionItem, EngagementBar, FeedItem, FilterChip, GalleryBlock, HeatmapGrid, MemberCard, MessageThread, NotificationItem, ProgressTracker, SectionHeader, SkillBar, SortSelect, StatBar, TOCNav, TimelineItem, VideoCard
+
+### Server Package (20 modules)
+admin, content, contest, docs, email, federation, hub, learning, messaging, notification, oauthCodes, product, profile, security, social, storage, image, theme, types, utils
+
+### Integration Test Suites (6)
+content (10 tests), hub (7), social (8), product (8), learning (11, 5 skipped PGlite), contest (9)
+
+### Infrastructure
+- **Toast system:** `useToast()` composable + `AppToast` component in default layout
+- **Error handling:** `useApiError()` composable — all pages use toast for errors (auth pages keep inline)
+- **Shared CSS:** `packages/ui/theme/components.css` — buttons, tags, empty states, pagination, links, back-link, hero-eyebrow, forms, dividers, section headers
+- **Zero hardcoded colors** in pages/components (only `error.vue` has CSS var fallbacks)
+- **Block editor:** Direct ES module imports in BlockCanvas (NOT string names)
+- **Storage:** `createStorageFromEnv()` — local or S3/DO Spaces via env vars
+- **Image processing:** sharp generates WebP variants (150/300/600/1200px)
+- **BOM sync:** PartsListBlock autocomplete → content_products join table → product hub gallery
+
+### What's Missing — Honest Assessment
+
+**Editor gaps vs mockups:**
+| Editor | % Done | What's Missing |
+|--------|--------|---------------|
+| Project | 90% | Canvas toolbar |
+| Explainer | 75% | Assets tab, canvas toolbar |
+| Article | 60% | Structure tab, Assets tab, canvas toolbar |
+| Blog | 50% | Title/subtitle in canvas, byline, author/social in right panel |
+| Profile | 100% | Fully matches mockup |
+
+**Canvas toolbar** (missing from all editors): zoom, viewport toggles, block nav. Cosmetic only.
+
+**Missing from plan (optional):**
+- Video category CRUD admin endpoints (3)
+- Migrations SQL (config ready, needs running Postgres)
+- Page decomposition (large pages work, just verbose)
+- OpenAPI spec generation
+- WebSocket for real-time messaging (have polling + SSE)
+- Editor consolidation into config-driven EditorShell
+
+### Key Architecture Decisions
+
+1. **Block storage:** `BlockTuple[] = [type, content][]` — ephemeral `id` added at runtime for Vue keys
+2. **Block rendering:** Direct ES module imports (only pattern that works with Nuxt auto-imports + `<component :is>`)
+3. **Storage:** env-driven — S3_BUCKET → S3, else → local filesystem
+4. **BOM → Gallery:** PartsListBlock autocomplete → content_products join → product hub gallery
+5. **CommentSection/EngagementBar:** `targetType` + `targetId` props (generic across content, posts, lessons)
+6. **Federation:** Infrastructure ready, delivery disabled per CLAUDE.md rule #10
+
+### Files to Read in Next Session
+
+**Must-read:**
+- `CLAUDE.md` — standing rules
+- `docs/plan-v2.md` — master plan
+- `docs/sessions/037-full-audit-handoff.md` — THIS FILE
+- `packages/ui/theme/components.css` — shared CSS primitives
+
+**Architecture:**
+- `packages/server/src/index.ts` — all server exports
+- `packages/schema/src/index.ts` — all schema exports
+- `apps/reference/composables/useBlockEditor.ts` — block editor state
+- `apps/reference/components/editors/BlockCanvas.vue` — editor canvas
+- `apps/reference/pages/[type]/[slug]/edit.vue` — editor page
+
+**Mockups (source of truth):**
+- `prime-mockups/unified-v2/00-design-system.html` — CSS variables, fonts, colors
+- `prime-mockups/unified-v2/03-editor-article.html` — article editor layout
+- `prime-mockups/unified-v2/04-editor-blog.html` — blog editor layout
+- `prime-mockups/unified-v2/05-editor-explainer.html` — explainer editor layout
+- `prime-mockups/unified-v2/06-editor-project.html` — project editor layout
+
+**Reference app (feature reference only, not framework code):**
+- `../hack-build/convex/schema.ts` — 27-table schema
+- `../hack-build/app/src/stores/editor.store.ts` — editor state management

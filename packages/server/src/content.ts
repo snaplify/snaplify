@@ -1,5 +1,5 @@
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { contentItems, contentVersions, tags, contentTags, users } from '@commonpub/schema';
+import { contentItems, contentVersions, tags, contentTags, users, follows } from '@commonpub/schema';
 import type { CommonPubConfig } from '@commonpub/config';
 import type {
   DB,
@@ -163,6 +163,8 @@ export async function getContentBySlug(
         username: users.username,
         displayName: users.displayName,
         avatarUrl: users.avatarUrl,
+        bio: users.bio,
+        headline: users.headline,
       },
     })
     .from(contentItems)
@@ -180,19 +182,55 @@ export async function getContentBySlug(
     return null;
   }
 
-  // Fetch tags
-  const itemTags = await db
-    .select({
-      id: tags.id,
-      name: tags.name,
-      slug: tags.slug,
-    })
-    .from(contentTags)
-    .innerJoin(tags, eq(contentTags.tagId, tags.id))
-    .where(eq(contentTags.contentId, item.id));
+  // Fetch tags, author stats, and related content in parallel
+  const [itemTags, followerCountResult, articleCountResult, totalViewsResult, relatedRows] = await Promise.all([
+    db
+      .select({ id: tags.id, name: tags.name, slug: tags.slug })
+      .from(contentTags)
+      .innerJoin(tags, eq(contentTags.tagId, tags.id))
+      .where(eq(contentTags.contentId, item.id)),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(follows)
+      .where(eq(follows.followingId, row.author.id)),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(contentItems)
+      .where(and(eq(contentItems.authorId, row.author.id), eq(contentItems.status, 'published'))),
+    db
+      .select({ total: sql<number>`coalesce(sum(${contentItems.viewCount}), 0)::int` })
+      .from(contentItems)
+      .where(eq(contentItems.authorId, row.author.id)),
+    db
+      .select({
+        id: contentItems.id,
+        type: contentItems.type,
+        slug: contentItems.slug,
+        title: contentItems.title,
+        viewCount: contentItems.viewCount,
+        coverImageUrl: contentItems.coverImageUrl,
+      })
+      .from(contentItems)
+      .where(
+        and(
+          eq(contentItems.type, item.type),
+          eq(contentItems.status, 'published'),
+          sql`${contentItems.id} != ${item.id}`,
+        ),
+      )
+      .orderBy(desc(contentItems.publishedAt))
+      .limit(3),
+  ]);
+
+  const enrichedAuthor = {
+    ...row.author,
+    followerCount: followerCountResult[0]?.count ?? 0,
+    articleCount: articleCountResult[0]?.count ?? 0,
+    totalViews: totalViewsResult[0]?.total ?? 0,
+  };
 
   return {
-    ...mapToListItem(item, row.author),
+    ...mapToListItem(item, enrichedAuthor),
     subtitle: item.subtitle,
     content: item.content,
     category: item.category,
@@ -207,6 +245,8 @@ export async function getContentBySlug(
     forkCount: item.forkCount,
     updatedAt: item.updatedAt,
     tags: itemTags,
+    author: enrichedAuthor,
+    related: relatedRows,
   };
 }
 

@@ -2,7 +2,7 @@
 
 > CSP directive builder, security headers, and Nitro server middleware with per-request nonce support.
 
-**Source**: `apps/reference/src/lib/server/security.ts`
+**Source**: `packages/server/src/security.ts`
 
 ---
 

@@ -143,7 +143,7 @@ docker pull ghcr.io/commonpub/commonpub:latest
 
 | Variable              | Description                   | Default |
 | --------------------- | ----------------------------- | ------- |
-| `FEATURE_COMMUNITIES` | Enable community features     | `true`  |
+| `FEATURE_HUBS`        | Enable hub features (community/product/company) | `true`  |
 | `FEATURE_DOCS`        | Enable docs module            | `true`  |
 | `FEATURE_LEARNING`    | Enable learning paths         | `true`  |
 | `FEATURE_EXPLAINERS`  | Enable interactive explainers | `true`  |

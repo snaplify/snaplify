@@ -161,7 +161,7 @@ const AP_PUBLIC = 'https://www.w3.org/ns/activitystreams#Public';
 
 | Type | TypeScript Type | Maps To |
 |------|----------------|---------|
-| Article | `APArticle` | project, article, guide, blog |
+| Article | `APArticle` | project, article, blog, explainer |
 | Note | `APNote` | comments, short posts |
 | Tombstone | `APTombstone` | deleted content |
 

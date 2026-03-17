@@ -81,7 +81,7 @@ const totalPrice = computed(() => {
 const activeAutocomplete = ref(-1);
 const autocompleteResults = ref<ProductResult[]>([]);
 const autocompleteLoading = ref(false);
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 
 function onNameInput(index: number, value: string): void {
   updatePart(index, 'name', value);
@@ -91,7 +91,7 @@ function onNameInput(index: number, value: string): void {
     clearProductLink(index);
   }
 
-  if (debounceTimer) clearTimeout(debounceTimer);
+  if (debounceTimer.value) clearTimeout(debounceTimer.value);
 
   if (value.length < 2) {
     autocompleteResults.value = [];
@@ -100,7 +100,7 @@ function onNameInput(index: number, value: string): void {
   }
 
   activeAutocomplete.value = index;
-  debounceTimer = setTimeout(async () => {
+  debounceTimer.value = setTimeout(async () => {
     autocompleteLoading.value = true;
     try {
       const data = await $fetch<{ items: ProductResult[] }>('/api/products', {
@@ -153,6 +153,7 @@ function onNameBlur(): void {
                 type="text"
                 :value="part.name"
                 placeholder="Search product catalog..."
+                :aria-label="`Part ${i + 1} name`"
                 @input="onNameInput(i, ($event.target as HTMLInputElement).value)"
                 @blur="onNameBlur"
               />
@@ -183,13 +184,13 @@ function onNameBlur(): void {
             </div>
           </td>
           <td class="cpub-parts-qty">
-            <input class="cpub-parts-input cpub-parts-input-sm" type="number" :value="part.qty" min="1" @input="updatePart(i, 'qty', Number(($event.target as HTMLInputElement).value))" />
+            <input class="cpub-parts-input cpub-parts-input-sm" type="number" :value="part.qty" min="1" :aria-label="`Part ${i + 1} quantity`" @input="updatePart(i, 'qty', Number(($event.target as HTMLInputElement).value))" />
           </td>
           <td>
-            <input class="cpub-parts-input" type="text" :value="part.notes ?? ''" placeholder="Notes..." @input="updatePart(i, 'notes', ($event.target as HTMLInputElement).value)" />
+            <input class="cpub-parts-input" type="text" :value="part.notes ?? ''" placeholder="Notes..." :aria-label="`Part ${i + 1} notes`" @input="updatePart(i, 'notes', ($event.target as HTMLInputElement).value)" />
           </td>
           <td class="cpub-parts-price">
-            <input class="cpub-parts-input cpub-parts-input-sm" type="number" step="0.01" :value="part.price ?? ''" placeholder="0.00" @input="updatePart(i, 'price', Number(($event.target as HTMLInputElement).value))" />
+            <input class="cpub-parts-input cpub-parts-input-sm" type="number" step="0.01" :value="part.price ?? ''" placeholder="0.00" :aria-label="`Part ${i + 1} price`" @input="updatePart(i, 'price', Number(($event.target as HTMLInputElement).value))" />
           </td>
           <td class="cpub-parts-actions">
             <button class="cpub-parts-remove" title="Remove" @click="removePart(i)">

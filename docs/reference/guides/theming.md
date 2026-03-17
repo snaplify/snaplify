@@ -1,25 +1,24 @@
 # Theming
 
-> 4 built-in themes, 142 CSS custom property tokens, token overrides, and admin controls.
+> Base theme with light/dark mode, CSS custom property tokens, token overrides, and admin controls.
 
-**Source**: `packages/ui/src/theme.ts`
-
----
-
-## Built-in Themes
-
-| ID | Name | Description | Dark Mode |
-|----|------|-------------|-----------|
-| `base` | Base | Clean default theme with blue accents | No |
-| `deepwood` | Deepwood | Forest greens, lime accent, nature-inspired | Yes |
-| `hackbuild` | hack.build | Punk zine theme, paper textures, hard-edge shadows | No |
-| `deveco` | deveco.io | Clean tech, teal/pink/yellow accents | No |
-
-Themes are applied via the `data-theme` attribute on the root element. The `base` theme uses no `data-theme` attribute (it's the default CSS).
+**Source**: `packages/ui/theme/`
 
 ---
 
-## CSS Token Reference (142 tokens)
+## Theme
+
+| ID | Name | Description | Modes |
+|----|------|-------------|-------|
+| `base` | Base | Sharp-cornered brutalist design, blue accent (`#5b9cf6`), JetBrains Mono for UI labels | Light + Dark |
+
+The base theme is defined across CSS files in `packages/ui/theme/`: `base.css` (tokens), `dark.css` (dark mode overrides), `prose.css` (content typography), `layouts.css` (page structure), `forms.css` (form controls), `editor-panels.css` (editor UI).
+
+Two additional themes are available: `dark` (dark mode override) and `generics` (dark minimal with blue accent).
+
+---
+
+## CSS Token Reference (136 tokens)
 
 All tokens are CSS custom properties prefixed with `--`. Use them as `var(--token-name)` in component styles. **Never hardcode colors or fonts** (standing rule #3).
 
@@ -211,11 +210,11 @@ All tokens are CSS custom properties prefixed with `--`. Use them as `var(--toke
 
 ### `BUILT_IN_THEMES: ThemeDefinition[]`
 
-Array of all 4 built-in theme definitions.
+Array of all 3 built-in theme definitions (base, dark, generics).
 
 ```typescript
 interface ThemeDefinition {
-  id: string;          // 'base' | 'deepwood' | 'hackbuild' | 'deveco'
+  id: string;          // 'base' | 'dark' | 'generics'
   name: string;        // Human-readable name
   description: string; // Short description
   isDark: boolean;     // Whether this is a dark theme
@@ -271,7 +270,7 @@ Token overrides are stored in `instanceSettings` (key-value store) and applied o
 
 ### Theme Application Order
 
-1. Base CSS defines all 142 tokens as CSS custom properties
+1. Base CSS defines all 136 tokens as CSS custom properties
 2. `data-theme` attribute activates theme-specific overrides via CSS
 3. Admin token overrides applied as inline styles on root element
 4. User theme preference overrides admin default (if set)

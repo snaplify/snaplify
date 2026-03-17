@@ -13,6 +13,25 @@ onMounted(() => {
   setInitialState(false, false, props.content?.likeCount ?? 0);
 });
 
+// Extract headings from block content for TOC
+const tocHeadings = computed(() => {
+  const blocks = props.content?.content;
+  if (!Array.isArray(blocks)) return [];
+  return blocks
+    .filter((b: unknown) => {
+      const block = b as [string, Record<string, unknown>];
+      return block[0] === 'heading';
+    })
+    .map((b: unknown, idx: number) => {
+      const block = b as [string, Record<string, unknown>];
+      return {
+        id: `heading-${idx}`,
+        text: (block[1].text as string) || 'Untitled',
+        level: (block[1].level as number) || 2,
+      };
+    });
+});
+
 const config = useRuntimeConfig();
 useJsonLd({
   type: 'article',
@@ -31,7 +50,7 @@ useJsonLd({
   <div class="cpub-article-view">
     <!-- COVER IMAGE -->
     <div class="cpub-cover">
-      <img v-if="content.coverImage" :src="content.coverImage" :alt="content.title" class="cpub-cover-img" />
+      <img v-if="content.coverImageUrl" :src="content.coverImageUrl" :alt="content.title" class="cpub-cover-img" />
       <template v-else>
         <div class="cpub-cover-label">
           <i class="fa-solid fa-microchip"></i>
@@ -89,12 +108,17 @@ useJsonLd({
         <button class="cpub-eng-btn"><i class="fa-solid fa-ellipsis"></i></button>
       </div>
 
+      <!-- ARTICLE BODY WITH TOC SIDEBAR -->
+      <div v-if="tocHeadings.length > 0" class="cpub-article-body-layout">
+        <aside class="cpub-article-toc-sidebar">
+          <TOCNav :headings="tocHeadings" />
+        </aside>
+      </div>
+
       <!-- ARTICLE BODY (PROSE) -->
       <div class="cpub-prose">
-        <template v-if="content.content && Array.isArray(content.content) && content.content.length > 0">
-          <ClientOnly>
-            <CpubEditor :model-value="content.content" :editable="false" />
-          </ClientOnly>
+        <template v-if="content.content && Array.isArray(content.content) && (content.content as unknown[]).length > 0">
+          <BlockContentRenderer :blocks="(content.content as [string, Record<string, unknown>][])" />
         </template>
         <template v-else>
           <p>No content body yet.</p>
@@ -170,6 +194,23 @@ useJsonLd({
 </template>
 
 <style scoped>
+/* ── TOC SIDEBAR ── */
+.cpub-article-toc-sidebar {
+  display: none;
+}
+@media (min-width: 1200px) {
+  .cpub-article-body-layout {
+    position: fixed;
+    right: 24px;
+    top: 120px;
+    width: 200px;
+    z-index: 10;
+  }
+  .cpub-article-toc-sidebar {
+    display: block;
+  }
+}
+
 /* ── COVER IMAGE ── */
 .cpub-cover {
   width: 100%;

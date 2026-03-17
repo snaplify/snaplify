@@ -6,14 +6,14 @@ useSeoMeta({
   description: 'Create a new maker hub.',
 });
 
+const toast = useToast();
+const { extract: extractError } = useApiError();
 const name = ref('');
 const description = ref('');
 const saving = ref(false);
-const error = ref('');
 
 async function handleCreate(): Promise<void> {
   saving.value = true;
-  error.value = '';
   try {
     const result = await $fetch('/api/hubs', {
       method: 'POST',
@@ -21,7 +21,7 @@ async function handleCreate(): Promise<void> {
     });
     await navigateTo(`/hubs/${(result as { slug: string }).slug}`);
   } catch (err: unknown) {
-    error.value = (err as { data?: { message?: string } })?.data?.message || 'Failed to create hub.';
+    toast.error(extractError(err));
   } finally {
     saving.value = false;
   }
@@ -33,8 +33,6 @@ async function handleCreate(): Promise<void> {
     <h1 class="page-title">Create Hub</h1>
 
     <form class="community-form" @submit.prevent="handleCreate" aria-label="Create community form">
-      <div v-if="error" class="form-error" role="alert">{{ error }}</div>
-
       <div class="form-field">
         <label for="community-name" class="form-label">Name</label>
         <input id="community-name" v-model="name" type="text" class="form-input" required placeholder="Hub name" />
@@ -45,7 +43,7 @@ async function handleCreate(): Promise<void> {
         <textarea id="community-desc" v-model="description" class="form-textarea" rows="3" placeholder="What is this community about?" />
       </div>
 
-      <button type="submit" class="cpub-btn-primary" :disabled="saving || !name">
+      <button type="submit" class="cpub-btn cpub-btn-primary" :disabled="saving || !name">
         {{ saving ? 'Creating...' : 'Create Hub' }}
       </button>
     </form>
@@ -67,14 +65,6 @@ async function handleCreate(): Promise<void> {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-}
-
-.form-error {
-  padding: var(--space-3);
-  background: var(--red-bg, var(--surface2));
-  color: var(--red, var(--text));
-  border: 1px solid var(--red, var(--border));
-  font-size: var(--text-sm);
 }
 
 .form-field {
@@ -109,25 +99,5 @@ async function handleCreate(): Promise<void> {
   resize: vertical;
 }
 
-.cpub-btn-primary {
-  padding: var(--space-2) var(--space-4);
-  background: var(--accent);
-  color: var(--color-on-primary);
-  border: 1px solid var(--border);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
-  font-family: var(--font-sans);
-  cursor: pointer;
-  align-self: flex-start;
-}
-
-.cpub-btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.cpub-btn-primary:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
+/* cpub-btn, cpub-btn-primary → global components.css */
 </style>

@@ -2,7 +2,7 @@
 
 > Server-side administration functions for platform stats, user management, reports, settings, and content moderation.
 
-**Source**: `apps/reference/src/lib/server/admin.ts`
+**Source**: `packages/server/src/admin.ts`
 
 ---
 
@@ -37,7 +37,7 @@
 {
   users: { total: number; byRole: Record<string, number>; byStatus: Record<string, number> };
   content: { total: number; byType: Record<string, number>; byStatus: Record<string, number> };
-  communities: { total: number };
+  hubs: { total: number };
   reports: { pending: number; total: number };
 }
 ```
@@ -84,7 +84,7 @@ Runs parallel queries to collect platform-wide statistics.
 |-----------|------|-------------|
 | `db` | `DrizzleClient` | Database connection |
 
-**Returns**: `PlatformStats` with aggregated counts for users (by role, by status), content (by type, by status), communities, and reports (pending vs total).
+**Returns**: `PlatformStats` with aggregated counts for users (by role, by status), content (by type, by status), hubs, and reports (pending vs total).
 
 **Notes**: All queries execute in parallel for performance.
 
@@ -216,7 +216,7 @@ Permanently deletes a user and cleans up all related counters in a transaction.
 **Notes**: Runs inside a transaction. Before deleting:
 - Decrements like counts on all content the user liked
 - Decrements comment counts on all content the user commented on
-- Decrements member counts on all communities the user belonged to
+- Decrements member counts on all hubs the user belonged to
 - Decrements enrollment counts on all learning paths the user was enrolled in
 
 The `DELETE` on users cascades to related rows. An audit log entry is created.

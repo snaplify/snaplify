@@ -550,13 +550,8 @@ const filters = ['All (134)', 'Top Voted', 'Newest', 'FPGA', 'TinyML', 'Computer
 .cpub-hero-stat-val { font-size: 20px; font-weight: 700; font-family: var(--font-mono); color: var(--hero-text); }
 .cpub-hero-stat-label { font-size: 10px; color: var(--hero-text-dim); text-transform: uppercase; letter-spacing: .1em; font-family: var(--font-mono); }
 
-/* BUTTONS */
-.cpub-btn { font-family: var(--font-sans); font-size: 12px; padding: 6px 14px; border-radius: var(--radius); border: 2px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; white-space: nowrap; }
-.cpub-btn:hover { background: var(--surface2); }
-.cpub-btn-primary { background: var(--accent); border-color: var(--border); color: var(--color-text-inverse); box-shadow: 4px 4px 0 var(--border); }
-.cpub-btn-primary:hover { background: var(--color-primary-hover); }
+/* BUTTONS (page-specific) */
 .cpub-btn-lg { padding: 10px 22px; font-size: 13px; }
-.cpub-btn-sm { padding: 4px 10px; font-size: 11px; }
 .cpub-btn-dark { background: var(--hero-surface); color: var(--hero-text); border-color: var(--hero-border); }
 .cpub-btn-dark:hover { background: var(--hero-surface); }
 
@@ -564,20 +559,11 @@ const filters = ['All (134)', 'Top Voted', 'Newest', 'FPGA', 'TinyML', 'Computer
 .cpub-av { display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 600; font-family: var(--font-mono); flex-shrink: 0; background: var(--surface3); border: 2px solid var(--border); color: var(--text-dim); }
 .cpub-av-sm { width: 24px; height: 24px; font-size: 9px; }
 
-/* TAGS */
-.cpub-tag { display: inline-flex; align-items: center; font-size: 10px; font-family: var(--font-mono); padding: 2px 8px; border-radius: var(--radius); border: 1px solid var(--border2); color: var(--text-dim); background: var(--surface2); }
-.cpub-tag-accent { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
-.cpub-tag-purple { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
-.cpub-tag-teal { border-color: var(--teal-border); color: var(--teal); background: var(--teal-bg); }
-.cpub-tag-yellow { border-color: var(--yellow-border); color: var(--yellow); background: var(--yellow-bg); }
-
 /* LAYOUT */
 .cpub-contest-main { max-width: 1100px; margin: 0 auto; padding: 32px; }
 .cpub-contest-layout { display: grid; grid-template-columns: 1fr 300px; gap: 28px; align-items: start; }
 
-/* SECTION HEADERS */
-.cpub-sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
-.cpub-sec-head h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; font-family: var(--font-mono); color: var(--text); }
+/* SECTION HEADERS (page-specific) */
 .cpub-sec-sub { font-size: 11px; color: var(--text-faint); margin-left: auto; font-family: var(--font-mono); }
 
 /* ABOUT */
@@ -653,10 +639,6 @@ const filters = ['All (134)', 'Top Voted', 'Newest', 'FPGA', 'TinyML', 'Computer
 .cpub-judge-name { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
 .cpub-judge-title { font-size: 10px; color: var(--text-dim); line-height: 1.35; font-family: var(--font-mono); }
 .cpub-judge-org { font-size: 10px; color: var(--accent); font-family: var(--font-mono); margin-top: 2px; }
-
-/* SIDEBAR CARDS */
-.cpub-sb-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: 4px 4px 0 var(--border); }
-.cpub-sb-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--text); font-family: var(--font-mono); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
 
 /* TIMELINE */
 .cpub-tl-item { display: flex; gap: 12px; margin-bottom: 14px; position: relative; }

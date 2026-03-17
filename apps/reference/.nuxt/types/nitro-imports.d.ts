@@ -10,6 +10,7 @@ declare global {
   const appendResponseHeader: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').appendResponseHeader
   const appendResponseHeaders: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').appendResponseHeaders
   const assertMethod: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').assertMethod
+  const badRequest: typeof import('../../server/utils/errors').badRequest
   const cachedEventHandler: typeof import('../../../../node_modules/.pnpm/nitropack@2.13.1_drizzle-orm@0.38.4_kysely@0.28.11_pg@8.20.0_/node_modules/nitropack/dist/runtime/internal/cache').cachedEventHandler
   const cachedFunction: typeof import('../../../../node_modules/.pnpm/nitropack@2.13.1_drizzle-orm@0.38.4_kysely@0.28.11_pg@8.20.0_/node_modules/nitropack/dist/runtime/internal/cache').cachedFunction
   const callNodeListener: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').callNodeListener
@@ -42,6 +43,7 @@ declare global {
   const dynamicEventHandler: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').dynamicEventHandler
   const eventHandler: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').eventHandler
   const fetchWithEvent: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').fetchWithEvent
+  const forbidden: typeof import('../../server/utils/errors').forbidden
   const fromNodeMiddleware: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').fromNodeMiddleware
   const fromPlainHandler: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').fromPlainHandler
   const fromWebHandler: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').fromWebHandler
@@ -83,6 +85,7 @@ declare global {
   const isWebResponse: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').isWebResponse
   const lazyEventHandler: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').lazyEventHandler
   const nitroPlugin: typeof import('../../../../node_modules/.pnpm/nitropack@2.13.1_drizzle-orm@0.38.4_kysely@0.28.11_pg@8.20.0_/node_modules/nitropack/dist/runtime/internal/plugin').nitroPlugin
+  const notFound: typeof import('../../server/utils/errors').notFound
   const parseCookies: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').parseCookies
   const promisifyNodeListener: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').promisifyNodeListener
   const proxyRequest: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').proxyRequest
@@ -130,6 +133,7 @@ declare global {
   const useRuntimeConfig: typeof import('../../../../node_modules/.pnpm/nitropack@2.13.1_drizzle-orm@0.38.4_kysely@0.28.11_pg@8.20.0_/node_modules/nitropack/dist/runtime/internal/config').useRuntimeConfig
   const useSession: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').useSession
   const useStorage: typeof import('../../../../node_modules/.pnpm/nitropack@2.13.1_drizzle-orm@0.38.4_kysely@0.28.11_pg@8.20.0_/node_modules/nitropack/dist/runtime/internal/storage').useStorage
+  const validationError: typeof import('../../server/utils/errors').validationError
   const writeEarlyHints: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').writeEarlyHints
 }
 // for type re-export
@@ -158,3 +162,4 @@ export { defineAppConfig } from '/Users/obsidian/Projects/ossuary-projects/snapl
 export { requireAuth, requireAdmin, getOptionalUser } from '/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server/utils/auth';
 export { useConfig } from '/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server/utils/config';
 export { useDB } from '/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server/utils/db';
+export { validationError, notFound, forbidden, badRequest } from '/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server/utils/errors';

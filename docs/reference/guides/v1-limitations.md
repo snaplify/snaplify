@@ -1,6 +1,6 @@
 # v1 Limitations
 
-> Known blockers, deferred features, federation stubs, and honest status as of Session 017.
+> Known blockers, deferred features, federation stubs, and honest status. Last updated Session 040.
 
 ---
 
@@ -30,9 +30,9 @@ See [Federation Roadmap](./federation.md#federation-roadmap-post-v1) phase F3.
 
 `verifyHttpSignature()` exists for inbound verification (and correctly rejects unsigned requests as of Session 017), but outbound requests are **not signed**. Most AP implementations will reject unsigned requests. See [Federation Roadmap](./federation.md#federation-roadmap-post-v1) phase F1.
 
-### Communities Are Local-Only
+### Hubs Are Local-Only
 
-No AP Group support. Communities exist only on the instance that creates them. Users on other instances cannot discover, join, or interact with remote communities. See [Federation Roadmap](./federation.md#federation-roadmap-post-v1) phase F5.
+No AP Group support. Hubs exist only on the instance that creates them. Users on other instances cannot discover, join, or interact with remote hubs. See [Federation Roadmap](./federation.md#federation-roadmap-post-v1) phase F5.
 
 ### No Remote Content Persistence
 
@@ -120,10 +120,10 @@ The warnings are Vue compiler warnings in component files. These do not affect f
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Unit tests | 1,015 | Passing |
-| Rust CLI tests | 17 | Passing |
-| E2E tests | 18 | Passing |
-| **Total** | **1,050** | **All passing** |
+| Unit tests | 118 | 117 passing, 1 pre-existing failure (nodeinfo) |
+| Build tasks | 13 | All passing |
+
+Note: Test counts reflect the current test suite after restructure. Additional E2E and component tests are planned.
 
 ---
 

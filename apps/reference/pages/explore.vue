@@ -4,6 +4,12 @@ useSeoMeta({
   description: 'Discover projects, articles, hubs, and learning paths on CommonPub.',
 });
 
+interface PlatformStats {
+  contentCount: number;
+  hubCount: number;
+  userCount: number;
+}
+
 const activeTab = ref<'content' | 'hubs' | 'learn' | 'people'>('content');
 const contentType = ref('');
 const sort = ref('recent');
@@ -20,18 +26,51 @@ const { data: content } = await useFetch('/api/content', {
   watch: [contentQuery],
 });
 
-const { data: hubsData } = await useFetch('/api/hubs', {
+interface HubListItem {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  hubType: string;
+  memberCount: number;
+}
+
+interface PathListItem {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  moduleCount: number;
+  enrollmentCount: number;
+  difficulty: string | null;
+}
+
+const { data: hubsData } = await useFetch<{ items: HubListItem[] }>('/api/hubs', {
   query: { limit: 12 },
   lazy: true,
 });
 
-const { data: pathsData } = await useFetch('/api/learn', {
+const { data: pathsData } = await useFetch<{ items: PathListItem[] }>('/api/learn', {
   query: { status: 'published', limit: 12 },
   lazy: true,
 });
 
-const { data: statsData } = await useFetch('/api/stats', {
+const { data: statsData } = await useFetch<PlatformStats>('/api/stats', {
   lazy: true,
+});
+
+// People data for People tab
+interface UserListItem {
+  id: string;
+  username: string;
+  displayName: string | null;
+  headline: string | null;
+  followerCount: number;
+}
+const { data: peopleData } = await useFetch<{ items: UserListItem[] }>('/api/users', {
+  query: { limit: 20 },
+  lazy: true,
+  default: () => ({ items: [] }),
 });
 
 const contentTypes = [
@@ -59,15 +98,15 @@ const sortOptions = [
     <!-- Stats summary -->
     <div v-if="statsData" class="cpub-explore-stats">
       <div class="cpub-explore-stat">
-        <span class="cpub-explore-stat-n">{{ (statsData as Record<string, unknown>)?.contentCount ?? 0 }}</span>
+        <span class="cpub-explore-stat-n">{{ statsData?.contentCount ?? 0 }}</span>
         <span class="cpub-explore-stat-l">Projects & Articles</span>
       </div>
       <div class="cpub-explore-stat">
-        <span class="cpub-explore-stat-n">{{ (statsData as Record<string, unknown>)?.hubCount ?? 0 }}</span>
+        <span class="cpub-explore-stat-n">{{ statsData?.hubCount ?? 0 }}</span>
         <span class="cpub-explore-stat-l">Hubs</span>
       </div>
       <div class="cpub-explore-stat">
-        <span class="cpub-explore-stat-n">{{ (statsData as Record<string, unknown>)?.userCount ?? 0 }}</span>
+        <span class="cpub-explore-stat-n">{{ statsData?.userCount ?? 0 }}</span>
         <span class="cpub-explore-stat-l">Makers</span>
       </div>
     </div>
@@ -82,6 +121,9 @@ const sortOptions = [
       </button>
       <button :class="['cpub-explore-tab', { active: activeTab === 'learn' }]" @click="activeTab = 'learn'">
         <i class="fa-solid fa-graduation-cap"></i> Learn
+      </button>
+      <button :class="['cpub-explore-tab', { active: activeTab === 'people' }]" @click="activeTab = 'people'">
+        <i class="fa-solid fa-users"></i> People
       </button>
     </div>
 
@@ -113,10 +155,10 @@ const sortOptions = [
 
     <!-- Hubs tab -->
     <div v-if="activeTab === 'hubs'" class="cpub-explore-panel">
-      <div v-if="(hubsData as Record<string, unknown>)?.items" class="cpub-explore-hub-grid">
+      <div v-if="hubsData?.items?.length" class="cpub-explore-hub-grid">
         <NuxtLink
-          v-for="hub in ((hubsData as Record<string, unknown>).items as Array<Record<string, unknown>>)"
-          :key="(hub.id as string)"
+          v-for="hub in hubsData.items"
+          :key="hub.id"
           :to="`/hubs/${hub.slug}`"
           class="cpub-explore-hub-card"
         >
@@ -128,7 +170,7 @@ const sortOptions = [
             <p class="cpub-explore-hub-desc">{{ hub.description || 'No description' }}</p>
             <div class="cpub-explore-hub-meta">
               <span>{{ hub.memberCount ?? 0 }} members</span>
-              <span class="cpub-tag" style="font-size:9px">{{ hub.hubType ?? 'community' }}</span>
+              <span class="cpub-tag cpub-tag-xs">{{ hub.hubType ?? 'community' }}</span>
             </div>
           </div>
         </NuxtLink>
@@ -140,10 +182,10 @@ const sortOptions = [
 
     <!-- Learn tab -->
     <div v-if="activeTab === 'learn'" class="cpub-explore-panel">
-      <div v-if="(pathsData as Record<string, unknown>)?.items" class="cpub-explore-grid">
+      <div v-if="pathsData?.items?.length" class="cpub-explore-grid">
         <NuxtLink
-          v-for="path in ((pathsData as Record<string, unknown>).items as Array<Record<string, unknown>>)"
-          :key="(path.id as string)"
+          v-for="path in pathsData.items"
+          :key="path.id"
           :to="`/learn/${path.slug}`"
           class="cpub-explore-path-card"
         >
@@ -160,6 +202,32 @@ const sortOptions = [
       </div>
       <div v-else class="cpub-empty-state">
         <p class="cpub-empty-state-title">No learning paths yet</p>
+      </div>
+    </div>
+
+    <!-- People tab -->
+    <div v-if="activeTab === 'people'" class="cpub-explore-panel">
+      <div v-if="peopleData?.items?.length" class="cpub-explore-hub-grid">
+        <NuxtLink
+          v-for="person in peopleData.items"
+          :key="person.id"
+          :to="`/u/${person.username}`"
+          class="cpub-explore-hub-card"
+        >
+          <div class="cpub-explore-hub-icon" style="border-radius: 50%">
+            <span style="font-weight: 700; font-family: var(--font-mono);">{{ (person.displayName || person.username).charAt(0).toUpperCase() }}</span>
+          </div>
+          <div class="cpub-explore-hub-body">
+            <h3 class="cpub-explore-hub-name">{{ person.displayName || person.username }}</h3>
+            <p class="cpub-explore-hub-desc">{{ person.headline || `@${person.username}` }}</p>
+            <div class="cpub-explore-hub-meta">
+              <span>{{ person.followerCount ?? 0 }} followers</span>
+            </div>
+          </div>
+        </NuxtLink>
+      </div>
+      <div v-else class="cpub-empty-state">
+        <p class="cpub-empty-state-title">No makers yet</p>
       </div>
     </div>
   </div>
@@ -364,14 +432,8 @@ const sortOptions = [
 .cpub-explore-path-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; margin-bottom: 8px; }
 .cpub-explore-path-meta { font-size: 10px; font-family: var(--font-mono); color: var(--text-faint); display: flex; gap: 12px; }
 
-.cpub-tag {
-  display: inline-flex;
-  font-family: var(--font-mono);
-  padding: 1px 6px;
-  border: 1px solid var(--border2);
-  color: var(--text-faint);
-  background: var(--surface2);
-}
+/* cpub-tag → global components.css */
+.cpub-tag-xs { font-size: 9px; }
 
 @media (max-width: 768px) {
   .cpub-explore-grid { grid-template-columns: 1fr; }

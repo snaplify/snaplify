@@ -6,7 +6,8 @@ definePageMeta({ layout: false, middleware: 'auth' });
 const route = useRoute();
 const contentType = computed(() => route.params.type as string);
 const slug = computed(() => route.params.slug as string);
-const isNew = computed(() => slug.value === 'new');
+/** Track whether this is a new content creation (starts true for /new, becomes false after first save) */
+const isNew = ref(slug.value === 'new');
 
 useSeoMeta({
   title: () => isNew.value ? `New ${contentType.value} — CommonPub` : `Edit — CommonPub`,
@@ -18,11 +19,12 @@ const metadata = ref<Record<string, unknown>>({
   slug: '',
   tags: [],
   visibility: 'public',
-  coverImage: '',
+  coverImageUrl: '',
 });
 const saving = ref(false);
 const error = ref('');
 const isDirty = ref(false);
+const { extract: extractError } = useApiError();
 const mode = ref<'write' | 'preview' | 'code'>('write');
 const contentId = ref<string | null>(null);
 
@@ -40,9 +42,10 @@ const editorMap: Record<string, Component> = {
 const editorComponent = computed<Component | null>(() => editorMap[contentType.value] ?? null);
 const hasSpecializedEditor = computed(() => editorComponent.value !== null);
 
-// Load existing content for editing
+// Load existing content for editing — pass cookies so SSR can auth the user (drafts are author-only)
+const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
 if (!isNew.value) {
-  const { data } = await useFetch(() => `/api/content/${slug.value}`);
+  const { data } = await useFetch(() => `/api/content/${slug.value}`, { headers: requestHeaders });
   if (data.value) {
     const d = data.value as Record<string, unknown>;
     contentId.value = d.id as string;
@@ -55,7 +58,6 @@ if (!isNew.value) {
       slug: (d.slug as string) || '',
       tags: d.tags ? (d.tags as { name: string }[]).map((t) => t.name) : [],
       visibility: (d.visibility as string) || 'public',
-      coverImage: (d.coverImageUrl as string) || '',
       coverImageUrl: (d.coverImageUrl as string) || '',
       seoDescription: (d.seoDescription as string) || '',
       difficulty: (d.difficulty as string) || '',
@@ -73,6 +75,11 @@ watch(() => blockEditor.blocks.value, () => {
 }, { deep: true });
 
 function handleMetadataUpdate(newMetadata: Record<string, unknown>): void {
+  // Blog editor manages title in canvas — sync it back to topbar
+  if (newMetadata.title !== undefined && typeof newMetadata.title === 'string') {
+    title.value = newMetadata.title;
+    delete newMetadata.title;
+  }
   metadata.value = newMetadata;
   isDirty.value = true;
 }
@@ -99,8 +106,8 @@ async function syncBOM(id: string): Promise<void> {
 
   // Only sync if there are product links (avoid clearing on non-project types)
   if (productItems.length > 0 || contentType.value === 'project') {
-    await $fetch(`/api/content/${id}/products`, {
-      method: 'PUT',
+    await $fetch(`/api/content/${id}/products-sync`, {
+      method: 'POST',
       body: { items: productItems },
     }).catch(() => {
       // Non-critical — don't fail the save
@@ -128,36 +135,62 @@ watch([() => blockEditor.blocks.value, title, metadata], () => {
   }
 }, { deep: true });
 
-/** Save without navigating away (for auto-save and Ctrl+S) */
+/** Build a clean save body from editor state, stripping empty strings and unknown fields */
+function buildSaveBody(): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    type: contentType.value,
+    title: title.value,
+    content: blockEditor.toBlockTuples(),
+    ...metadata.value,
+  };
+
+  // Remove client-only keys that don't belong in the API payload
+  delete body.slug;
+
+  // Strip empty strings — Zod URL validators reject ''
+  for (const key of Object.keys(body)) {
+    if (body[key] === '') body[key] = undefined;
+  }
+
+  return body;
+}
+
+/** Save without navigating away — used by Save Draft button, auto-save, and Ctrl+S */
 async function silentSave(): Promise<void> {
-  if (saving.value || !title.value) return;
+  if (saving.value) return;
+  if (!title.value) {
+    error.value = 'Please enter a title before saving.';
+    return;
+  }
+  // Guard: if not new but no contentId, we can't PUT — treat as new creation
+  if (!isNew.value && !contentId.value) {
+    isNew.value = true;
+  }
   saving.value = true;
   autoSaveStatus.value = 'saving';
   error.value = '';
 
   try {
-    const body: Record<string, unknown> = {
-      type: contentType.value,
-      title: title.value,
-      content: blockEditor.toBlockTuples(),
-      ...metadata.value,
-      coverImageUrl: metadata.value.coverImage || metadata.value.coverImageUrl,
-    };
-    delete body.coverImage;
+    const body = buildSaveBody();
 
     if (isNew.value) {
       const result = await $fetch<{ id: string; slug: string }>('/api/content', { method: 'POST', body });
       contentId.value = result.id;
+      isNew.value = false; // Now subsequent saves will PUT instead of POST
       isDirty.value = false;
       autoSaveStatus.value = 'saved';
       await syncBOM(result.id);
       // Update the URL without full navigation so we can keep editing
       history.replaceState({}, '', `/${contentType.value}/${result.slug}/edit`);
     } else {
-      await $fetch(`/api/content/${contentId.value}`, { method: 'PUT', body });
+      const updated = await $fetch<{ slug: string }>(`/api/content/${contentId.value}`, { method: 'PUT', body });
       isDirty.value = false;
       autoSaveStatus.value = 'saved';
       await syncBOM(contentId.value!);
+      // Update URL if slug changed (title change triggers slug regeneration)
+      if (updated?.slug) {
+        history.replaceState({}, '', `/${contentType.value}/${updated.slug}/edit`);
+      }
     }
 
     // Reset status after a few seconds
@@ -165,7 +198,7 @@ async function silentSave(): Promise<void> {
       if (autoSaveStatus.value === 'saved') autoSaveStatus.value = 'idle';
     }, 3000);
   } catch (err: unknown) {
-    error.value = (err as { data?: { message?: string } })?.data?.message || 'Failed to save.';
+    error.value = extractError(err);
     autoSaveStatus.value = 'error';
   } finally {
     saving.value = false;
@@ -173,22 +206,21 @@ async function silentSave(): Promise<void> {
 }
 
 async function handleSave(): Promise<void> {
+  if (saving.value || !title.value) return;
+  // Guard: if not new but no contentId, treat as new creation
+  if (!isNew.value && !contentId.value) {
+    isNew.value = true;
+  }
   saving.value = true;
   error.value = '';
 
   try {
-    const body: Record<string, unknown> = {
-      type: contentType.value,
-      title: title.value,
-      content: blockEditor.toBlockTuples(),
-      ...metadata.value,
-      coverImageUrl: metadata.value.coverImage || metadata.value.coverImageUrl,
-    };
-    delete body.coverImage;
+    const body = buildSaveBody();
 
     if (isNew.value) {
       const result = await $fetch<{ id: string; slug: string }>('/api/content', { method: 'POST', body });
       contentId.value = result.id;
+      isNew.value = false;
       isDirty.value = false;
       await syncBOM(result.id);
       await navigateTo(`/${contentType.value}/${result.slug}`);
@@ -199,7 +231,7 @@ async function handleSave(): Promise<void> {
       await navigateTo(`/${contentType.value}/${slug.value}`);
     }
   } catch (err: unknown) {
-    error.value = (err as { data?: { message?: string } })?.data?.message || 'Failed to save.';
+    error.value = extractError(err);
   } finally {
     saving.value = false;
   }
@@ -229,13 +261,36 @@ if (import.meta.client) {
 }
 
 async function handlePublish(): Promise<void> {
-  await handleSave();
-  if (!error.value && contentId.value) {
-    try {
-      await $fetch(`/api/content/${contentId.value}/publish`, { method: 'POST' });
-    } catch (err: unknown) {
-      error.value = (err as { data?: { message?: string } })?.data?.message || 'Failed to publish.';
+  if (saving.value || !title.value) return;
+  saving.value = true;
+  error.value = '';
+
+  try {
+    const body = buildSaveBody();
+    let resultSlug = slug.value;
+
+    if (isNew.value || !contentId.value) {
+      const result = await $fetch<{ id: string; slug: string }>('/api/content', { method: 'POST', body });
+      contentId.value = result.id;
+      isNew.value = false;
+      resultSlug = result.slug;
+      await syncBOM(result.id);
+    } else {
+      const updated = await $fetch<{ slug: string }>(`/api/content/${contentId.value}`, { method: 'PUT', body });
+      if (updated?.slug) resultSlug = updated.slug;
+      await syncBOM(contentId.value);
     }
+
+    // Now publish — content is saved, we have a valid contentId
+    await $fetch(`/api/content/${contentId.value}/publish`, { method: 'POST' });
+    isDirty.value = false;
+
+    // Navigate to the published content view
+    await navigateTo(`/${contentType.value}/${resultSlug}`);
+  } catch (err: unknown) {
+    error.value = extractError(err);
+  } finally {
+    saving.value = false;
   }
 }
 </script>
@@ -277,7 +332,7 @@ async function handlePublish(): Promise<void> {
       </div>
       <div class="cpub-topbar-spacer" />
       <div class="cpub-topbar-actions">
-        <button class="cpub-topbar-btn" :disabled="saving || !title" @click="handleSave">
+        <button class="cpub-topbar-btn" :disabled="saving || !title" @click="silentSave">
           {{ saving ? 'Saving...' : 'Save Draft' }}
         </button>
         <button class="cpub-topbar-btn cpub-topbar-btn-primary" :disabled="saving || !title" @click="handlePublish">
@@ -293,7 +348,7 @@ async function handlePublish(): Promise<void> {
       <component
         :is="editorComponent"
         :block-editor="blockEditor"
-        :metadata="metadata"
+        :metadata="contentType === 'blog' ? { ...metadata, title: title } : metadata"
         @update:metadata="handleMetadataUpdate"
       />
     </template>
@@ -509,18 +564,23 @@ async function handlePublish(): Promise<void> {
 .cpub-topbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .cpub-topbar-btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--color-text-inverse);
   font-weight: 600;
   box-shadow: 4px 4px 0 var(--border);
 }
 .cpub-topbar-btn-primary:hover { box-shadow: 2px 2px 0 var(--border); }
 
 .cpub-editor-error {
-  padding: 8px 16px;
+  padding: 10px 16px;
   background: var(--red-bg);
   color: var(--red);
-  border-bottom: 1px solid var(--red-border);
+  border-bottom: 2px solid var(--red);
   font-size: 12px;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 99;
 }
 
 .cpub-editor-shell {

@@ -26,9 +26,11 @@ useJsonLd({
   updatedAt: props.content.updatedAt,
 });
 
-const seriesPart = computed(() => props.content?.seriesPart);
-const seriesTitle = computed(() => props.content?.seriesTitle);
-const seriesTotalParts = computed(() => props.content?.seriesTotalParts || 4);
+// Series data — only available when content has series metadata
+const seriesPart = computed(() => props.content?.seriesPart as number | undefined);
+const seriesTitle = computed(() => props.content?.seriesTitle as string | undefined);
+const seriesTotalParts = computed(() => (props.content?.seriesTotalParts as number) || 0);
+const hasSeries = computed(() => !!seriesTitle.value && seriesTotalParts.value > 0);
 </script>
 
 <template>
@@ -54,7 +56,7 @@ const seriesTotalParts = computed(() => props.content?.seriesTotalParts || 4);
             <span>{{ new Date(content.publishedAt || content.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
             <span class="cpub-sep">·</span>
             <span><i class="fa-regular fa-clock"></i> {{ content.readTime || '5 min read' }}</span>
-            <template v-if="seriesTitle">
+            <template v-if="hasSeries">
               <span class="cpub-sep">·</span>
               <span class="cpub-tag cpub-tag-pink">{{ seriesTitle }} · Part {{ seriesPart || 1 }} of {{ seriesTotalParts }}</span>
             </template>
@@ -79,10 +81,8 @@ const seriesTotalParts = computed(() => props.content?.seriesTotalParts || 4);
 
       <!-- BLOG BODY (PROSE) -->
       <div class="cpub-prose">
-        <template v-if="content.content && Array.isArray(content.content) && content.content.length > 0">
-          <ClientOnly>
-            <CpubEditor :model-value="content.content" :editable="false" />
-          </ClientOnly>
+        <template v-if="content.content && Array.isArray(content.content) && (content.content as unknown[]).length > 0">
+          <BlockContentRenderer :blocks="(content.content as [string, Record<string, unknown>][])" />
         </template>
         <template v-else>
           <p>No content body yet.</p>
@@ -90,7 +90,7 @@ const seriesTotalParts = computed(() => props.content?.seriesTotalParts || 4);
       </div>
 
       <!-- SERIES NAVIGATION -->
-      <div v-if="seriesTitle" class="cpub-series-nav">
+      <div v-if="hasSeries" class="cpub-series-nav">
         <div class="cpub-series-header">
           <div class="cpub-series-icon"><i class="fa-solid fa-layer-group"></i></div>
           <div>

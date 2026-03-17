@@ -170,6 +170,65 @@ export async function listVideoCategories(db: DB): Promise<VideoCategoryItem[]> 
   return rows;
 }
 
+export async function createVideoCategory(
+  db: DB,
+  input: { name: string; description?: string; sortOrder?: number },
+): Promise<VideoCategoryItem> {
+  const slug = input.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  const [row] = await db
+    .insert(videoCategories)
+    .values({
+      name: input.name,
+      slug,
+      description: input.description ?? null,
+      sortOrder: input.sortOrder ?? 0,
+    })
+    .returning();
+
+  return { id: row!.id, name: row!.name, slug: row!.slug };
+}
+
+export async function updateVideoCategory(
+  db: DB,
+  id: string,
+  input: { name?: string; description?: string; sortOrder?: number },
+): Promise<VideoCategoryItem | null> {
+  const updates: Record<string, unknown> = {};
+  if (input.name !== undefined) {
+    updates.name = input.name;
+    updates.slug = input.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+  if (input.description !== undefined) updates.description = input.description;
+  if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
+
+  if (Object.keys(updates).length === 0) return null;
+
+  const [row] = await db
+    .update(videoCategories)
+    .set(updates)
+    .where(eq(videoCategories.id, id))
+    .returning();
+
+  if (!row) return null;
+  return { id: row.id, name: row.name, slug: row.slug };
+}
+
+export async function deleteVideoCategory(db: DB, id: string): Promise<boolean> {
+  const result = await db
+    .delete(videoCategories)
+    .where(eq(videoCategories.id, id))
+    .returning({ id: videoCategories.id });
+
+  return result.length > 0;
+}
+
 export async function incrementVideoViewCount(db: DB, id: string): Promise<void> {
   await db
     .update(videos)

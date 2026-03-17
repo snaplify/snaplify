@@ -15,5 +15,5 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return createComment(db, user.id, body);
+  return createComment(db, user.id, parsed.data);
 });

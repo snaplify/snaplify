@@ -23,6 +23,7 @@ interface HubPost {
   body: string | null;
   content: string | null;
   createdAt: string;
+  lastReplyAt: string | null;
   voteCount: number;
   likeCount: number;
   replyCount: number;
@@ -34,6 +35,7 @@ interface HubMember {
   username: string;
   displayName: string | null;
   role: string;
+  joinedAt: string | null;
 }
 
 interface Discussion {
@@ -49,7 +51,26 @@ interface Discussion {
 const { data: hub } = await useFetch<HubData & { hubType?: string }>(() => `/api/hubs/${slug.value}`);
 const { data: posts } = await useFetch<{ items: HubPost[] }>(() => `/api/hubs/${slug.value}/posts`, { default: () => ({ items: [] }) });
 const { data: members } = await useFetch<HubMember[]>(() => `/api/hubs/${slug.value}/members`);
-const { data: gallery } = await useFetch<{ items: any[]; total: number }>(() => `/api/hubs/${slug.value}/gallery`, { default: () => ({ items: [], total: 0 }) });
+interface GalleryItem {
+  id: string;
+  type: string;
+  title: string;
+  slug: string;
+  coverImageUrl: string | null;
+  authorName: string | null;
+}
+
+interface ProductItem {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrl: string | null;
+  category: string | null;
+  status: string | null;
+}
+
+const { data: gallery } = await useFetch<{ items: GalleryItem[]; total: number }>(() => `/api/hubs/${slug.value}/gallery`, { default: () => ({ items: [], total: 0 }) });
 
 // Product hub: fetch products
 const hubType = computed(() => hub.value?.hubType ?? 'community');
@@ -57,7 +78,7 @@ const isProductHub = computed(() => hubType.value === 'product');
 const isCompanyHub = computed(() => hubType.value === 'company');
 const isCommunityHub = computed(() => hubType.value === 'community');
 
-const { data: products } = await useFetch<{ items: any[]; total: number }>(
+const { data: products } = await useFetch<{ items: ProductItem[]; total: number }>(
   () => `/api/hubs/${slug.value}/products`,
   { default: () => ({ items: [], total: 0 }), immediate: isCompanyHub.value },
 );
@@ -140,18 +161,64 @@ async function handlePost(): Promise<void> {
     postError.value = '';
     refreshNuxtData();
   } catch (e) {
-    postError.value = e instanceof Error ? e.message : 'Failed to create post';
+    const fetchErr = e as { data?: { statusMessage?: string }; message?: string };
+    postError.value = fetchErr?.data?.statusMessage || fetchErr?.message || 'Failed to create post';
   } finally {
     posting.value = false;
   }
 }
 
+const toast = useToast();
+
 async function handleJoin(): Promise<void> {
+  if (!isAuthenticated.value) {
+    await navigateTo(`/auth/login?redirect=/hubs/${slug.value}`);
+    return;
+  }
   try {
     await $fetch(`/api/hubs/${slug.value}/join`, { method: 'POST' });
+    toast.success('Joined hub!');
     refreshNuxtData();
   } catch {
-    /* silent */
+    toast.error('Failed to join hub');
+  }
+}
+
+async function handleShare(): Promise<void> {
+  const url = `${window.location.origin}/hubs/${slug.value}`;
+  if (navigator.share) {
+    await navigator.share({ title: hub.value?.name || 'Hub', url }).catch(() => {});
+  } else {
+    await navigator.clipboard.writeText(url);
+    toast.success('Link copied to clipboard');
+  }
+}
+
+const imageInput = ref<HTMLInputElement | null>(null);
+function openImagePicker(): void {
+  imageInput.value?.click();
+}
+
+async function handleImageUpload(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const result = await $fetch<{ url: string }>('/api/files/upload', { method: 'POST', body: formData });
+    newPostContent.value += (newPostContent.value ? ' ' : '') + result.url;
+    toast.success('Image uploaded');
+  } catch {
+    toast.error('Upload failed');
+  }
+  input.value = '';
+}
+
+function handleLinkInsert(): void {
+  const url = prompt('Enter a URL:');
+  if (url) {
+    newPostContent.value += (newPostContent.value ? ' ' : '') + url;
   }
 }
 </script>
@@ -187,8 +254,8 @@ async function handleJoin(): Promise<void> {
                   <span v-else-if="c.currentUserRole" class="cpub-member-badge">
                     <i class="fa-solid fa-check"></i> Member
                   </span>
-                  <button class="cpub-btn"><i class="fa-solid fa-bell"></i> Subscribe</button>
-                  <button class="cpub-btn cpub-btn-sm"><i class="fa-solid fa-share-nodes"></i></button>
+                  <button class="cpub-btn" @click="handleJoin"><i class="fa-solid fa-bell"></i> Subscribe</button>
+                  <button class="cpub-btn cpub-btn-sm" aria-label="Share hub" @click="handleShare"><i class="fa-solid fa-share-nodes"></i></button>
                 </div>
               </div>
               <div class="cpub-hub-badges">
@@ -238,8 +305,9 @@ async function handleJoin(): Promise<void> {
                 type="text"
                 placeholder="Share a project, ask a question, or start a discussion..."
               />
-              <button class="cpub-btn cpub-btn-sm"><i class="fa-solid fa-image"></i></button>
-              <button class="cpub-btn cpub-btn-sm"><i class="fa-solid fa-link"></i></button>
+              <input ref="imageInput" type="file" accept="image/*" style="display: none" @change="handleImageUpload" />
+              <button class="cpub-btn cpub-btn-sm" aria-label="Upload image" @click="openImagePicker"><i class="fa-solid fa-image"></i></button>
+              <button class="cpub-btn cpub-btn-sm" aria-label="Insert link" @click="handleLinkInsert"><i class="fa-solid fa-link"></i></button>
               <button class="cpub-btn cpub-btn-sm cpub-btn-primary" :disabled="posting" @click="handlePost">
                 <i class="fa-solid fa-paper-plane"></i> Post
               </button>
@@ -281,15 +349,14 @@ async function handleJoin(): Promise<void> {
           <!-- Discussions tab (uses posts data filtered to text/link types) -->
           <template v-else-if="activeTab === 'discussions'">
             <div v-if="discussionPosts.length" class="cpub-disc-list">
-              <FeedItem
+              <DiscussionItem
                 v-for="post in discussionPosts"
                 :key="post.id"
-                :author-name="post.author?.displayName || post.author?.username || 'Unknown'"
-                :author-username="post.author?.username || ''"
-                :content="post.content || ''"
-                :created-at="post.createdAt"
-                :like-count="post.likeCount ?? 0"
+                :title="post.content?.slice(0, 80) || 'Untitled'"
+                :author="post.author?.displayName || post.author?.username || 'Unknown'"
                 :reply-count="post.replyCount ?? 0"
+                :vote-count="post.likeCount ?? 0"
+                :last-reply-at="post.lastReplyAt ? new Date(post.lastReplyAt) : undefined"
               />
             </div>
             <div v-else class="cpub-empty-state">
@@ -308,7 +375,7 @@ async function handleJoin(): Promise<void> {
                 :username="member.username"
                 :display-name="member.displayName || member.username"
                 :role="(member.role as 'owner' | 'moderator' | 'member') || 'member'"
-                :joined-at="new Date()"
+                :joined-at="member.joinedAt ? new Date(member.joinedAt) : new Date()"
               />
             </div>
             <div v-else class="cpub-empty-state">
@@ -347,12 +414,7 @@ async function handleJoin(): Promise<void> {
               <ContentCard
                 v-for="item in gallery.items"
                 :key="item.id"
-                :title="item.title"
-                :slug="item.slug"
-                :type="item.type"
-                :cover-image-url="item.coverImageUrl"
-                :author="item.author"
-                :published-at="item.publishedAt"
+                :item="{ type: item.type, slug: item.slug, title: item.title, coverImageUrl: item.coverImageUrl ?? undefined, author: item.authorName ? { username: item.authorName, displayName: item.authorName } : undefined, createdAt: new Date().toISOString() }"
               />
             </div>
             <div v-else class="cpub-empty-state">
@@ -634,43 +696,6 @@ async function handleJoin(): Promise<void> {
   align-items: start;
 }
 
-/* ─── TAGS ─── */
-.cpub-tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.cpub-tag {
-  display: inline-flex;
-  align-items: center;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 2px 8px;
-  border: 1px solid var(--border2);
-  color: var(--text-dim);
-  background: var(--surface2);
-}
-
-.cpub-tag-accent { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
-.cpub-tag-green { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
-
-/* ─── BUTTONS ─── */
-.cpub-btn {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.cpub-btn:hover { background: var(--surface2); }
-.cpub-btn-primary { background: var(--accent); color: var(--color-text-inverse); box-shadow: 4px 4px 0 var(--border); }
-.cpub-btn-primary:hover { background: var(--color-primary-hover); }
-.cpub-btn-sm { padding: 4px 10px; font-size: 11px; }
-
 /* ─── COMPOSE BAR ─── */
 .cpub-compose-bar {
   background: var(--surface);
@@ -867,25 +892,6 @@ async function handleJoin(): Promise<void> {
 /* ─── SIDEBAR ─── */
 .cpub-hub-sidebar { min-width: 0; }
 
-.cpub-sb-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  padding: 16px;
-  margin-bottom: 12px;
-}
-
-.cpub-sb-title {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-faint);
-  font-family: var(--font-mono);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border2);
-}
-
 .cpub-mod-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .cpub-mod-item:last-child { margin-bottom: 0; }
 
@@ -951,12 +957,6 @@ async function handleJoin(): Promise<void> {
 
 /* ─── POST ERROR ─── */
 .cpub-post-error { font-size: 11px; color: var(--red); background: var(--red-bg); border: 1px solid var(--red-border); padding: 8px 12px; margin-bottom: 12px; font-family: var(--font-mono); }
-
-/* ─── EMPTY STATE ─── */
-.cpub-empty-state { text-align: center; padding: 32px 16px; }
-.cpub-empty-state-icon { font-size: 28px; color: var(--text-faint); margin-bottom: 10px; }
-.cpub-empty-state-title { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
-.cpub-empty-state-desc { font-size: 11px; color: var(--text-faint); }
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 1024px) {
@@ -1041,12 +1041,6 @@ async function handleJoin(): Promise<void> {
   flex-wrap: wrap;
 }
 
-.cpub-tag-red {
-  border-color: var(--red-border);
-  color: var(--red);
-  background: var(--red-bg);
-}
-
 /* ── Overview sections ── */
 .cpub-product-overview,
 .cpub-company-overview {
@@ -1075,12 +1069,6 @@ async function handleJoin(): Promise<void> {
 
 .cpub-meta-link a:hover { text-decoration: underline; }
 
-.cpub-section-head {
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--border);
-}
-
 .cpub-section-title {
   font-size: 14px;
   font-weight: 700;
@@ -1088,12 +1076,6 @@ async function handleJoin(): Promise<void> {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-dim);
-}
-
-.cpub-empty-state-desc {
-  font-size: 12px;
-  color: var(--text-faint);
-  margin-top: 4px;
 }
 
 @media (max-width: 1024px) {

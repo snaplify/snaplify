@@ -5,15 +5,57 @@ const props = defineProps<{
   content: ContentViewData;
 }>();
 
-const sections = computed(() => props.content?.sections || [
-  { title: 'Introduction', slug: 'introduction' },
-  { title: 'Neurons & Signals', slug: 'neurons' },
-  { title: 'Gradient Descent', slug: 'gradient-descent' },
-  { title: 'Backpropagation', slug: 'backpropagation' },
-  { title: 'Overfitting', slug: 'overfitting' },
-  { title: 'Architectures', slug: 'architectures' },
-  { title: 'Real-World Applications', slug: 'applications' },
-]);
+type BlockTuple = [string, Record<string, unknown>];
+
+const blocks = computed<BlockTuple[]>(() => {
+  const raw = props.content?.content;
+  if (!Array.isArray(raw)) return [];
+  return raw as BlockTuple[];
+});
+
+// Derive sections from heading blocks (level <= 2)
+const sections = computed(() => {
+  if (Array.isArray(props.content?.sections) && props.content.sections.length > 0) {
+    return props.content.sections as Array<{ title: string; slug?: string }>;
+  }
+
+  const headings: Array<{ title: string; slug: string; blockIndex: number }> = [];
+  for (let i = 0; i < blocks.value.length; i++) {
+    const [type, data] = blocks.value[i]!;
+    if (type === 'heading' && ((data.level as number) ?? 2) <= 2) {
+      const title = (data.text as string) || 'Untitled';
+      headings.push({
+        title,
+        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+        blockIndex: i,
+      });
+    }
+  }
+
+  // Fallback: treat entire content as one section
+  if (headings.length === 0 && blocks.value.length > 0) {
+    return [{ title: props.content.title || 'Content', slug: 'content', blockIndex: 0 }];
+  }
+
+  return headings;
+});
+
+// Compute block ranges per section
+const sectionRanges = computed(() => {
+  const ranges: Array<{ start: number; end: number }> = [];
+  for (let i = 0; i < sections.value.length; i++) {
+    const sec = sections.value[i] as { blockIndex?: number };
+    const start = sec.blockIndex ?? 0;
+    const nextSec = sections.value[i + 1] as { blockIndex?: number } | undefined;
+    const end = nextSec?.blockIndex ?? blocks.value.length;
+    ranges.push({ start, end });
+  }
+  // Fallback if no blockIndex data
+  if (ranges.length === 0 && blocks.value.length > 0) {
+    ranges.push({ start: 0, end: blocks.value.length });
+  }
+  return ranges;
+});
 
 const activeSection = ref(2); // 0-indexed, default to section 3
 const completedSections = ref<Set<number>>(new Set([0, 1]));
@@ -55,38 +97,20 @@ function nextSection(): void {
   if (activeSection.value < totalSections.value - 1) activeSection.value++;
 }
 
-// Interactive slider state
-const learningRate = ref(10);
-const lrValue = computed(() => (0.001 + (learningRate.value - 1) / 999 * 0.999).toFixed(3));
-const lrPct = computed(() => ((learningRate.value - 1) / 999) * 100);
-const lrState = computed(() => {
-  const lr = parseFloat(lrValue.value);
-  if (lr < 0.005) return 'slow';
-  if (lr <= 0.3) return 'ok';
-  return 'high';
-});
-const lrMessage = computed(() => {
-  if (lrState.value === 'slow') return 'Too slow — barely converging. This will take forever to train.';
-  if (lrState.value === 'ok') return 'Converging steadily. Loss decreasing each epoch.';
-  return 'Too high — loss exploding! Overshooting the minimum on every step.';
-});
-
-// Quiz state
-const quizAnswered = ref(false);
-const quizCorrect = ref(false);
+// Checkpoint state (shown when section is completed)
 const checkpointVisible = ref(false);
 
-function selectQuizOption(isCorrect: boolean): void {
-  if (quizAnswered.value) return;
-  quizAnswered.value = true;
-  quizCorrect.value = isCorrect;
-  setTimeout(() => { checkpointVisible.value = true; }, 600);
-}
+watch(activeSection, () => {
+  checkpointVisible.value = false;
+});
 </script>
 
 <template>
   <div class="cpub-explainer-view">
-    <!-- PROGRESS BAR -->
+    <!-- SCROLL PROGRESS TRACKER -->
+    <ProgressTracker />
+
+    <!-- SECTION PROGRESS BAR -->
     <div class="cpub-progress-line">
       <div class="cpub-progress-line-fill" :style="{ width: progressPct + '%' }"></div>
     </div>
@@ -153,109 +177,21 @@ function selectQuizOption(isCorrect: boolean): void {
 
           <!-- Body content -->
           <div class="cpub-body-text">
-            <template v-if="content.content && Array.isArray(content.content) && content.content.length > 0">
-              <ClientOnly>
-                <CpubEditor :model-value="content.content" :editable="false" />
-              </ClientOnly>
+            <template v-if="blocks.length > 0 && sectionRanges[activeSection]">
+              <BlockContentRenderer
+                :blocks="blocks"
+                :start-index="sectionRanges[activeSection]!.start"
+                :end-index="sectionRanges[activeSection]!.end"
+                @quiz-answered="(idx, correct) => { if (correct) { completedSections.add(activeSection); checkpointVisible = true; } }"
+                @checkpoint-reached="() => { completedSections.add(activeSection); checkpointVisible = true; }"
+              />
             </template>
             <template v-else>
-              <p>A neural network learns by adjusting its weights to minimize a <em>loss function</em> — a measure of how wrong its predictions are. The algorithm that drives this process is called <strong>gradient descent</strong>.</p>
-              <p>Think of it as rolling a ball down a hilly landscape toward the lowest valley. At each step, the ball moves in the direction of the steepest downward slope. The size of that step is controlled by a critical hyperparameter: the <em>learning rate</em>.</p>
+              <p>This explainer doesn't have any content blocks yet.</p>
             </template>
           </div>
 
-          <!-- MATH BLOCK -->
-          <div class="cpub-math-block">
-            <span class="cpub-math-comment">// Weight update rule</span><br>
-            w<sub>new</sub> &nbsp;=&nbsp; w<sub>old</sub> &nbsp;<span class="cpub-math-sym">−</span>&nbsp; <span class="cpub-math-sym">η</span> &nbsp;<span class="cpub-math-sym">·</span>&nbsp; ∂L/∂w
-            <br><br>
-            <span class="cpub-math-comment">// where ∂L/∂w is the gradient of the loss w.r.t. each weight</span>
-          </div>
-
-          <!-- INTERACTIVE SLIDER CARD -->
-          <div class="cpub-interactive-card">
-            <div class="cpub-card-header">
-              <div class="cpub-card-header-icon"><i class="fa-solid fa-sliders"></i></div>
-              <div class="cpub-card-header-label">Learning Rate <span>(η)</span></div>
-            </div>
-            <div class="cpub-slider-value-display">{{ lrValue }}</div>
-            <div class="cpub-slider-track-wrap">
-              <div class="cpub-slider-fill-track" :style="{ width: lrPct + '%' }"></div>
-              <input type="range" v-model.number="learningRate" min="1" max="1000" step="1" class="cpub-slider-input" />
-            </div>
-            <div class="cpub-slider-range-labels">
-              <span>0.001 — very slow</span>
-              <span>1.0 — too high</span>
-            </div>
-            <div class="cpub-slider-output" :class="'state-' + lrState">
-              <i :class="lrState === 'ok' ? 'fa-solid fa-circle-check' : lrState === 'slow' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-circle-xmark'"></i>
-              <span class="cpub-slider-output-text">{{ lrMessage }}</span>
-            </div>
-          </div>
-
-          <!-- CALLOUT -->
-          <div class="cpub-callout">
-            <i class="fa-solid fa-lightbulb cpub-callout-icon"></i>
-            <div class="cpub-callout-text">
-              <strong>Practical tip:</strong> Use a learning rate finder — ramp the rate from a very small value over a short training run and plot the loss. The ideal rate sits just before the loss starts to rise sharply.
-            </div>
-          </div>
-
-          <hr class="cpub-content-divider" />
-
-          <!-- QUIZ BLOCK -->
-          <div class="cpub-quiz-card">
-            <div class="cpub-quiz-header">
-              <span class="cpub-quiz-badge">QUICK CHECK</span>
-              <span class="cpub-quiz-title-text">Test your understanding</span>
-            </div>
-            <div class="cpub-quiz-question">What happens when the learning rate is set too high?</div>
-            <div class="cpub-quiz-options">
-              <div
-                class="cpub-quiz-option"
-                :class="{ answered: quizAnswered, 'selected-wrong': quizAnswered && false }"
-                @click="selectQuizOption(false)"
-              >
-                <span class="cpub-quiz-option-key">A</span>
-                <span class="cpub-quiz-option-text">Training slows down because each weight update is tiny, requiring many more iterations to converge.</span>
-                <i class="fa-solid fa-xmark cpub-quiz-option-indicator"></i>
-              </div>
-              <div
-                class="cpub-quiz-option"
-                :class="{ answered: quizAnswered, 'selected-correct': quizAnswered && quizCorrect, 'reveal-correct': quizAnswered && !quizCorrect }"
-                @click="selectQuizOption(true)"
-              >
-                <span class="cpub-quiz-option-key">B</span>
-                <span class="cpub-quiz-option-text">Updates overshoot the loss minimum — the model oscillates or diverges, and loss may increase instead of decrease.</span>
-                <i class="fa-solid fa-check cpub-quiz-option-indicator"></i>
-              </div>
-              <div
-                class="cpub-quiz-option"
-                :class="{ answered: quizAnswered }"
-                @click="selectQuizOption(false)"
-              >
-                <span class="cpub-quiz-option-key">C</span>
-                <span class="cpub-quiz-option-text">The gradient becomes zero, stopping all learning permanently after the first few epochs.</span>
-                <i class="fa-solid fa-xmark cpub-quiz-option-indicator"></i>
-              </div>
-              <div
-                class="cpub-quiz-option"
-                :class="{ answered: quizAnswered }"
-                @click="selectQuizOption(false)"
-              >
-                <span class="cpub-quiz-option-key">D</span>
-                <span class="cpub-quiz-option-text">Batch normalization layers automatically correct the rate, so there is no real effect on training.</span>
-                <i class="fa-solid fa-xmark cpub-quiz-option-indicator"></i>
-              </div>
-            </div>
-            <div v-if="quizAnswered" class="cpub-quiz-feedback" :class="quizCorrect ? 'correct' : 'wrong'">
-              <i :class="quizCorrect ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
-              <span v-if="quizCorrect">Correct — a high learning rate causes overshooting and unstable training.</span>
-              <span v-else>Not quite. The correct answer is <strong>B</strong> — overshooting leads to divergence.</span>
-            </div>
-          </div>
-
-          <!-- CHECKPOINT -->
+          <!-- CHECKPOINT (shown after completing quiz or section) -->
           <div class="cpub-checkpoint" :class="{ visible: checkpointVisible }">
             <i class="fa-solid fa-circle-check"></i>
             <span class="cpub-checkpoint-text">Section {{ activeSection + 1 }} complete</span>

@@ -16,17 +16,7 @@ const { data: notifData } = useFetch<{ count: number }>('/api/notifications/coun
   server: false,
 });
 
-let notifInterval: ReturnType<typeof setInterval> | undefined;
-onMounted(() => {
-  notifInterval = setInterval(async () => {
-    try {
-      const res = await $fetch<{ count: number }>('/api/notifications/count');
-      if (res && typeof res.count === 'number') notifData.value = res;
-    } catch { /* ignore */ }
-  }, 30_000);
-});
-onUnmounted(() => { if (notifInterval) clearInterval(notifInterval); });
-
+const notifInterval = ref<ReturnType<typeof setInterval> | undefined>();
 const unreadCount = computed(() => notifData.value?.count ?? 0);
 
 // Cmd+K / Ctrl+K → search
@@ -36,16 +26,32 @@ function handleGlobalKeydown(e: KeyboardEvent): void {
     navigateTo('/search');
   }
 }
-onMounted(() => document.addEventListener('keydown', handleGlobalKeydown));
-onUnmounted(() => document.removeEventListener('keydown', handleGlobalKeydown));
 
 // Close menus on click outside
 function handleClickOutside(e: MouseEvent): void {
   const target = e.target as HTMLElement;
   if (!target.closest('.cpub-user-menu-wrapper')) userMenuOpen.value = false;
 }
-onMounted(() => document.addEventListener('click', handleClickOutside));
-onUnmounted(() => document.removeEventListener('click', handleClickOutside));
+
+onMounted(() => {
+  // Notification polling
+  notifInterval.value = setInterval(async () => {
+    try {
+      const res = await $fetch<{ count: number }>('/api/notifications/count');
+      if (res && typeof res.count === 'number') notifData.value = res;
+    } catch { /* ignore */ }
+  }, 30_000);
+
+  // Global listeners
+  document.addEventListener('keydown', handleGlobalKeydown);
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  if (notifInterval.value) clearInterval(notifInterval.value);
+  document.removeEventListener('keydown', handleGlobalKeydown);
+  document.removeEventListener('click', handleClickOutside);
+});
 
 function handleSignOut(): void {
   userMenuOpen.value = false;
@@ -53,14 +59,10 @@ function handleSignOut(): void {
 }
 
 const userInitial = computed(() => {
-  const u = user.value as Record<string, string> | null;
-  return (u?.displayName || u?.username || 'U').charAt(0).toUpperCase();
+  return (user.value?.name || user.value?.username || 'U').charAt(0).toUpperCase();
 });
 
-const userUsername = computed(() => {
-  const u = user.value as Record<string, string> | null;
-  return u?.username ?? '';
-});
+const userUsername = computed(() => user.value?.username ?? '');
 </script>
 
 <template>
@@ -138,6 +140,9 @@ const userUsername = computed(() => {
     <main id="main-content">
       <slot />
     </main>
+
+    <!-- Toast notifications -->
+    <AppToast />
 
     <!-- ═══ FOOTER ═══ -->
     <footer class="cpub-footer">

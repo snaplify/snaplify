@@ -19,7 +19,7 @@ const emit = defineEmits<{
     <button class="cpub-ep-section-header" @click="emit('toggle')">
       <i :class="['fa', icon, 'cpub-ep-sec-icon']"></i>
       <span class="cpub-ep-sec-label">{{ title }}</span>
-      <i class="fa fa-chevron-down cpub-ep-sec-arrow"></i>
+      <i class="fa-solid fa-chevron-down cpub-ep-sec-arrow"></i>
     </button>
     <div v-if="open" class="cpub-ep-section-body">
       <slot />

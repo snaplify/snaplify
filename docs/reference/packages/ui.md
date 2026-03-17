@@ -1,6 +1,6 @@
 # @commonpub/ui
 
-> 15 headless Vue 3 components and theme utilities with 4 built-in themes and 142 CSS tokens.
+> Headless Vue 3 components and theme utilities with base theme (light/dark) and CSS custom property tokens.
 
 **npm**: `@commonpub/ui`
 **Source**: `packages/ui/src/`
@@ -14,8 +14,8 @@
 
 | Export | Kind | Description |
 |--------|------|-------------|
-| `BUILT_IN_THEMES` | `ThemeDefinition[]` | Array of 4 built-in theme definitions |
-| `TOKEN_NAMES` | `string[]` | Array of 142 valid CSS token names |
+| `BUILT_IN_THEMES` | `ThemeDefinition[]` | Array of 3 built-in theme definitions (base, dark, generics) |
+| `TOKEN_NAMES` | `string[]` | Array of 136 valid CSS token names |
 | `isValidThemeId` | Function | Validates a theme ID string |
 | `validateTokenOverrides` | Function | Validates token override keys |
 | `applyThemeToElement` | Function | Applies theme + overrides to a DOM element |

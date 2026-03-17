@@ -12,9 +12,9 @@
 
 The schema package is the foundation of CommonPub — every other package and app depends on it. It defines:
 
-- **41 database tables** across 13 sub-modules
-- **24 PostgreSQL enums** for type-safe domain values
-- **35+ Zod validators** for input validation at system boundaries
+- **52 database tables** across 12 sub-modules
+- **30 PostgreSQL enums** for type-safe domain values
+- **59 Zod validators** for input validation at system boundaries
 
 All tables use UUID primary keys, `timestamp with timezone` for dates, and Drizzle's query builder API.
 
@@ -25,11 +25,12 @@ All tables use UUID primary keys, `timestamp with timezone` for dates, and Drizz
 ```
 packages/schema/src/
 ├── index.ts          → Re-exports everything
-├── enums.ts          → 24 pgEnum definitions
-├── auth.ts           → users, sessions, accounts, organizations, members, federatedAccounts, oauthClients, verifications
-├── content.ts        → contentItems, contentForks, tags, contentTags
-├── social.ts         → likes, follows, comments, bookmarks, notifications, reports
-├── community.ts      → communities, communityMembers, communityPosts, communityPostReplies, communityBans, communityInvites, communityShares
+├── enums.ts          → 30+ pgEnum definitions
+├── auth.ts           → users, sessions, accounts, organizations, members, federatedAccounts, oauthClients, oauthCodes, verifications
+├── content.ts        → contentItems, contentVersions, contentForks, tags, contentTags
+├── social.ts         → likes, follows, comments, bookmarks, notifications, reports, conversations, messages
+├── hub.ts            → hubs, hubMembers, hubPosts, hubPostReplies, hubBans, hubInvites, hubShares
+├── product.ts        → products, contentProducts
 ├── learning.ts       → learningPaths, learningModules, learningLessons, enrollments, lessonProgress, certificates
 ├── docs.ts           → docsSites, docsVersions, docsPages, docsNav
 ├── federation.ts     → remoteActors, activities, followRelationships, actorKeypairs
@@ -42,7 +43,7 @@ packages/schema/src/
 
 ---
 
-## Enums (24)
+## Enums (30)
 
 All enums are `pgEnum` from `drizzle-orm/pg-core`.
 
@@ -59,7 +60,7 @@ All enums are `pgEnum` from `drizzle-orm/pg-core`.
 | Export | Enum Name | Values |
 |--------|-----------|--------|
 | `contentStatusEnum` | `content_status` | `draft`, `published`, `archived` |
-| `contentTypeEnum` | `content_type` | `project`, `article`, `guide`, `blog`, `explainer` |
+| `contentTypeEnum` | `content_type` | `project`, `article`, `blog`, `explainer` |
 | `difficultyEnum` | `difficulty` | `beginner`, `intermediate`, `advanced` |
 | `contentVisibilityEnum` | `content_visibility` | `public`, `members`, `private` |
 
@@ -67,21 +68,31 @@ All enums are `pgEnum` from `drizzle-orm/pg-core`.
 
 | Export | Enum Name | Values |
 |--------|-----------|--------|
-| `likeTargetTypeEnum` | `like_target_type` | `project`, `article`, `blog`, `explainer`, `comment`, `post`, `guide` |
+| `likeTargetTypeEnum` | `like_target_type` | `project`, `article`, `blog`, `explainer`, `comment`, `post` |
 | `commentTargetTypeEnum` | `comment_target_type` | `project`, `article`, `blog`, `explainer`, `post`, `lesson` |
 | `bookmarkTargetTypeEnum` | `bookmark_target_type` | `project`, `article`, `blog`, `explainer`, `learning_path` |
 | `reportTargetTypeEnum` | `report_target_type` | `project`, `article`, `blog`, `post`, `comment`, `user`, `explainer` |
 | `reportReasonEnum` | `report_reason` | `spam`, `harassment`, `inappropriate`, `copyright`, `other` |
 | `reportStatusEnum` | `report_status` | `pending`, `reviewed`, `resolved`, `dismissed` |
-| `notificationTypeEnum` | `notification_type` | `like`, `comment`, `follow`, `mention`, `contest`, `certificate`, `community`, `system` |
+| `notificationTypeEnum` | `notification_type` | `like`, `comment`, `follow`, `mention`, `contest`, `certificate`, `hub`, `system` |
 
-### Community
+### Hubs
 
 | Export | Enum Name | Values |
 |--------|-----------|--------|
-| `communityRoleEnum` | `community_role` | `owner`, `admin`, `moderator`, `member` |
-| `communityJoinPolicyEnum` | `community_join_policy` | `open`, `approval`, `invite` |
+| `hubTypeEnum` | `hub_type` | `community`, `product`, `company` |
+| `hubPrivacyEnum` | `hub_privacy` | `public`, `unlisted`, `private` |
+| `hubRoleEnum` | `hub_role` | `owner`, `admin`, `moderator`, `member` |
+| `hubJoinPolicyEnum` | `hub_join_policy` | `open`, `approval`, `invite` |
+| `hubMemberStatusEnum` | `hub_member_status` | `pending`, `active` |
 | `postTypeEnum` | `post_type` | `text`, `link`, `share`, `poll` |
+
+### Products
+
+| Export | Enum Name | Values |
+|--------|-----------|--------|
+| `productStatusEnum` | `product_status` | `active`, `discontinued`, `preview` |
+| `productCategoryEnum` | `product_category` | `microcontroller`, `sbc`, `sensor`, `actuator`, `display`, `communication`, `power`, `mechanical`, `software`, `tool`, `other` |
 
 ### Learning
 
@@ -123,9 +134,9 @@ All enums are `pgEnum` from `drizzle-orm/pg-core`.
 
 ---
 
-## Tables (41)
+## Tables (44)
 
-### Auth & User Management (8 tables)
+### Auth & User Management (9 tables)
 
 #### `users`
 
@@ -151,6 +162,10 @@ Primary user table. Mapped to Better Auth's user model.
 | `profileVisibility` | profile_visibility | DEFAULT 'public', NOT NULL |
 | `skills` | jsonb | NULLABLE — `string[]` |
 | `theme` | varchar(64) | NULLABLE |
+| `pronouns` | varchar(32) | NULLABLE |
+| `timezone` | varchar(64) | NULLABLE |
+| `emailNotifications` | jsonb | NULLABLE — `{digest?, likes?, comments?, follows?, mentions?}` |
+| `deletedAt` | timestamp(tz) | NULLABLE — soft delete |
 | `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 | `updatedAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
@@ -234,6 +249,19 @@ Registered OAuth2 clients (other CommonPub instances).
 | `instanceDomain` | varchar(255) | NOT NULL |
 | `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
+#### `oauthCodes`
+
+OAuth2 authorization codes for AP SSO. Single-use, with TTL.
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `code` | varchar(255) | PK |
+| `userId` | UUID | NOT NULL, FK → users.id CASCADE |
+| `clientId` | varchar(255) | NOT NULL |
+| `redirectUri` | text | NOT NULL |
+| `expiresAt` | timestamp(tz) | NOT NULL |
+| `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+
 #### `verifications`
 
 Email verification tokens, magic links, etc.
@@ -246,11 +274,11 @@ Email verification tokens, magic links, etc.
 | `expiresAt` | timestamp(tz) | NOT NULL |
 | `createdAt` / `updatedAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-### Content Management (4 tables)
+### Content Management (5 tables)
 
 #### `contentItems`
 
-Unified content table. All content types (project, article, guide, blog, explainer) share this table with a `type` enum discriminator.
+Unified content table. All content types (project, article, blog, explainer) share this table with a `type` enum discriminator.
 
 | Column | Type | Constraints |
 |--------|------|-------------|
@@ -274,12 +302,35 @@ Unified content table. All content types (project, article, guide, blog, explain
 | `previewToken` | varchar(64) | NULLABLE |
 | `parts` | jsonb | NULLABLE |
 | `sections` | jsonb | NULLABLE — explainer sections |
+| `licenseType` | varchar(32) | NULLABLE — MIT, CC-BY-SA, etc. |
+| `series` | varchar(128) | NULLABLE — multi-part grouping |
+| `estimatedMinutes` | integer | NULLABLE — read/build time |
+| `canonicalUrl` | text | NULLABLE — federation: original URL |
+| `apObjectId` | text | NULLABLE — federation: AP object URI |
+| `deletedAt` | timestamp(tz) | NULLABLE — soft delete |
 | `viewCount` | integer | DEFAULT 0, NOT NULL |
 | `likeCount` | integer | DEFAULT 0, NOT NULL |
 | `commentCount` | integer | DEFAULT 0, NOT NULL |
 | `forkCount` | integer | DEFAULT 0, NOT NULL |
 | `publishedAt` | timestamp(tz) | NULLABLE |
 | `createdAt` / `updatedAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+
+#### `contentVersions`
+
+Snapshot of content state at publish time. Auto-created by `publishContent()`.
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | UUID | PK |
+| `contentId` | UUID | FK → contentItems.id CASCADE |
+| `version` | integer | NOT NULL |
+| `title` | varchar(255) | NULLABLE |
+| `content` | jsonb | NULLABLE |
+| `metadata` | jsonb | NULLABLE — snapshot of all metadata |
+| `createdById` | UUID | FK → users.id CASCADE |
+| `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+
+---
 
 #### `contentForks`
 
@@ -308,7 +359,7 @@ Unified content table. All content types (project, article, guide, blog, explain
 | `contentId` | UUID | FK → contentItems.id CASCADE |
 | `tagId` | UUID | FK → tags.id CASCADE |
 
-### Social (6 tables)
+### Social (8 tables)
 
 #### `likes`
 
@@ -388,9 +439,32 @@ Unified content table. All content types (project, article, guide, blog, explain
 | `resolution` | text | NULLABLE |
 | `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-### Communities (7 tables)
+#### `conversations`
 
-#### `communities`
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | UUID | PK |
+| `participants` | jsonb | NOT NULL — string[] of user IDs |
+| `lastMessageAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+| `lastMessage` | text | NULLABLE — preview of last message |
+| `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+
+#### `messages`
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | UUID | PK |
+| `conversationId` | UUID | FK → conversations.id CASCADE |
+| `senderId` | UUID | FK → users.id CASCADE |
+| `body` | text | NOT NULL |
+| `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+| `readAt` | timestamp(tz) | NULLABLE |
+
+### Hubs (7 tables)
+
+#### `hubs`
+
+Three types: community, product, company. See plan-v2.md Phase 0.1 for the hub model.
 
 | Column | Type | Constraints |
 |--------|------|-------------|
@@ -400,66 +474,73 @@ Unified content table. All content types (project, article, guide, blog, explain
 | `description` | text | NULLABLE |
 | `rules` | text | NULLABLE |
 | `iconUrl` / `bannerUrl` | text | NULLABLE |
-| `joinPolicy` | community_join_policy | DEFAULT 'open', NOT NULL |
+| `hubType` | hub_type | DEFAULT 'community', NOT NULL |
+| `privacy` | hub_privacy | DEFAULT 'public', NOT NULL |
+| `joinPolicy` | hub_join_policy | DEFAULT 'open', NOT NULL |
+| `parentHubId` | UUID | NULLABLE, FK → hubs.id (product→company link) |
+| `website` | varchar(512) | NULLABLE |
+| `categories` | jsonb | NULLABLE — string[] |
 | `createdById` | UUID | FK → users.id CASCADE |
 | `isOfficial` | boolean | DEFAULT false, NOT NULL |
 | `memberCount` / `postCount` | integer | DEFAULT 0, NOT NULL |
+| `apActorId` | text | NULLABLE (federation) |
+| `deletedAt` | timestamp(tz) | NULLABLE (soft delete) |
 | `createdAt` / `updatedAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-#### `communityMembers`
-
-**Primary key**: `(communityId, userId)` composite
+#### `hubMembers`
 
 | Column | Type | Constraints |
 |--------|------|-------------|
-| `communityId` | UUID | FK → communities.id CASCADE |
+| `hubId` | UUID | FK → hubs.id CASCADE |
 | `userId` | UUID | FK → users.id CASCADE |
-| `role` | community_role | DEFAULT 'member', NOT NULL |
+| `role` | hub_role | DEFAULT 'member', NOT NULL |
+| `status` | hub_member_status | DEFAULT 'active', NOT NULL |
 | `joinedAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-#### `communityPosts`
+#### `hubPosts`
 
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | UUID | PK |
-| `communityId` | UUID | FK → communities.id CASCADE |
+| `hubId` | UUID | FK → hubs.id CASCADE |
 | `authorId` | UUID | FK → users.id CASCADE |
 | `type` | post_type | DEFAULT 'text', NOT NULL |
 | `content` | text | NOT NULL |
 | `isPinned` / `isLocked` | boolean | DEFAULT false, NOT NULL |
 | `likeCount` / `replyCount` | integer | DEFAULT 0, NOT NULL |
+| `lastEditedAt` | timestamp(tz) | NULLABLE |
 | `createdAt` / `updatedAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-#### `communityPostReplies`
+#### `hubPostReplies`
 
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | UUID | PK |
-| `postId` | UUID | FK → communityPosts.id CASCADE |
+| `postId` | UUID | FK → hubPosts.id CASCADE |
 | `authorId` | UUID | FK → users.id CASCADE |
 | `parentId` | UUID | NULLABLE (self-ref for threads) |
 | `content` | text | NOT NULL |
 | `likeCount` | integer | DEFAULT 0, NOT NULL |
 | `createdAt` / `updatedAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-#### `communityBans`
+#### `hubBans`
 
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | UUID | PK |
-| `communityId` | UUID | FK → communities.id CASCADE |
+| `hubId` | UUID | FK → hubs.id CASCADE |
 | `userId` | UUID | FK → users.id CASCADE |
 | `bannedById` | UUID | FK → users.id CASCADE |
 | `reason` | text | NULLABLE |
 | `expiresAt` | timestamp(tz) | NULLABLE |
 | `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-#### `communityInvites`
+#### `hubInvites`
 
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | UUID | PK |
-| `communityId` | UUID | FK → communities.id CASCADE |
+| `hubId` | UUID | FK → hubs.id CASCADE |
 | `createdById` | UUID | FK → users.id CASCADE |
 | `token` | varchar(64) | NOT NULL, UNIQUE |
 | `maxUses` | integer | NULLABLE |
@@ -467,15 +548,54 @@ Unified content table. All content types (project, article, guide, blog, explain
 | `expiresAt` | timestamp(tz) | NULLABLE |
 | `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-#### `communityShares`
+#### `hubShares`
 
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | UUID | PK |
-| `communityId` | UUID | FK → communities.id CASCADE |
+| `hubId` | UUID | FK → hubs.id CASCADE |
 | `contentId` | UUID | FK → contentItems.id CASCADE |
 | `sharedById` | UUID | FK → users.id CASCADE |
 | `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+
+### Products (2 tables)
+
+#### `products`
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | UUID | PK |
+| `name` | varchar(255) | NOT NULL |
+| `slug` | varchar(255) | NOT NULL, UNIQUE |
+| `description` | text | NULLABLE |
+| `hubId` | UUID | FK → hubs.id NOT NULL |
+| `category` | product_category | NULLABLE |
+| `specs` | jsonb | NULLABLE |
+| `imageUrl` | text | NULLABLE |
+| `purchaseUrl` | text | NULLABLE |
+| `datasheetUrl` | text | NULLABLE |
+| `alternatives` | jsonb | NULLABLE |
+| `pricing` | jsonb | NULLABLE |
+| `status` | product_status | DEFAULT 'active', NOT NULL |
+| `createdById` | UUID | FK → users.id |
+| `createdAt` / `updatedAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+
+#### `contentProducts`
+
+BOM join table — links content to products in the catalog.
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | UUID | PK |
+| `contentId` | UUID | FK → contentItems.id CASCADE |
+| `productId` | UUID | FK → products.id CASCADE |
+| `quantity` | integer | DEFAULT 1 |
+| `role` | varchar(64) | NULLABLE |
+| `notes` | text | NULLABLE |
+| `required` | boolean | DEFAULT true |
+| `sortOrder` | integer | DEFAULT 0 |
+| `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
+| | | UNIQUE(contentId, productId) |
 
 ### Documentation (4 tables)
 
@@ -663,7 +783,7 @@ RSA keypairs for HTTP Signature signing.
 | `privateKeyPem` | text | NOT NULL |
 | `createdAt` | timestamp(tz) | DEFAULT now(), NOT NULL |
 
-### Other Tables (6)
+### Other Tables (7)
 
 #### `files`
 
@@ -761,7 +881,7 @@ Key-value store for admin-configurable instance settings.
 
 ---
 
-## Validators (35+)
+## Validators (50+)
 
 All validators are Zod schemas exported from `packages/schema/src/validators.ts`.
 
@@ -775,33 +895,70 @@ All validators are Zod schemas exported from `packages/schema/src/validators.ts`
 | `bioSchema` | `z.string().max(2000).optional()` |
 | `socialLinksSchema` | `z.object({github?, twitter?, linkedin?, youtube?, instagram?, mastodon?, discord?}).optional()` |
 | `createUserSchema` | `{email, username, displayName?}` |
-| `updateProfileSchema` | `{displayName?, bio?, headline?, location?, website?, socialLinks?, skills?}` |
+| `updateProfileSchema` | `{displayName?, bio?, headline?, location?, website?, socialLinks?, skills?, pronouns?, timezone?, emailNotifications?}` |
 
 ### Content Validators
 
 | Export | Shape |
 |--------|-------|
 | `slugSchema` | `z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)` |
-| `contentTypeSchema` | `z.enum(['project','article','guide','blog','explainer'])` |
+| `contentTypeSchema` | `z.enum(['project','article','blog','explainer'])` |
 | `contentStatusSchema` | `z.enum(['draft','published','archived'])` |
 | `difficultySchema` | `z.enum(['beginner','intermediate','advanced'])` |
-| `createContentSchema` | `{type, title, slug, subtitle?, description?, content?, coverImageUrl?, category?, difficulty?, tags?}` |
+| `createContentSchema` | `{type, title, subtitle?, description?, content?, coverImageUrl?, category?, difficulty?, buildTime?, estimatedCost?, estimatedMinutes?, visibility?, seoDescription?, licenseType?, series?, sections?, tags?}` |
 | `updateContentSchema` | `createContentSchema.partial().omit({type: true})` |
 
 ### Social Validators
 
 | Export | Shape |
 |--------|-------|
-| `likeTargetTypeSchema` | `z.enum(['project','article','blog','comment','post','explainer','guide'])` |
+| `likeTargetTypeSchema` | `z.enum(['project','article','blog','comment','post','explainer'])` |
 | `commentTargetTypeSchema` | `z.enum(['project','article','blog','explainer','post','lesson'])` |
 | `createCommentSchema` | `{targetType, targetId: uuid, parentId?: uuid, content: string(1..10000)}` |
 
-### Community Validators
+### Hub Validators
 
 | Export | Shape |
 |--------|-------|
-| `createCommunitySchema` | `{name, slug, description?, rules?, joinPolicy?}` |
-| `createPostSchema` | `{communityId: uuid, type?, content}` |
+| `hubTypeSchema` | `z.enum(['community','product','company'])` |
+| `createHubSchema` | `{name, description?, rules?, hubType?, joinPolicy?, privacy?, website?, categories?, parentHubId?}` |
+| `updateHubSchema` | `createHubSchema.partial()` |
+| `createPostSchema` | `{hubId: uuid, type?, content, sharedContentId?, pollOptions?, pollMultiSelect?}` |
+| `createReplySchema` | `{postId: uuid, content, parentId?}` |
+| `createInviteSchema` | `{maxUses?, expiresAt?}` |
+| `banUserSchema` | `{userId: uuid, reason?, expiresAt?}` |
+| `changeRoleSchema` | `{userId: uuid, role}` |
+
+### Product Validators
+
+| Export | Shape |
+|--------|-------|
+| `createProductSchema` | `{name, slug?, description?, category?, imageUrl?, purchaseUrl?, datasheetUrl?, specs?, status?}` |
+| `updateProductSchema` | `createProductSchema.partial()` |
+| `addContentProductSchema` | `{productId: uuid, quantity?, role?, notes?, required?}` |
+
+### Contest Validators
+
+| Export | Shape |
+|--------|-------|
+| `createContestSchema` | `{title, slug?, description?, rules?, startDate, endDate, prizes?, judges?}` |
+| `updateContestSchema` | `createContestSchema.partial()` |
+| `judgeEntrySchema` | `{entryId: uuid, score: number(1-100)}` |
+| `contestTransitionSchema` | `{status: 'active'\|'judging'\|'completed'}` |
+
+### Video Validators
+
+| Export | Shape |
+|--------|-------|
+| `createVideoSchema` | `{title, url, platform, description?, thumbnailUrl?, duration?, categoryId?}` |
+| `createVideoCategorySchema` | `{name, slug?, description?}` |
+
+### Messaging Validators
+
+| Export | Shape |
+|--------|-------|
+| `createConversationSchema` | `{participants: string[]}` |
+| `sendMessageSchema` | `{body: string}` |
 
 ### Learning Validators
 
@@ -827,8 +984,11 @@ All validators are Zod schemas exported from `packages/schema/src/validators.ts`
 
 | Export | Shape |
 |--------|-------|
-| `createDocsSiteSchema` | `{name, slug, description?}` |
-| `createDocsPageSchema` | `{versionId: uuid, title, slug, content: string, sortOrder?, parentId?}` |
+| `createDocsSiteSchema` | `{name, description?}` |
+| `updateDocsSiteSchema` | `createDocsSiteSchema.partial()` |
+| `createDocsPageSchema` | `{versionId?: uuid, title, content: string, sortOrder?, parentId?}` |
+| `updateDocsPageSchema` | `createDocsPageSchema.partial()` |
+| `createDocsVersionSchema` | `{version, isDefault?, copyFromVersionId?}` |
 
 ### Report Validators
 

@@ -97,7 +97,7 @@ describe('createTestConfig', () => {
   it('should accept feature overrides', () => {
     const config = createTestConfig({ features: { federation: true } as any });
     expect(config.features.federation).toBe(true);
-    expect(config.features.communities).toBe(true);
+    expect(config.features.hubs).toBe(true);
   });
 
   it('should accept auth overrides', () => {

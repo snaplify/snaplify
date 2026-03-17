@@ -254,13 +254,13 @@ stateDiagram-v2
     banned --> [*]: ban expires
 
     note right of member
-        communityMembers row.
+        hubMembers row.
         role: 'member' (default).
         Can be promoted: moderator → admin → owner.
     end note
 
     note right of banned
-        communityBans row created.
+        hubBans row created.
         Optional expiresAt for temp bans.
         Prevents rejoin while active.
     end note
@@ -302,7 +302,7 @@ erDiagram
     users ||--o{ bookmarks : saves
     users ||--o{ follows : "follows/followed"
     users ||--o{ notifications : receives
-    users ||--o{ communityMembers : joins
+    users ||--o{ hubMembers : joins
     users ||--o{ enrollments : enrolls
     users ||--o{ certificates : earns
     users ||--o{ federatedAccounts : "SSO links"
@@ -311,15 +311,18 @@ erDiagram
 
     contentItems ||--o{ contentTags : tagged
     contentItems ||--o{ contentForks : forked
+    contentItems ||--o{ contentProducts : "uses products"
     tags ||--o{ contentTags : used
 
-    communities ||--o{ communityMembers : has
-    communities ||--o{ communityPosts : contains
-    communities ||--o{ communityBans : enforces
-    communities ||--o{ communityInvites : creates
-    communities ||--o{ communityShares : shares
+    hubs ||--o{ hubMembers : has
+    hubs ||--o{ hubPosts : contains
+    hubs ||--o{ hubBans : enforces
+    hubs ||--o{ hubInvites : creates
+    hubs ||--o{ hubShares : shares
+    hubs ||--o{ products : catalogs
 
-    communityPosts ||--o{ communityPostReplies : has
+    hubPosts ||--o{ hubPostReplies : has
+    products ||--o{ contentProducts : "used in"
 
     learningPaths ||--o{ learningModules : contains
     learningModules ||--o{ learningLessons : contains

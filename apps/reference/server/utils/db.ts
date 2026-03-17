@@ -1,10 +1,12 @@
 // Singleton Drizzle DB instance for Nitro server
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
+import * as schema from '@commonpub/schema';
+import type { DB } from '@commonpub/server';
 
-let db: ReturnType<typeof drizzle> | null = null;
+let db: DB | null = null;
 
-export function useDB(): ReturnType<typeof drizzle> {
+export function useDB(): DB {
   if (db) return db;
 
   const config = useRuntimeConfig();
@@ -15,7 +17,7 @@ export function useDB(): ReturnType<typeof drizzle> {
   }
 
   const pool = new pg.Pool({ connectionString: databaseUrl });
-  db = drizzle(pool);
+  db = drizzle(pool, { schema }) as unknown as DB;
 
   return db;
 }

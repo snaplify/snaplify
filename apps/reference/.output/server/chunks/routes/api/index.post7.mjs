@@ -1,8 +1,7 @@
-import { d as defineEventHandler, u as useDB, c as readBody, bM as createVideoSchema, f as createError, bN as createVideo } from '../../nitro/nitro.mjs';
+import { d as defineEventHandler, u as useDB, c as readBody, bY as createVideoSchema, f as createError, bZ as createVideo } from '../../nitro/nitro.mjs';
 import { a as requireAuth } from '../../_/auth.mjs';
-import 'drizzle-orm/pg-core';
 import 'drizzle-orm';
-import 'zod';
+import 'drizzle-orm/pg-core';
 import 'jose';
 import 'node:fs';
 import 'node:fs/promises';
@@ -14,6 +13,7 @@ import 'node:https';
 import 'node:events';
 import 'node:buffer';
 import 'node:url';
+import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';

@@ -1,12 +1,39 @@
 <script setup lang="ts">
+interface VideoAuthor {
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+interface VideoCategory {
+  id: string;
+  name: string;
+}
+
+interface VideoDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  embedUrl: string | null;
+  platform: string;
+  thumbnailUrl: string | null;
+  duration: string | null;
+  viewCount: number;
+  category: VideoCategory | string | null;
+  author: VideoAuthor | null;
+  createdBy: string | null;
+  createdAt: string;
+}
+
 const route = useRoute();
 const videoId = computed(() => route.params.id as string);
 
-const { data: video } = await useFetch(() => `/api/videos/${videoId.value}`);
+const { data: video } = await useFetch<VideoDetail>(() => `/api/videos/${videoId.value}`);
 
 useSeoMeta({
-  title: () => video.value?.title ? `${(video.value as Record<string, unknown>).title} — CommonPub` : 'Video — CommonPub',
-  description: () => (video.value as Record<string, unknown>)?.description as string ?? '',
+  title: () => video.value?.title ? `${video.value.title} — CommonPub` : 'Video — CommonPub',
+  description: () => video.value?.description ?? '',
 });
 
 // Track view
@@ -16,26 +43,33 @@ onMounted(() => {
   }
 });
 
-const v = computed(() => video.value as Record<string, unknown> | null);
-
-function embedUrl(url: string): string | null {
-  // YouTube
+function buildEmbedUrl(url: string): string | null {
   const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-  // Vimeo
   const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   return null;
 }
 
 const videoEmbedUrl = computed(() => {
-  const url = v.value?.url as string | undefined;
-  return url ? embedUrl(url) : null;
+  const url = video.value?.embedUrl || video.value?.url;
+  return url ? buildEmbedUrl(url) : null;
+});
+
+const categoryName = computed(() => {
+  const cat = video.value?.category;
+  if (!cat) return null;
+  return typeof cat === 'string' ? cat : cat.name;
+});
+
+const authorInitial = computed(() => {
+  const a = video.value?.author;
+  return (a?.displayName || a?.username || 'U').charAt(0).toUpperCase();
 });
 </script>
 
 <template>
-  <div v-if="v" class="cpub-video-page">
+  <div v-if="video" class="cpub-video-page">
     <!-- Video player -->
     <div class="cpub-video-player">
       <iframe
@@ -44,36 +78,36 @@ const videoEmbedUrl = computed(() => {
         class="cpub-video-iframe"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen
-        :title="(v.title as string) || 'Video'"
+        :title="video.title || 'Video'"
       />
       <div v-else class="cpub-video-placeholder">
         <i class="fa-solid fa-play"></i>
         <p>Video preview not available</p>
-        <a v-if="v.url" :href="(v.url as string)" target="_blank" rel="noopener" class="cpub-link">Open video link</a>
+        <a v-if="video.url" :href="video.url" target="_blank" rel="noopener" class="cpub-link">Open video link</a>
       </div>
     </div>
 
     <!-- Video info -->
     <div class="cpub-video-info">
-      <h1 class="cpub-video-title">{{ v.title }}</h1>
+      <h1 class="cpub-video-title">{{ video.title }}</h1>
       <div class="cpub-video-meta">
-        <span v-if="v.category"><i class="fa-solid fa-tag"></i> {{ (v.category as Record<string, unknown>)?.name ?? v.category }}</span>
-        <span><i class="fa-regular fa-eye"></i> {{ ((v.viewCount as number) ?? 0).toLocaleString() }} views</span>
-        <span v-if="v.duration"><i class="fa-regular fa-clock"></i> {{ v.duration }}</span>
-        <span v-if="v.createdAt">{{ new Date(v.createdAt as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
+        <span v-if="categoryName"><i class="fa-solid fa-tag"></i> {{ categoryName }}</span>
+        <span><i class="fa-regular fa-eye"></i> {{ (video.viewCount ?? 0).toLocaleString() }} views</span>
+        <span v-if="video.duration"><i class="fa-regular fa-clock"></i> {{ video.duration }}</span>
+        <span v-if="video.createdAt">{{ new Date(video.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
       </div>
-      <p v-if="v.description" class="cpub-video-desc">{{ v.description }}</p>
+      <p v-if="video.description" class="cpub-video-desc">{{ video.description }}</p>
 
       <!-- Author -->
-      <div v-if="v.author || v.createdBy" class="cpub-video-author">
-        <div class="cpub-video-author-av">{{ ((v.author as Record<string, unknown>)?.displayName as string ?? (v.author as Record<string, unknown>)?.username as string ?? 'U').charAt(0).toUpperCase() }}</div>
+      <div v-if="video.author" class="cpub-video-author">
+        <div class="cpub-video-author-av">{{ authorInitial }}</div>
         <div>
           <NuxtLink
-            v-if="(v.author as Record<string, unknown>)?.username"
-            :to="`/u/${(v.author as Record<string, unknown>).username}`"
+            v-if="video.author.username"
+            :to="`/u/${video.author.username}`"
             class="cpub-video-author-name"
           >
-            {{ (v.author as Record<string, unknown>)?.displayName ?? (v.author as Record<string, unknown>)?.username }}
+            {{ video.author.displayName ?? video.author.username }}
           </NuxtLink>
         </div>
       </div>

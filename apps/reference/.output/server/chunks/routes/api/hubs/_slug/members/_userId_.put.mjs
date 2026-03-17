@@ -1,8 +1,7 @@
-import { d as defineEventHandler, u as useDB, a as getRouterParam, c as readBody, aB as changeRoleSchema, f as createError, am as getHubBySlug, aC as changeRole } from '../../../../../nitro/nitro.mjs';
+import { d as defineEventHandler, u as useDB, a as getRouterParam, c as readBody, aF as changeRoleSchema, f as createError, an as getHubBySlug, aG as changeRole } from '../../../../../nitro/nitro.mjs';
 import { a as requireAuth } from '../../../../../_/auth.mjs';
-import 'drizzle-orm/pg-core';
 import 'drizzle-orm';
-import 'zod';
+import 'drizzle-orm/pg-core';
 import 'jose';
 import 'node:fs';
 import 'node:fs/promises';
@@ -14,6 +13,7 @@ import 'node:https';
 import 'node:events';
 import 'node:buffer';
 import 'node:url';
+import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';

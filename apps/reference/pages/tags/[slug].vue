@@ -103,18 +103,6 @@ async function loadMore(): Promise<void> {
   padding: 24px 0;
 }
 
-.cpub-btn {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-}
-
-.cpub-btn:hover { background: var(--surface2); }
-
 @media (max-width: 768px) {
   .cpub-tag-grid { grid-template-columns: 1fr; }
 }

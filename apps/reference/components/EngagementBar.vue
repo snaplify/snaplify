@@ -12,6 +12,7 @@ const emit = defineEmits<{
   like: [];
   bookmark: [];
   share: [];
+  comment: [];
 }>();
 
 const liked = ref(props.isLiked ?? false);
@@ -65,7 +66,7 @@ async function toggleBookmark(): Promise<void> {
       <span>{{ likes }}</span>
     </button>
 
-    <button class="cpub-engage-btn" aria-label="Comments">
+    <button class="cpub-engage-btn" aria-label="Comments" @click="$emit('comment')">
       <i class="fa-regular fa-comment"></i>
       <span>{{ commentCount }}</span>
     </button>

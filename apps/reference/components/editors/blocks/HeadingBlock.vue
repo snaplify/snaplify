@@ -12,6 +12,7 @@ const emit = defineEmits<{
 
 const level = computed(() => (props.content.level as number) ?? 2);
 const text = computed(() => (props.content.text as string) ?? '');
+const headingEl = ref<HTMLElement | null>(null);
 
 function onTextInput(event: Event): void {
   const el = event.target as HTMLElement;
@@ -22,20 +23,27 @@ function cycleLevel(): void {
   const next = level.value >= 4 ? 2 : level.value + 1;
   emit('update', { text: text.value, level: next });
 }
+
+// Set initial text without v-text (which fights with contenteditable)
+onMounted(() => {
+  if (headingEl.value && text.value) {
+    headingEl.value.textContent = text.value;
+  }
+});
 </script>
 
 <template>
   <div class="cpub-heading-block">
-    <button class="cpub-heading-level" title="Change heading level" @click="cycleLevel">
+    <button class="cpub-heading-level" title="Change heading level" aria-label="Change heading level" @click="cycleLevel">
       H{{ level }}
     </button>
     <div
+      ref="headingEl"
       class="cpub-heading-text"
       :class="`cpub-heading-text--h${level}`"
       contenteditable="true"
       :data-placeholder="`Heading ${level}`"
       @input="onTextInput"
-      v-text="text"
     />
   </div>
 </template>

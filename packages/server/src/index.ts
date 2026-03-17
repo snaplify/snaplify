@@ -284,6 +284,9 @@ export {
   getVideoById,
   createVideo,
   listVideoCategories,
+  createVideoCategory,
+  updateVideoCategory,
+  deleteVideoCategory,
   incrementVideoViewCount,
 } from './video.js';
 export type {

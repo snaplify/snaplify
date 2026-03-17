@@ -1,7 +1,7 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 /** Framework-agnostic database type for Drizzle ORM with node-postgres */
-export type DB = NodePgDatabase<Record<string, unknown>>;
+export type DB = NodePgDatabase;
 
 // --- User Types ---
 
@@ -47,6 +47,23 @@ export interface ContentListItem {
   author: UserRef;
 }
 
+export interface ContentDetailAuthor extends UserRef {
+  bio?: string | null;
+  headline?: string | null;
+  followerCount?: number;
+  articleCount?: number;
+  totalViews?: number;
+}
+
+export interface ContentRelatedItem {
+  id: string;
+  type: string;
+  slug: string;
+  title: string;
+  viewCount: number;
+  coverImageUrl: string | null;
+}
+
 export interface ContentDetail extends ContentListItem {
   subtitle: string | null;
   content: unknown;
@@ -62,6 +79,8 @@ export interface ContentDetail extends ContentListItem {
   forkCount: number;
   updatedAt: Date;
   tags: Array<{ id: string; name: string; slug: string }>;
+  author: ContentDetailAuthor;
+  related?: ContentRelatedItem[];
 }
 
 export interface ContentFilters {

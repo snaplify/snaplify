@@ -2,7 +2,7 @@ import { deleteProduct } from '@commonpub/server';
 
 export default defineEventHandler(async (event) => {
   const db = useDB();
-  requireAuth(event);
+  requireAdmin(event);
   const id = getRouterParam(event, 'id');
 
   if (!id) {

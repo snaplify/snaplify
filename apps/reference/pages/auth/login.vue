@@ -7,11 +7,14 @@ useSeoMeta({
 });
 
 const { signIn } = useAuth();
+const route = useRoute();
 
 const email = ref('');
 const password = ref('');
 const error = ref('');
 const loading = ref(false);
+
+const redirectTo = computed(() => (route.query.redirect as string) || '/');
 
 async function handleSubmit(): Promise<void> {
   error.value = '';
@@ -19,10 +22,14 @@ async function handleSubmit(): Promise<void> {
 
   try {
     await signIn(email.value, password.value);
-    await navigateTo('/');
+    await navigateTo(redirectTo.value);
   } catch (err: unknown) {
-    const message = (err as { data?: { message?: string } })?.data?.message;
-    error.value = message || 'Invalid email or password.';
+    const fetchErr = err as { statusCode?: number; data?: { message?: string; statusMessage?: string } };
+    if (fetchErr?.statusCode === 503) {
+      error.value = 'Database unavailable. Make sure PostgreSQL is running.';
+    } else {
+      error.value = fetchErr?.data?.statusMessage || fetchErr?.data?.message || 'Invalid email or password.';
+    }
   } finally {
     loading.value = false;
   }
@@ -65,6 +72,8 @@ async function handleSubmit(): Promise<void> {
       <button type="submit" class="submit-btn" :disabled="loading">
         {{ loading ? 'Logging in...' : 'Log in' }}
       </button>
+
+      <NuxtLink to="/auth/forgot-password" class="forgot-link">Forgot your password?</NuxtLink>
     </form>
 
     <p class="login-footer">
@@ -179,6 +188,18 @@ async function handleSubmit(): Promise<void> {
 }
 
 .login-footer a:hover {
+  text-decoration: underline;
+}
+
+.forgot-link {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  text-decoration: none;
+  display: block;
+}
+.forgot-link:hover {
+  color: var(--accent);
   text-decoration: underline;
 }
 </style>

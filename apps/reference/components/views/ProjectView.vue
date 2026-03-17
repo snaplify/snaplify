@@ -14,14 +14,23 @@ const { data: bomProducts } = useFetch(() => `/api/content/${props.content?.id}/
   immediate: !!props.content?.id,
 });
 
-const tabs = computed(() => [
-  { value: 'overview', label: 'Overview' },
-  { value: 'code', label: 'Code' },
-  { value: 'schematics', label: 'Schematics' },
-  { value: 'bom', label: 'BOM', count: (props.content?.parts?.length ?? 0) + (bomProducts.value?.length ?? 0) },
-  { value: 'files', label: 'Files' },
-  { value: 'comments', label: 'Comments', count: props.content?.commentCount ?? 0 },
-]);
+const tabs = computed(() => {
+  const result = [
+    { value: 'overview', label: 'Overview', count: 0 },
+  ];
+  const bomCount = partsFromBlocks.value.length + (bomProducts.value?.length ?? 0);
+  if (bomCount > 0 || buildStepsFromBlocks.value.length > 0) {
+    result.push({ value: 'bom', label: 'Parts & Steps', count: bomCount });
+  }
+  if (codeBlocks.value.length > 0) {
+    result.push({ value: 'code', label: 'Code', count: codeBlocks.value.length });
+  }
+  if (downloadFiles.value.length > 0) {
+    result.push({ value: 'files', label: 'Files', count: downloadFiles.value.length });
+  }
+  result.push({ value: 'comments', label: 'Discussion', count: props.content?.commentCount ?? 0 });
+  return result;
+});
 
 const contentId = computed(() => props.content?.id);
 const contentType = computed(() => props.content?.type ?? 'project');
@@ -59,6 +68,113 @@ const formattedDate = computed(() => {
   return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 });
 
+// Extract parts list blocks from content for BOM tab
+interface PartItem {
+  name: string;
+  quantity: number;
+  productId?: string;
+  notes?: string;
+}
+
+const partsFromBlocks = computed<PartItem[]>(() => {
+  const blocks = props.content?.content;
+  if (!Array.isArray(blocks)) return [];
+  const items: PartItem[] = [];
+  for (const block of blocks) {
+    const [type, data] = block as [string, Record<string, unknown>];
+    if (type === 'partsList' && Array.isArray(data.parts)) {
+      for (const part of data.parts as Array<Record<string, unknown>>) {
+        items.push({
+          name: (part.name as string) || 'Unknown',
+          quantity: (part.qty as number) ?? (part.quantity as number) ?? 1,
+          productId: part.productId as string | undefined,
+          notes: (part.notes as string) || '',
+        });
+      }
+    }
+  }
+  return items;
+});
+
+// Extract build steps from content
+interface BuildStep {
+  number: number;
+  title: string;
+  instructions: string;
+  image?: string;
+  time?: string;
+}
+
+const buildStepsFromBlocks = computed<BuildStep[]>(() => {
+  const blocks = props.content?.content;
+  if (!Array.isArray(blocks)) return [];
+  const steps: BuildStep[] = [];
+  let stepNum = 0;
+  for (const block of blocks) {
+    const [type, data] = block as [string, Record<string, unknown>];
+    if (type === 'buildStep') {
+      stepNum++;
+      steps.push({
+        number: (data.stepNumber as number) || stepNum,
+        title: (data.title as string) || `Step ${stepNum}`,
+        instructions: (data.instructions as string) || '',
+        image: data.image as string | undefined,
+        time: data.time as string | undefined,
+      });
+    }
+  }
+  return steps;
+});
+
+// Extract code blocks for code tab
+interface CodeSnippet {
+  language: string;
+  filename: string;
+  code: string;
+}
+
+const codeBlocks = computed<CodeSnippet[]>(() => {
+  const blocks = props.content?.content;
+  if (!Array.isArray(blocks)) return [];
+  const snippets: CodeSnippet[] = [];
+  for (const block of blocks) {
+    const [type, data] = block as [string, Record<string, unknown>];
+    if (type === 'code_block' || type === 'codeBlock') {
+      snippets.push({
+        language: (data.language as string) || '',
+        filename: (data.filename as string) || '',
+        code: (data.code as string) || '',
+      });
+    }
+  }
+  return snippets;
+});
+
+// Extract download blocks for files tab
+interface FileItem {
+  name: string;
+  url: string;
+  size?: string;
+}
+
+const downloadFiles = computed<FileItem[]>(() => {
+  const blocks = props.content?.content;
+  if (!Array.isArray(blocks)) return [];
+  const files: FileItem[] = [];
+  for (const block of blocks) {
+    const [type, data] = block as [string, Record<string, unknown>];
+    if (type === 'downloads' && Array.isArray(data.files)) {
+      for (const file of data.files as Array<Record<string, unknown>>) {
+        files.push({
+          name: (file.name as string) || 'Unknown',
+          url: (file.url as string) || '',
+          size: (file.size as string) || '',
+        });
+      }
+    }
+  }
+  return files;
+});
 </script>
 
 <template>
@@ -152,22 +268,116 @@ const formattedDate = computed(() => {
       <div class="cpub-content-grid">
         <!-- LEFT: CONTENT -->
         <div class="cpub-content-col">
-          <div class="cpub-prose">
-            <template v-if="content.content && Array.isArray(content.content) && content.content.length > 0">
-              <ClientOnly>
-                <CpubEditor :model-value="content.content" :editable="false" />
-              </ClientOnly>
-            </template>
-            <template v-else>
-              <div class="cpub-prose-section">
-                <div class="cpub-section-title">Introduction</div>
-                <p class="cpub-prose-p">No content body yet. This project doesn't have any content blocks.</p>
-              </div>
-            </template>
-          </div>
+          <!-- OVERVIEW TAB -->
+          <template v-if="activeTab === 'overview'">
+            <div class="cpub-prose">
+              <template v-if="content.content && Array.isArray(content.content) && (content.content as unknown[]).length > 0">
+                <BlockContentRenderer :blocks="(content.content as [string, Record<string, unknown>][])" />
+              </template>
+              <template v-else>
+                <div class="cpub-prose-section">
+                  <div class="cpub-section-title">Introduction</div>
+                  <p class="cpub-prose-p">No content body yet. This project doesn't have any content blocks.</p>
+                </div>
+              </template>
+            </div>
+          </template>
 
-          <!-- Comments -->
-          <CommentSection :target-type="content.type" :target-id="content.id" />
+          <!-- BOM / PARTS & STEPS TAB -->
+          <template v-else-if="activeTab === 'bom'">
+            <!-- Parts Table -->
+            <div v-if="partsFromBlocks.length > 0" class="cpub-bom-section">
+              <h2 class="cpub-tab-section-title"><i class="fa-solid fa-list-check"></i> Parts List</h2>
+              <div class="cpub-parts-table-wrap">
+                <table class="cpub-parts-table">
+                  <thead>
+                    <tr>
+                      <th>Component</th>
+                      <th>Qty</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(part, idx) in partsFromBlocks" :key="idx">
+                      <td class="cpub-part-name">{{ part.name }}</td>
+                      <td class="cpub-part-qty">{{ part.quantity }}</td>
+                      <td class="cpub-part-notes">{{ part.notes || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Linked Products from catalog -->
+            <div v-if="bomProducts?.length" class="cpub-bom-section">
+              <h2 class="cpub-tab-section-title"><i class="fa-solid fa-cube"></i> Linked Products</h2>
+              <div class="cpub-linked-products">
+                <div v-for="bp in bomProducts" :key="bp.id" class="cpub-linked-product">
+                  <div class="cpub-linked-product-icon"><i class="fa-solid fa-microchip"></i></div>
+                  <div class="cpub-linked-product-info">
+                    <NuxtLink :to="`/products/${bp.productSlug}`" class="cpub-linked-product-name">{{ bp.productName }}</NuxtLink>
+                    <span class="cpub-linked-product-qty">× {{ bp.quantity }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Build Steps -->
+            <div v-if="buildStepsFromBlocks.length > 0" class="cpub-bom-section">
+              <h2 class="cpub-tab-section-title"><i class="fa-solid fa-hammer"></i> Build Steps</h2>
+              <div class="cpub-build-steps">
+                <div v-for="step in buildStepsFromBlocks" :key="step.number" class="cpub-build-step">
+                  <div class="cpub-build-step-header">
+                    <span class="cpub-build-step-num">{{ step.number }}</span>
+                    <h3 class="cpub-build-step-title">{{ step.title }}</h3>
+                    <span v-if="step.time" class="cpub-build-step-time"><i class="fa-regular fa-clock"></i> {{ step.time }}</span>
+                  </div>
+                  <div class="cpub-build-step-body">
+                    <p>{{ step.instructions }}</p>
+                    <img v-if="step.image" :src="step.image" :alt="`Step ${step.number}`" class="cpub-build-step-img" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p v-if="partsFromBlocks.length === 0 && !bomProducts?.length && buildStepsFromBlocks.length === 0" class="cpub-tab-empty">
+              No parts or build steps have been added to this project yet.
+            </p>
+          </template>
+
+          <!-- CODE TAB -->
+          <template v-else-if="activeTab === 'code'">
+            <div class="cpub-code-tab">
+              <div v-for="(snippet, idx) in codeBlocks" :key="idx" class="cpub-code-snippet">
+                <div class="cpub-code-snippet-header">
+                  <span class="cpub-code-lang-label">{{ snippet.language || 'plain text' }}</span>
+                  <span v-if="snippet.filename" class="cpub-code-filename">{{ snippet.filename }}</span>
+                </div>
+                <pre class="cpub-code-body"><code>{{ snippet.code }}</code></pre>
+              </div>
+            </div>
+          </template>
+
+          <!-- FILES TAB -->
+          <template v-else-if="activeTab === 'files'">
+            <div class="cpub-files-tab">
+              <div v-for="(file, idx) in downloadFiles" :key="idx" class="cpub-file-row">
+                <div class="cpub-file-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
+                <div class="cpub-file-info">
+                  <a :href="file.url" class="cpub-file-name" download>{{ file.name }}</a>
+                  <span v-if="file.size" class="cpub-file-size">{{ file.size }}</span>
+                </div>
+                <a :href="file.url" class="cpub-file-download" download>
+                  <i class="fa-solid fa-download"></i>
+                </a>
+              </div>
+            </div>
+          </template>
+
+          <!-- DISCUSSION TAB -->
+          <template v-else-if="activeTab === 'comments'">
+            <CommentSection :target-type="content.type" :target-id="content.id" />
+          </template>
         </div>
 
         <!-- RIGHT: SIDEBAR -->
@@ -881,6 +1091,201 @@ const formattedDate = computed(() => {
   padding-top: 10px;
   text-align: center;
 }
+
+/* ── TAB CONTENT ── */
+.cpub-tab-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+
+.cpub-tab-section-title i { font-size: 12px; color: var(--text-faint); }
+.cpub-tab-empty { font-size: 13px; color: var(--text-faint); text-align: center; padding: 48px 0; }
+
+/* Parts Table */
+.cpub-bom-section { margin-bottom: 32px; }
+.cpub-parts-table-wrap { overflow-x: auto; }
+
+.cpub-parts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cpub-parts-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 8px 12px;
+  text-align: left;
+  background: var(--surface2);
+  border-bottom: 2px solid var(--border);
+}
+
+.cpub-parts-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border2);
+  color: var(--text-dim);
+}
+
+.cpub-part-name { font-weight: 500; color: var(--text); }
+.cpub-part-qty { font-family: var(--font-mono); font-size: 12px; text-align: center; width: 50px; }
+.cpub-part-notes { font-size: 12px; color: var(--text-faint); }
+
+/* Linked Products */
+.cpub-linked-products { display: flex; flex-direction: column; gap: 8px; }
+
+.cpub-linked-product {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+.cpub-linked-product-icon {
+  width: 32px; height: 32px;
+  background: var(--accent-bg);
+  border: 2px solid var(--accent-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--accent); flex-shrink: 0;
+}
+
+.cpub-linked-product-info { flex: 1; display: flex; align-items: center; gap: 8px; }
+.cpub-linked-product-name { font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+.cpub-linked-product-name:hover { text-decoration: underline; }
+.cpub-linked-product-qty { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+
+/* Build Steps */
+.cpub-build-steps { display: flex; flex-direction: column; gap: 16px; }
+
+.cpub-build-step {
+  border: 2px solid var(--border);
+  overflow: hidden;
+  box-shadow: 4px 4px 0 var(--border);
+}
+
+.cpub-build-step-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  background: var(--border);
+  color: var(--surface);
+}
+
+.cpub-build-step-num {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cpub-build-step-title { font-size: 14px; font-weight: 600; flex: 1; }
+.cpub-build-step-time { font-family: var(--font-mono); font-size: 11px; opacity: 0.7; display: flex; align-items: center; gap: 4px; }
+
+.cpub-build-step-body {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.cpub-build-step-body p { margin-bottom: 12px; }
+.cpub-build-step-body p:last-child { margin-bottom: 0; }
+
+.cpub-build-step-img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  margin-top: 12px;
+}
+
+/* Code Tab */
+.cpub-code-tab { display: flex; flex-direction: column; gap: 16px; }
+
+.cpub-code-snippet {
+  border: 2px solid var(--border);
+  overflow: hidden;
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+.cpub-code-snippet-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  background: var(--surface2);
+  border-bottom: 2px solid var(--border);
+}
+
+.cpub-code-lang-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.cpub-code-filename {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-left: auto;
+}
+
+.cpub-code-body {
+  margin: 0;
+  padding: 16px;
+  background: var(--text);
+  color: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Files Tab */
+.cpub-files-tab { display: flex; flex-direction: column; gap: 8px; }
+
+.cpub-file-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+.cpub-file-icon {
+  width: 32px; height: 32px;
+  background: var(--surface2);
+  border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--text-faint); flex-shrink: 0;
+}
+
+.cpub-file-info { flex: 1; min-width: 0; }
+.cpub-file-name { font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cpub-file-name:hover { text-decoration: underline; }
+.cpub-file-size { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); }
+
+.cpub-file-download {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-bg); border: 2px solid var(--accent-border);
+  color: var(--accent); font-size: 12px; text-decoration: none; flex-shrink: 0;
+}
+
+.cpub-file-download:hover { background: var(--accent); color: var(--color-text-inverse); }
 
 /* Cover image */
 .cpub-hero-cover-has-image {

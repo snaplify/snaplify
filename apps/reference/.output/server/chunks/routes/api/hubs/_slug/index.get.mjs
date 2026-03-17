@@ -1,7 +1,6 @@
-import { d as defineEventHandler, u as useDB, a as getRouterParam, g as getQuery, aH as listPosts } from '../../../../nitro/nitro.mjs';
-import 'drizzle-orm/pg-core';
+import { d as defineEventHandler, u as useDB, a as getRouterParam, g as getQuery, an as getHubBySlug, f as createError, aL as listPosts } from '../../../../nitro/nitro.mjs';
 import 'drizzle-orm';
-import 'zod';
+import 'drizzle-orm/pg-core';
 import 'jose';
 import 'node:fs';
 import 'node:fs/promises';
@@ -13,6 +12,7 @@ import 'node:https';
 import 'node:events';
 import 'node:buffer';
 import 'node:url';
+import 'zod';
 import 'drizzle-orm/node-postgres';
 import 'pg';
 import 'better-auth';
@@ -23,8 +23,11 @@ const index_get = defineEventHandler(async (event) => {
   const db = useDB();
   const slug = getRouterParam(event, "slug");
   const query = getQuery(event);
-  return listPosts(db, {
-    hubId: slug,
+  const hub = await getHubBySlug(db, slug);
+  if (!hub) {
+    throw createError({ statusCode: 404, statusMessage: "Hub not found" });
+  }
+  return listPosts(db, hub.id, {
     type: query.type,
     limit: query.limit ? Number(query.limit) : void 0,
     offset: query.offset ? Number(query.offset) : void 0

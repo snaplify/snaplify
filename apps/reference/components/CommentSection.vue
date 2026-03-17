@@ -1,4 +1,17 @@
 <script setup lang="ts">
+interface CommentAuthor {
+  id: string;
+  username: string;
+  displayName: string | null;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: CommentAuthor | null;
+}
+
 const props = defineProps<{
   targetType: string;
   targetId: string;
@@ -11,7 +24,7 @@ const queryParams = computed(() => ({
   targetId: props.targetId,
 }));
 
-const { data: comments, refresh } = await useFetch('/api/social/comments', {
+const { data: comments, refresh } = await useFetch<Comment[]>('/api/social/comments', {
   query: queryParams,
   lazy: true,
 });
@@ -74,24 +87,24 @@ async function deleteComment(id: string): Promise<void> {
 
     <!-- Comments list -->
     <div class="cpub-comment-list">
-      <div v-for="comment in (comments || [])" :key="(comment as any).id" class="cpub-comment">
+      <div v-for="comment in (comments || [])" :key="comment.id" class="cpub-comment">
         <div class="cpub-comment-avatar">
-          {{ ((comment as any).author?.displayName || (comment as any).author?.username || 'U').charAt(0).toUpperCase() }}
+          {{ (comment.author?.displayName || comment.author?.username || 'U').charAt(0).toUpperCase() }}
         </div>
         <div class="cpub-comment-body">
           <div class="cpub-comment-header">
-            <NuxtLink :to="`/u/${(comment as any).author?.username}`" class="cpub-comment-author">
-              {{ (comment as any).author?.displayName || (comment as any).author?.username }}
+            <NuxtLink :to="`/u/${comment.author?.username}`" class="cpub-comment-author">
+              {{ comment.author?.displayName || comment.author?.username }}
             </NuxtLink>
             <time class="cpub-comment-time">
-              {{ new Date((comment as any).createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
+              {{ new Date(comment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
             </time>
           </div>
-          <p class="cpub-comment-text">{{ (comment as any).content }}</p>
+          <p class="cpub-comment-text">{{ comment.content }}</p>
           <button
-            v-if="(user as any)?.id === (comment as any).author?.id"
+            v-if="user?.id === comment.author?.id"
             class="cpub-comment-delete"
-            @click="deleteComment((comment as any).id)"
+            @click="deleteComment(comment.id)"
             aria-label="Delete comment"
           >
             Delete
