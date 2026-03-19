@@ -5,17 +5,8 @@ import { createInviteSchema } from '@commonpub/schema';
 export default defineEventHandler(async (event): Promise<HubInviteItem> => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, 'slug') as string;
-  const body = await readBody(event);
-
-  const parsed = createInviteSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
+  const { slug } = parseParams(event, { slug: 'string' });
+  const input = await parseBody(event, createInviteSchema);
 
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
@@ -26,7 +17,7 @@ export default defineEventHandler(async (event): Promise<HubInviteItem> => {
     db,
     user.id,
     hub.id,
-    parsed.data.maxUses,
-    parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : undefined,
+    input.maxUses,
+    input.expiresAt ? new Date(input.expiresAt) : undefined,
   );
 });

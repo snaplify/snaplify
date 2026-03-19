@@ -377,6 +377,7 @@
 .cpub-btn-sm {
   padding: 4px 10px;
   font-size: var(--text-xs);
+  min-height: 44px;
 }
 
 .cpub-btn-lg {

@@ -8,8 +8,8 @@ const reorderSchema = z.object({
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const siteSlug = getRouterParam(event, 'siteSlug')!;
-  const body = reorderSchema.parse(await readBody(event));
+  const { siteSlug } = parseParams(event, { siteSlug: 'string' });
+  const body = await parseBody(event, reorderSchema);
 
   const site = await getDocsSiteBySlug(db, siteSlug);
   if (!site) throw createError({ statusCode: 404, statusMessage: 'Docs site not found' });

@@ -23,7 +23,7 @@ import {
   buildLikeActivity,
   type ResolvedActor,
 } from '@commonpub/protocol';
-import type { DB } from './types.js';
+import type { DB } from '../types.js';
 
 // --- Keypair Management ---
 

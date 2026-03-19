@@ -11,11 +11,7 @@ function getStorage(): ReturnType<typeof createStorageFromEnv> {
 export default defineEventHandler(async (event): Promise<{ deleted: boolean }> => {
   const db = useDB();
   const user = requireAuth(event);
-  const id = getRouterParam(event, 'id');
-
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'File ID is required' });
-  }
+  const { id } = parseParams(event, { id: 'uuid' });
 
   const result = await db
     .delete(files)

@@ -6,8 +6,9 @@ import {
   hubs,
   users,
 } from '@commonpub/schema';
-import type { DB, UserRef } from './types.js';
-import { generateSlug } from './utils.js';
+import type { DB, UserRef } from '../types.js';
+import { generateSlug } from '../utils.js';
+import { ensureUniqueSlugFor, USER_REF_SELECT, normalizePagination, countRows } from '../query.js';
 
 // --- Types ---
 
@@ -56,31 +57,6 @@ export interface ProductFilters {
   offset?: number;
 }
 
-// --- Slug Helper ---
-
-async function ensureUniqueProductSlug(
-  db: DB,
-  slug: string,
-  excludeId?: string,
-): Promise<string> {
-  if (!slug) slug = `product-${Date.now()}`;
-
-  const conditions = [eq(products.slug, slug)];
-  if (excludeId) {
-    const { ne } = await import('drizzle-orm');
-    conditions.push(ne(products.id, excludeId));
-  }
-
-  const existing = await db
-    .select({ id: products.id })
-    .from(products)
-    .where(and(...conditions))
-    .limit(1);
-
-  if (existing.length === 0) return slug;
-  return `${slug}-${Date.now()}`;
-}
-
 // --- Product CRUD ---
 
 export async function createProduct(
@@ -99,7 +75,7 @@ export async function createProduct(
     status?: 'active' | 'discontinued' | 'preview';
   },
 ): Promise<ProductDetail> {
-  const slug = await ensureUniqueProductSlug(db, generateSlug(input.name));
+  const slug = await ensureUniqueSlugFor(db, products, products.slug, products.id, generateSlug(input.name), 'product');
 
   const [product] = await db
     .insert(products)
@@ -151,7 +127,7 @@ export async function updateProduct(
 
   if (input.name !== undefined) {
     updates.name = input.name;
-    updates.slug = await ensureUniqueProductSlug(db, generateSlug(input.name), productId);
+    updates.slug = await ensureUniqueSlugFor(db, products, products.slug, products.id, generateSlug(input.name), 'product', productId);
   }
   if (input.description !== undefined) updates.description = input.description;
   if (input.category !== undefined) updates.category = input.category;
@@ -197,12 +173,7 @@ export async function getProductBySlug(
   const rows = await db
     .select({
       product: products,
-      createdBy: {
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      },
+      createdBy: USER_REF_SELECT,
       hub: {
         id: hubs.id,
         name: hubs.name,
@@ -258,10 +229,9 @@ export async function listHubProducts(
   }
 
   const where = and(...conditions);
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select()
       .from(products)
@@ -269,10 +239,7 @@ export async function listHubProducts(
       .orderBy(desc(products.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(products)
-      .where(where),
+    countRows(db, products, where),
   ]);
 
   const items: ProductListItem[] = rows.map((p) => ({
@@ -288,7 +255,7 @@ export async function listHubProducts(
     createdAt: p.createdAt,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function searchProducts(
@@ -311,10 +278,9 @@ export async function searchProducts(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select()
       .from(products)
@@ -322,10 +288,7 @@ export async function searchProducts(
       .orderBy(desc(products.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(products)
-      .where(where),
+    countRows(db, products, where),
   ]);
 
   const items: ProductListItem[] = rows.map((p) => ({
@@ -341,7 +304,7 @@ export async function searchProducts(
     createdAt: p.createdAt,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 // --- Content-Product Linking (BOM) ---
@@ -509,8 +472,7 @@ export async function listProductContent(
   productId: string,
   opts: { limit?: number; offset?: number } = {},
 ): Promise<{ items: Array<{ id: string; title: string; slug: string; type: string; coverImageUrl: string | null; author: UserRef; publishedAt: Date | null }>; total: number }> {
-  const limit = Math.min(opts.limit ?? 20, 100);
-  const offset = opts.offset ?? 0;
+  const { limit, offset } = normalizePagination(opts);
 
   const where = and(
     eq(contentProducts.productId, productId),
@@ -528,12 +490,7 @@ export async function listProductContent(
           coverImageUrl: contentItems.coverImageUrl,
           publishedAt: contentItems.publishedAt,
         },
-        author: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-        },
+        author: USER_REF_SELECT,
       })
       .from(contentProducts)
       .innerJoin(contentItems, eq(contentProducts.contentId, contentItems.id))
@@ -563,8 +520,7 @@ export async function listHubGallery(
   hubId: string,
   opts: { limit?: number; offset?: number } = {},
 ): Promise<{ items: Array<{ id: string; title: string; slug: string; type: string; coverImageUrl: string | null; author: UserRef; publishedAt: Date | null }>; total: number }> {
-  const limit = Math.min(opts.limit ?? 20, 100);
-  const offset = opts.offset ?? 0;
+  const { limit, offset } = normalizePagination(opts);
 
   // Get hub type to determine gallery source
   const hub = await db
@@ -709,12 +665,7 @@ export async function listHubGallery(
           coverImageUrl: contentItems.coverImageUrl,
           publishedAt: contentItems.publishedAt,
         },
-        author: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-        },
+        author: USER_REF_SELECT,
       })
       .from(hubShares)
       .innerJoin(contentItems, eq(hubShares.contentId, contentItems.id))

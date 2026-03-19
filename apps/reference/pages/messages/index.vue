@@ -113,7 +113,9 @@ async function startConversation(): Promise<void> {
 
 <style scoped>
 .cpub-messages-page {
-  max-width: 720px;
+  max-width: var(--content-max-width, 960px);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
 }
 
 .cpub-messages-header {

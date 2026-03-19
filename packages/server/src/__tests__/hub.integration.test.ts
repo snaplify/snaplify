@@ -18,7 +18,7 @@ import {
   listBans,
   createInvite,
   listInvites,
-} from '../hub.js';
+} from '../hub/hub.js';
 
 describe('hub integration', () => {
   let db: DB;

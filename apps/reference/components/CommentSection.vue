@@ -19,15 +19,44 @@ const props = defineProps<{
 
 const { user } = useAuth();
 
+const commentLimit = 20;
+
 const queryParams = computed(() => ({
   targetType: props.targetType,
   targetId: props.targetId,
+  limit: commentLimit,
 }));
 
 const { data: comments, refresh } = await useFetch<Comment[]>('/api/social/comments', {
   query: queryParams,
   lazy: true,
 });
+
+const allCommentsLoaded = ref(false);
+const hasMore = computed(() => !allCommentsLoaded.value && (comments.value?.length ?? 0) >= commentLimit);
+const loadingMore = ref(false);
+
+async function loadMoreComments(): Promise<void> {
+  loadingMore.value = true;
+  try {
+    const more = await $fetch<Comment[]>('/api/social/comments', {
+      query: {
+        targetType: props.targetType,
+        targetId: props.targetId,
+        limit: commentLimit,
+        offset: comments.value?.length ?? 0,
+      },
+    });
+    if (more?.length && comments.value) {
+      comments.value.push(...more);
+    }
+    if (!more?.length || more.length < commentLimit) {
+      allCommentsLoaded.value = true;
+    }
+  } finally {
+    loadingMore.value = false;
+  }
+}
 
 const newComment = ref('');
 const submitting = ref(false);
@@ -112,6 +141,11 @@ async function deleteComment(id: string): Promise<void> {
         </div>
       </div>
       <p v-if="!comments?.length" class="cpub-comments-empty">No comments yet. Be the first!</p>
+      <div v-if="hasMore" class="cpub-comments-more">
+        <button class="cpub-btn cpub-btn-sm" :disabled="loadingMore" @click="loadMoreComments">
+          {{ loadingMore ? 'Loading...' : 'Load more comments' }}
+        </button>
+      </div>
     </div>
   </section>
 </template>
@@ -240,5 +274,10 @@ async function deleteComment(id: string): Promise<void> {
   font-size: 13px;
   text-align: center;
   padding: var(--space-6) 0;
+}
+
+.cpub-comments-more {
+  text-align: center;
+  padding: var(--space-4) 0;
 }
 </style>

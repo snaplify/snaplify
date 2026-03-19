@@ -7,6 +7,7 @@ const { data: path, pending: pathPending, error: pathError, refresh } = useLazyF
 useSeoMeta({
   title: () => path.value ? `${path.value.title} — Learn — CommonPub` : 'Learn — CommonPub',
   description: () => path.value?.description || '',
+  ogImage: '/og-default.png',
 });
 
 const { isAuthenticated, user } = useAuth();
@@ -63,16 +64,20 @@ watch(path, (p) => {
 // Flatten lessons for "Continue" button
 const flatLessons = computed(() => {
   if (!path.value?.modules) return [];
-  const result: Array<{ slug: string; title: string }> = [];
+  const result: Array<{ slug: string; title: string; isCompleted?: boolean }> = [];
   for (const mod of path.value.modules) {
     for (const l of (mod.lessons ?? [])) {
-      result.push({ slug: l.slug, title: l.title });
+      result.push({ slug: l.slug, title: l.title, isCompleted: (l as Record<string, unknown>).isCompleted as boolean | undefined });
     }
   }
   return result;
 });
 
-const firstLessonSlug = computed(() => flatLessons.value[0]?.slug ?? null);
+// Find next incomplete lesson, or fall back to first lesson
+const nextLessonSlug = computed(() => {
+  const incomplete = flatLessons.value.find(l => !l.isCompleted);
+  return incomplete?.slug ?? flatLessons.value[0]?.slug ?? null;
+});
 
 // Total lesson count
 const totalLessons = computed(() => {
@@ -134,7 +139,7 @@ function getDifficultyClass(d: string | null): string {
               </button>
             </template>
             <template v-if="path.isEnrolled">
-              <NuxtLink v-if="firstLessonSlug" :to="`/learn/${slug}/${firstLessonSlug}`" class="cpub-continue-btn">
+              <NuxtLink v-if="nextLessonSlug" :to="`/learn/${slug}/${nextLessonSlug}`" class="cpub-continue-btn">
                 <i class="fa-solid fa-play"></i> Continue Learning
               </NuxtLink>
               <button class="cpub-unenroll-btn" :disabled="unenrolling" @click="handleUnenroll">

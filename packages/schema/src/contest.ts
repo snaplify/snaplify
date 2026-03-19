@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, integer, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, integer, jsonb, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { users } from './auth.js';
 import { contentItems } from './content.js';
@@ -55,7 +55,9 @@ export const contestEntries = pgTable('contest_entries', {
     }>
   >(),
   submittedAt: timestamp('submitted_at', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => [
+  unique('contest_entries_user_content').on(t.contestId, t.userId, t.contentId),
+]);
 
 // --- Relations ---
 

@@ -3,10 +3,7 @@ import { getConversationMessages } from '@commonpub/server';
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const userId = user.id;
-  const conversationId = getRouterParam(event, 'conversationId');
-  if (!conversationId) {
-    throw createError({ statusCode: 400, statusMessage: 'Conversation ID required' });
-  }
+  const { conversationId } = parseParams(event, { conversationId: 'uuid' });
 
   const db = useDB();
 

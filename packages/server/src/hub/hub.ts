@@ -24,33 +24,9 @@ import type {
   HubRole,
   JoinPolicy,
   PostType,
-} from './types.js';
-import { generateSlug, hasPermission, canManageRole } from './utils.js';
-
-// --- Slug Helper ---
-
-async function ensureUniqueHubSlug(
-  db: DB,
-  slug: string,
-  excludeId?: string,
-): Promise<string> {
-  if (!slug) slug = `hub-${Date.now()}`;
-
-  const conditions = [eq(hubs.slug, slug)];
-  if (excludeId) {
-    const { ne } = await import('drizzle-orm');
-    conditions.push(ne(hubs.id, excludeId));
-  }
-
-  const existing = await db
-    .select({ id: hubs.id })
-    .from(hubs)
-    .where(and(...conditions))
-    .limit(1);
-
-  if (existing.length === 0) return slug;
-  return `${slug}-${Date.now()}`;
-}
+} from '../types.js';
+import { generateSlug, hasPermission, canManageRole } from '../utils.js';
+import { ensureUniqueSlugFor, USER_REF_SELECT, normalizePagination, countRows } from '../query.js';
 
 // --- Hub CRUD ---
 
@@ -70,19 +46,13 @@ export async function listHubs(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         hub: hubs,
-        createdBy: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-        },
+        createdBy: USER_REF_SELECT,
       })
       .from(hubs)
       .innerJoin(users, eq(hubs.createdById, users.id))
@@ -90,10 +60,7 @@ export async function listHubs(
       .orderBy(desc(hubs.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(hubs)
-      .where(where),
+    countRows(db, hubs, where),
   ]);
 
   const items: HubListItem[] = rows.map((row) => ({
@@ -112,7 +79,7 @@ export async function listHubs(
     createdBy: row.createdBy,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function getHubBySlug(
@@ -189,7 +156,7 @@ export async function createHub(
   userId: string,
   input: { name: string; description?: string; rules?: string; joinPolicy?: JoinPolicy },
 ): Promise<HubDetail> {
-  const slug = await ensureUniqueHubSlug(db, generateSlug(input.name));
+  const slug = await ensureUniqueSlugFor(db, hubs, hubs.slug, hubs.id, generateSlug(input.name), 'hub');
 
   const [inserted] = await db
     .insert(hubs)
@@ -242,7 +209,7 @@ export async function updateHub(
 
   if (input.name !== undefined) {
     updates.name = input.name;
-    updates.slug = await ensureUniqueHubSlug(db, generateSlug(input.name), hubId);
+    updates.slug = await ensureUniqueSlugFor(db, hubs, hubs.slug, hubs.id, generateSlug(input.name), 'hub', hubId);
   }
   if (input.description !== undefined) updates.description = input.description;
   if (input.rules !== undefined) updates.rules = input.rules;
@@ -383,12 +350,7 @@ export async function getMember(
   const rows = await db
     .select({
       member: hubMembers,
-      user: {
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      },
+      user: USER_REF_SELECT,
     })
     .from(hubMembers)
     .innerJoin(users, eq(hubMembers.userId, users.id))
@@ -411,12 +373,7 @@ export async function listMembers(db: DB, hubId: string): Promise<HubMemberItem[
   const rows = await db
     .select({
       member: hubMembers,
-      user: {
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      },
+      user: USER_REF_SELECT,
     })
     .from(hubMembers)
     .innerJoin(users, eq(hubMembers.userId, users.id))
@@ -579,12 +536,7 @@ export async function createPost(
       .where(eq(hubs.id, input.hubId));
 
     const author = await tx
-      .select({
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      })
+      .select(USER_REF_SELECT)
       .from(users)
       .where(eq(users.id, authorId))
       .limit(1);
@@ -617,19 +569,13 @@ export async function listPosts(
   }
 
   const where = and(...conditions);
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         post: hubPosts,
-        author: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-        },
+        author: USER_REF_SELECT,
       })
       .from(hubPosts)
       .innerJoin(users, eq(hubPosts.authorId, users.id))
@@ -637,10 +583,7 @@ export async function listPosts(
       .orderBy(desc(hubPosts.isPinned), desc(hubPosts.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(hubPosts)
-      .where(where),
+    countRows(db, hubPosts, where),
   ]);
 
   const items: HubPostItem[] = rows.map((row) => {
@@ -669,7 +612,7 @@ export async function listPosts(
     return item;
   });
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function deletePost(
@@ -822,12 +765,7 @@ export async function createReply(
     .where(eq(hubPosts.id, input.postId));
 
   const author = await db
-    .select({
-      id: users.id,
-      username: users.username,
-      displayName: users.displayName,
-      avatarUrl: users.avatarUrl,
-    })
+    .select(USER_REF_SELECT)
     .from(users)
     .where(eq(users.id, authorId))
     .limit(1);
@@ -1049,12 +987,7 @@ export async function listBans(db: DB, hubId: string): Promise<HubBanItem[]> {
   const rows = await db
     .select({
       ban: hubBans,
-      user: {
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      },
+      user: USER_REF_SELECT,
     })
     .from(hubBans)
     .innerJoin(users, eq(hubBans.userId, users.id))
@@ -1070,12 +1003,7 @@ export async function listBans(db: DB, hubId: string): Promise<HubBanItem[]> {
 
   if (uniqueBannerIds.length > 0) {
     const bannerRows = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      })
+      .select(USER_REF_SELECT)
       .from(users)
       .where(inArray(users.id, uniqueBannerIds));
     for (const row of bannerRows) {
@@ -1131,12 +1059,7 @@ export async function createInvite(
     .returning();
 
   const author = await db
-    .select({
-      id: users.id,
-      username: users.username,
-      displayName: users.displayName,
-      avatarUrl: users.avatarUrl,
-    })
+    .select(USER_REF_SELECT)
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);

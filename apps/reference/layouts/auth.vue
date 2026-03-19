@@ -6,7 +6,7 @@
   <div class="auth-layout">
     <main class="auth-content">
       <NuxtLink to="/" class="auth-brand" aria-label="Return to homepage">
-        CommonPub
+        <span class="auth-bracket">[</span>C<span class="auth-bracket">]</span> CommonPub
       </NuxtLink>
       <div class="auth-card">
         <slot />
@@ -42,6 +42,14 @@
   font-size: 18px;
   color: var(--text);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.auth-bracket {
+  color: var(--accent);
+  font-size: 20px;
 }
 
 .auth-card {

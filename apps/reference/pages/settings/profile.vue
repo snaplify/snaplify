@@ -6,6 +6,18 @@ const { user } = useAuth();
 const toast = useToast();
 const { extract: extractError } = useApiError();
 const saving = ref(false);
+const isDirty = ref(false);
+
+// Track changes
+function markDirty(): void { isDirty.value = true; }
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (isDirty.value && !confirm('You have unsaved changes. Leave anyway?')) {
+    next(false);
+  } else {
+    next();
+  }
+});
 
 const form = ref({
   displayName: '',
@@ -57,6 +69,13 @@ if (profile.value) {
     experience.value = p.experience.map((e) => ({ ...e }));
   }
 }
+
+// Watch for form changes AFTER initial data is loaded (nextTick avoids false positive)
+onMounted(() => {
+  nextTick(() => {
+    watch([form, skills, socialLinks, experience], () => { isDirty.value = true; }, { deep: true });
+  });
+});
 
 function addSkill(): void {
   skills.value.push({ name: '', proficiency: 50 });
@@ -126,6 +145,7 @@ async function handleSave(): Promise<void> {
       },
     });
     toast.success('Profile updated');
+    isDirty.value = false;
   } catch (err: unknown) {
     toast.error(extractError(err));
   } finally {

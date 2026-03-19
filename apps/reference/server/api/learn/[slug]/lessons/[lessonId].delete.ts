@@ -3,7 +3,7 @@ import { deleteLesson } from '@commonpub/server';
 export default defineEventHandler(async (event): Promise<{ success: boolean }> => {
   const user = requireAuth(event);
   const db = useDB();
-  const lessonId = getRouterParam(event, 'lessonId')!;
+  const { lessonId } = parseParams(event, { lessonId: 'uuid' });
 
   const deleted = await deleteLesson(db, lessonId, user.id);
   if (!deleted) {

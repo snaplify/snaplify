@@ -21,7 +21,9 @@ async function handleSubmit(): Promise<void> {
 
   try {
     await signUp(email.value, password.value, username.value);
-    registered.value = true;
+    const redirect = (useRoute().query.redirect as string) || '/dashboard';
+    await navigateTo(redirect);
+    return;
   } catch (err: unknown) {
     const message = (err as { data?: { message?: string } })?.data?.message;
     error.value = message || 'Registration failed. Please try again.';

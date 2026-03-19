@@ -3,10 +3,7 @@ import { deleteVideoCategory } from '@commonpub/server';
 export default defineEventHandler(async (event): Promise<{ success: boolean }> => {
   requireAdmin(event);
 
-  const id = getRouterParam(event, 'id');
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Category ID required' });
-  }
+  const { id } = parseParams(event, { id: 'uuid' });
 
   const db = useDB();
   const deleted = await deleteVideoCategory(db, id);

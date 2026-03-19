@@ -9,12 +9,9 @@ const paginationSchema = z.object({
 
 export default defineEventHandler(async (event): Promise<PaginatedResponse<FollowUserItem>> => {
   const db = useDB();
-  const username = getRouterParam(event, 'username');
+  const { username } = parseParams(event, { username: 'string' });
   const query = paginationSchema.parse(getQuery(event));
 
-  if (!username) {
-    throw createError({ statusCode: 400, statusMessage: 'Username is required' });
-  }
 
   const target = await getUserByUsername(db, username);
   if (!target) {

@@ -1,6 +1,14 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' });
 useSeoMeta({ title: 'Settings — CommonPub' });
+
+// Redirect bare /settings to /settings/profile on mount
+onMounted(() => {
+  const route = useRoute();
+  if (route.path === '/settings') {
+    navigateTo('/settings/profile', { replace: true });
+  }
+});
 </script>
 
 <template>

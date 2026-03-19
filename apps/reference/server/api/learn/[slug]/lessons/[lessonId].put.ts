@@ -12,10 +12,10 @@ const updateLessonSchema = z.object({
 export default defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const lessonId = getRouterParam(event, 'lessonId')!;
-  const body = updateLessonSchema.parse(await readBody(event));
+  const { lessonId } = parseParams(event, { lessonId: 'uuid' });
+  const input = await parseBody(event, updateLessonSchema);
 
-  const result = await updateLesson(db, lessonId, user.id, body);
+  const result = await updateLesson(db, lessonId, user.id, input);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: 'Lesson not found or not authorized' });
   }

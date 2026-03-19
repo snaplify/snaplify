@@ -11,8 +11,8 @@ import {
   judgeContestEntry,
   transitionContestStatus,
   listContestEntries,
-} from '../contest.js';
-import { createContent, publishContent } from '../content.js';
+} from '../contest/contest.js';
+import { createContent, publishContent } from '../content/content.js';
 
 describe('contest integration', () => {
   let db: DB;

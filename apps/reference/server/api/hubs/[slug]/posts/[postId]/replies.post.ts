@@ -5,7 +5,7 @@ import { createReplySchema } from '@commonpub/schema';
 export default defineEventHandler(async (event): Promise<HubReplyItem> => {
   const user = requireAuth(event);
   const db = useDB();
-  const postId = getRouterParam(event, 'postId')!;
+  const { postId } = parseParams(event, { postId: 'uuid' });
   const body = await readBody(event);
 
   const parsed = createReplySchema.safeParse({ ...body, postId });

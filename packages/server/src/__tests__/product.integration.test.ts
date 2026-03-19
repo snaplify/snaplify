@@ -11,9 +11,9 @@ import {
   removeContentProduct,
   listContentProducts,
   syncContentProducts,
-} from '../product.js';
-import { createHub } from '../hub.js';
-import { createContent } from '../content.js';
+} from '../product/product.js';
+import { createHub } from '../hub/hub.js';
+import { createContent } from '../content/content.js';
 
 describe('product integration', () => {
   let db: DB;

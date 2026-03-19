@@ -2,7 +2,7 @@ import { getDocsSiteBySlug } from '@commonpub/server';
 
 export default defineEventHandler(async (event) => {
   const db = useDB();
-  const siteSlug = getRouterParam(event, 'siteSlug')!;
+  const { siteSlug } = parseParams(event, { siteSlug: 'string' });
 
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) {

@@ -8,12 +8,9 @@ const galleryQuerySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, 'slug');
+  const { slug } = parseParams(event, { slug: 'string' });
   const query = galleryQuerySchema.parse(getQuery(event));
 
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: 'Hub slug is required' });
-  }
 
   const hub = await getHubBySlug(db, slug);
   if (!hub) {

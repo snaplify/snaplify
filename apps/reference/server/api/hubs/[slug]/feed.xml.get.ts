@@ -13,11 +13,8 @@ export default defineEventHandler(async (event) => {
   const db = useDB();
   const config = useRuntimeConfig();
   const siteUrl = config.public.siteUrl as string;
-  const slug = getRouterParam(event, 'slug');
+  const { slug } = parseParams(event, { slug: 'string' });
 
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: 'Hub slug required' });
-  }
 
   const hub = await getHubBySlug(db, slug);
   if (!hub) {

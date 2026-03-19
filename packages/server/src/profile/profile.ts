@@ -1,8 +1,8 @@
 import { eq, and, sql } from 'drizzle-orm';
 import { contentItems, users, follows } from '@commonpub/schema';
 import type { ContentType } from '@commonpub/schema';
-import type { DB, ContentListItem, UserProfile } from './types.js';
-import { listContent } from './content.js';
+import type { DB, ContentListItem, UserProfile } from '../types.js';
+import { listContent } from '../content/content.js';
 
 export async function getUserByUsername(db: DB, username: string): Promise<UserProfile | null> {
   const rows = await db

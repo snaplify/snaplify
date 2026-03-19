@@ -4,7 +4,7 @@ import { hubPostFiltersSchema } from '@commonpub/schema';
 
 export default defineEventHandler(async (event): Promise<PaginatedResponse<HubPostItem>> => {
   const db = useDB();
-  const slug = getRouterParam(event, 'slug')!;
+  const { slug } = parseParams(event, { slug: 'string' });
   const filters = hubPostFiltersSchema.parse(getQuery(event));
 
   const hub = await getHubBySlug(db, slug);

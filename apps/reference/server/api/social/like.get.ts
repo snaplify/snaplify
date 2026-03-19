@@ -10,7 +10,7 @@ const likeQuerySchema = z.object({
 export default defineEventHandler(async (event): Promise<{ liked: boolean }> => {
   const user = requireAuth(event);
   const db = useDB();
-  const query = likeQuerySchema.parse(getQuery(event));
+  const query = parseQueryParams(event, likeQuerySchema);
 
   const liked = await isLiked(db, user.id, query.targetType, query.targetId);
   return { liked };

@@ -7,7 +7,7 @@ const searchQuerySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const db = useDB();
-  const siteSlug = getRouterParam(event, 'siteSlug')!;
+  const { siteSlug } = parseParams(event, { siteSlug: 'string' });
   const query = searchQuerySchema.parse(getQuery(event));
 
   const result = await getDocsSiteBySlug(db, siteSlug);

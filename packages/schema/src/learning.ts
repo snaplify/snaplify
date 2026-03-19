@@ -113,7 +113,9 @@ export const certificates = pgTable('certificates', {
   verificationCode: varchar('verification_code', { length: 64 }).notNull().unique(),
   certificateUrl: text('certificate_url'),
   issuedAt: timestamp('issued_at', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => [
+  unique('certificates_user_path').on(t.userId, t.pathId),
+]);
 
 // --- Relations ---
 

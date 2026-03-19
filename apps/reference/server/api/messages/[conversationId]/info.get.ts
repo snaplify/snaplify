@@ -4,7 +4,7 @@ import { eq, and, sql } from 'drizzle-orm';
 export default defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const conversationId = getRouterParam(event, 'conversationId')!;
+  const { conversationId } = parseParams(event, { conversationId: 'uuid' });
 
   const rows = await db
     .select()

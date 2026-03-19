@@ -2,7 +2,7 @@ import { getUserByUsername, getUserEnrollments, getUserCertificates } from '@com
 
 export default defineEventHandler(async (event) => {
   const db = useDB();
-  const username = getRouterParam(event, 'username')!;
+  const { username } = parseParams(event, { username: 'string' });
 
   const profile = await getUserByUsername(db, username);
   if (!profile) {

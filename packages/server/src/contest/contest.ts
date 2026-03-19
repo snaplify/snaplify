@@ -1,6 +1,7 @@
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { contests, contestEntries, users, contentItems } from '@commonpub/schema';
-import type { DB } from './types.js';
+import type { DB } from '../types.js';
+import { normalizePagination, countRows } from '../query.js';
 
 import type { ContestStatus } from '@commonpub/schema';
 
@@ -77,10 +78,9 @@ export async function listContests(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select()
       .from(contests)
@@ -88,10 +88,7 @@ export async function listContests(
       .orderBy(desc(contests.startDate))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(contests)
-      .where(where),
+    countRows(db, contests, where),
   ]);
 
   const items: ContestListItem[] = rows.map((row) => ({
@@ -107,7 +104,7 @@ export async function listContests(
     createdAt: row.createdAt,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function getContestBySlug(

@@ -3,11 +3,7 @@ import { deleteProduct } from '@commonpub/server';
 export default defineEventHandler(async (event): Promise<{ deleted: boolean }> => {
   const db = useDB();
   requireAdmin(event);
-  const id = getRouterParam(event, 'id');
-
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Product ID is required' });
-  }
+  const { id } = parseParams(event, { id: 'uuid' });
 
   const deleted = await deleteProduct(db, id);
 

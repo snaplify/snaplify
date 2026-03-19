@@ -3,7 +3,7 @@ import { deleteHub, getHubBySlug } from '@commonpub/server';
 export default defineEventHandler(async (event): Promise<{ success: boolean }> => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, 'slug')!;
+  const { slug } = parseParams(event, { slug: 'string' });
 
   const hub = await getHubBySlug(db, slug, user.id);
   if (!hub) {

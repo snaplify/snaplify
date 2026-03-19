@@ -65,7 +65,19 @@ export type {
 } from '@commonpub/schema';
 
 // Utilities
-export { generateSlug, ensureUniqueSlug, hasPermission, canManageRole } from './utils.js';
+export { generateSlug, hasPermission, canManageRole } from './utils.js';
+
+// Query Helpers
+export {
+  ensureUniqueSlugFor,
+  USER_REF_SELECT,
+  USER_REF_WITH_BIO_SELECT,
+  USER_REF_WITH_HEADLINE_SELECT,
+  normalizePagination,
+  countRows,
+  buildPartialUpdates,
+} from './query.js';
+export type { PaginationOpts } from './query.js';
 
 // Content
 export {
@@ -84,8 +96,8 @@ export {
   forkContent,
   toggleBuildMark,
   isBuildMarked,
-} from './content.js';
-export type { ContentVersionItem } from './content.js';
+} from './content/index.js';
+export type { ContentVersionItem } from './content/index.js';
 
 // Hubs
 export {
@@ -119,7 +131,7 @@ export {
   shareContent,
   unshareContent,
   listShares,
-} from './hub.js';
+} from './hub/index.js';
 
 // Products
 export {
@@ -135,13 +147,13 @@ export {
   syncContentProducts,
   listProductContent,
   listHubGallery,
-} from './product.js';
+} from './product/index.js';
 export type {
   ProductListItem,
   ProductDetail,
   ContentProductItem,
   ProductFilters,
-} from './product.js';
+} from './product/index.js';
 
 // Social
 export {
@@ -159,8 +171,8 @@ export {
   listFollowing,
   createReport,
   listUserBookmarks,
-} from './social.js';
-export type { FollowUserItem, BookmarkItem } from './social.js';
+} from './social/index.js';
+export type { FollowUserItem, BookmarkItem } from './social/index.js';
 
 // Learning
 export {
@@ -187,7 +199,7 @@ export {
   getCertificateByCode,
   getLessonBySlug,
   getCompletedLessonIds,
-} from './learning.js';
+} from './learning/index.js';
 
 // Docs
 export {
@@ -208,7 +220,7 @@ export {
   getDocsNav,
   updateDocsNav,
   searchDocsPages,
-} from './docs.js';
+} from './docs/index.js';
 
 // Admin (includes audit)
 export {
@@ -225,7 +237,7 @@ export {
   setInstanceSetting,
   deleteUser,
   removeContent,
-} from './admin.js';
+} from './admin/index.js';
 export type {
   AuditEntry,
   AuditLogItem,
@@ -235,10 +247,10 @@ export type {
   UserFilters,
   ReportListItem,
   ReportFilters,
-} from './admin.js';
+} from './admin/index.js';
 
 // Profile
-export { getUserByUsername, getUserContent, updateUserProfile } from './profile.js';
+export { getUserByUsername, getUserContent, updateUserProfile } from './profile/index.js';
 
 // Security
 export {
@@ -273,7 +285,7 @@ export {
   getFollowers,
   getFollowing,
   listFederationActivity,
-} from './federation.js';
+} from './federation/index.js';
 
 // OAuth Codes
 export { storeAuthCode, consumeAuthCode, cleanupExpiredCodes } from './oauthCodes.js';
@@ -290,14 +302,14 @@ export {
   deleteContest,
   transitionContestStatus,
   calculateContestRanks,
-} from './contest.js';
+} from './contest/index.js';
 export type {
   ContestListItem,
   ContestDetail,
   ContestFilters,
   CreateContestInput,
   ContestEntryItem,
-} from './contest.js';
+} from './contest/index.js';
 
 // Notification
 export {
@@ -307,8 +319,8 @@ export {
   markAllNotificationsRead,
   deleteNotification,
   createNotification,
-} from './notification.js';
-export type { NotificationItem, NotificationFilters } from './notification.js';
+} from './notification/index.js';
+export type { NotificationItem, NotificationFilters } from './notification/index.js';
 
 // Messaging
 export {
@@ -317,8 +329,8 @@ export {
   createConversation,
   sendMessage,
   markMessagesRead,
-} from './messaging.js';
-export type { ConversationItem, MessageItem } from './messaging.js';
+} from './messaging/index.js';
+export type { ConversationItem, MessageItem } from './messaging/index.js';
 
 // Video
 export {
@@ -330,13 +342,13 @@ export {
   updateVideoCategory,
   deleteVideoCategory,
   incrementVideoViewCount,
-} from './video.js';
+} from './video/index.js';
 export type {
   VideoListItem,
   VideoDetail,
   VideoFilters,
   VideoCategoryItem,
-} from './video.js';
+} from './video/index.js';
 
 // Storage
 export {

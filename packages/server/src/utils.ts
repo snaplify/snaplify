@@ -1,7 +1,3 @@
-import { eq, and } from 'drizzle-orm';
-import { contentItems } from '@commonpub/schema';
-import type { DB } from './types.js';
-
 /** Generate a URL-safe slug from a string */
 export function generateSlug(text: string): string {
   return text
@@ -11,33 +7,6 @@ export function generateSlug(text: string): string {
     .replace(/[\s_]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 100);
-}
-
-/** Ensure a slug is unique among content items, appending a timestamp suffix if needed */
-export async function ensureUniqueSlug(
-  db: DB,
-  slug: string,
-  excludeId?: string,
-): Promise<string> {
-  if (!slug) {
-    slug = `untitled-${Date.now()}`;
-  }
-
-  const conditions = [eq(contentItems.slug, slug)];
-  if (excludeId) {
-    const { ne } = await import('drizzle-orm');
-    conditions.push(ne(contentItems.id, excludeId));
-  }
-
-  const existing = await db
-    .select({ id: contentItems.id })
-    .from(contentItems)
-    .where(and(...conditions))
-    .limit(1);
-
-  if (existing.length === 0) return slug;
-
-  return `${slug}-${Date.now()}`;
 }
 
 // --- Hub Permission Helpers ---

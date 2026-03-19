@@ -1,5 +1,6 @@
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
+import { normalizePagination, countRows } from '../query.js';
 import {
   users,
   contentItems,
@@ -14,7 +15,7 @@ import {
   instanceSettings,
   auditLogs,
 } from '@commonpub/schema';
-import type { DB } from './types.js';
+import type { DB } from '../types.js';
 import type { AdminUpdateRoleInput, AdminUpdateStatusInput } from '@commonpub/schema';
 
 // --- Audit Types ---
@@ -131,7 +132,7 @@ export async function listAuditLogs(
   const limit = Math.min(filters.limit ?? 50, 100);
   const offset = filters.offset ?? 0;
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         log: auditLogs,
@@ -147,10 +148,7 @@ export async function listAuditLogs(
       .orderBy(desc(auditLogs.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(auditLogs)
-      .where(where),
+    countRows(db, auditLogs, where),
   ]);
 
   const items: AuditLogItem[] = rows.map((row) => ({
@@ -168,7 +166,7 @@ export async function listAuditLogs(
     },
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 // --- Platform Stats ---
@@ -264,10 +262,9 @@ export async function listUsers(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         id: users.id,
@@ -284,15 +281,12 @@ export async function listUsers(
       .orderBy(desc(users.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(users)
-      .where(where),
+    countRows(db, users, where),
   ]);
 
   return {
     items: rows as UserListItem[],
-    total: countResult[0]?.count ?? 0,
+    total,
   };
 }
 
@@ -367,12 +361,11 @@ export async function listReports(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
   const reviewerAlias = alias(users, 'reviewer');
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         report: reports,
@@ -392,10 +385,7 @@ export async function listReports(
       .orderBy(desc(reports.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(reports)
-      .where(where),
+    countRows(db, reports, where),
   ]);
 
   const items: ReportListItem[] = rows.map((row) => ({
@@ -411,7 +401,7 @@ export async function listReports(
     reviewer: row.reviewer?.id ? { id: row.reviewer.id, username: row.reviewer.username } : null,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function resolveReport(

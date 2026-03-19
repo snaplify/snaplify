@@ -4,17 +4,8 @@ import { resolveReportSchema } from '@commonpub/schema';
 export default defineEventHandler(async (event): Promise<void> => {
   const admin = requireAdmin(event);
   const db = useDB();
-  const id = getRouterParam(event, 'id')!;
-  const body = await readBody(event);
+  const { id } = parseParams(event, { id: 'uuid' });
+  const input = await parseBody(event, resolveReportSchema);
 
-  const parsed = resolveReportSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
-
-  return resolveReport(db, id, parsed.data.resolution, parsed.data.status ?? 'resolved', admin.id);
+  return resolveReport(db, id, input.resolution, input.status ?? 'resolved', admin.id);
 });

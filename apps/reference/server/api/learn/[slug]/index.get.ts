@@ -3,7 +3,7 @@ import type { LearningPathDetail } from '@commonpub/server';
 
 export default defineEventHandler(async (event): Promise<LearningPathDetail> => {
   const db = useDB();
-  const slug = getRouterParam(event, 'slug')!;
+  const { slug } = parseParams(event, { slug: 'string' });
   const user = getOptionalUser(event);
 
   const path = await getPathBySlug(db, slug, user?.id);

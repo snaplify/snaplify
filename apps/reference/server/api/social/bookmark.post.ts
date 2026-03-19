@@ -1,5 +1,4 @@
 import { toggleBookmark } from '@commonpub/server';
-import { bookmarkTargetTypeEnum } from '@commonpub/schema';
 import { z } from 'zod';
 
 const toggleBookmarkSchema = z.object({
@@ -10,16 +9,7 @@ const toggleBookmarkSchema = z.object({
 export default defineEventHandler(async (event): Promise<{ bookmarked: boolean }> => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
+  const input = await parseBody(event, toggleBookmarkSchema);
 
-  const parsed = toggleBookmarkSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
-
-  return toggleBookmark(db, user.id, parsed.data.targetType, parsed.data.targetId);
+  return toggleBookmark(db, user.id, input.targetType, input.targetId);
 });

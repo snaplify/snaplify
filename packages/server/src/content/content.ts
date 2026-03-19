@@ -8,12 +8,12 @@ import type {
   ContentDetail,
   ContentFilters,
   UserRef,
-} from './types.js';
+} from '../types.js';
 import type { CreateContentInput, UpdateContentInput } from '@commonpub/schema';
-import { generateSlug, ensureUniqueSlug } from './utils.js';
-import { federateContent, federateUpdate, federateDelete } from './federation.js';
+import { generateSlug } from '../utils.js';
+import { ensureUniqueSlugFor, USER_REF_SELECT, USER_REF_WITH_HEADLINE_SELECT, normalizePagination, countRows } from '../query.js';
+import { federateContent, federateUpdate, federateDelete } from '../federation/federation.js';
 
-/** Sanitize HTML strings within block content to prevent XSS */
 /** Sanitize HTML strings within block content to prevent XSS */
 async function sanitizeBlockContent(content: unknown): Promise<unknown> {
   if (!Array.isArray(content)) return content;
@@ -32,8 +32,15 @@ async function sanitizeBlockContent(content: unknown): Promise<unknown> {
       ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
     });
   } catch (err) {
-    console.warn('[sanitize] DOMPurify unavailable, HTML passed through unsanitized:', err instanceof Error ? err.message : err);
-    return content;
+    // Strip all HTML tags if DOMPurify is unavailable — never pass through unsanitized
+    console.error('[sanitize] DOMPurify unavailable, stripping HTML tags:', err instanceof Error ? err.message : err);
+    return blocks.map(([type, data]) => {
+      const cleaned = { ...data };
+      if (typeof cleaned.html === 'string' && cleaned.html) {
+        cleaned.html = cleaned.html.replace(/<[^>]*>/g, '');
+      }
+      return [type, cleaned];
+    });
   }
 
   return blocks.map(([type, data]) => {
@@ -118,19 +125,13 @@ export async function listContent(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         content: contentItems,
-        author: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-        },
+        author: USER_REF_SELECT,
       })
       .from(contentItems)
       .innerJoin(users, eq(contentItems.authorId, users.id))
@@ -144,14 +145,10 @@ export async function listContent(
       )
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(contentItems)
-      .where(where),
+    countRows(db, contentItems, where),
   ]);
 
   const items = rows.map((row) => mapToListItem(row.content, row.author));
-  const total = countResult[0]?.count ?? 0;
 
   return { items, total };
 }
@@ -164,14 +161,7 @@ export async function getContentBySlug(
   const rows = await db
     .select({
       content: contentItems,
-      author: {
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-        bio: users.bio,
-        headline: users.headline,
-      },
+      author: USER_REF_WITH_HEADLINE_SELECT,
     })
     .from(contentItems)
     .innerJoin(users, eq(contentItems.authorId, users.id))
@@ -261,7 +251,7 @@ export async function createContent(
   authorId: string,
   input: CreateContentInput,
 ): Promise<ContentDetail> {
-  const slug = await ensureUniqueSlug(db, generateSlug(input.title));
+  const slug = await ensureUniqueSlugFor(db, contentItems, contentItems.slug, contentItems.id, generateSlug(input.title), 'untitled');
   const previewToken = crypto.randomUUID().replace(/-/g, '');
 
   const [item] = await db
@@ -317,7 +307,7 @@ export async function updateContent(
   if (input.title !== undefined) {
     updates.title = input.title;
     if (input.title !== current.title) {
-      updates.slug = await ensureUniqueSlug(db, generateSlug(input.title), contentId);
+      updates.slug = await ensureUniqueSlugFor(db, contentItems, contentItems.slug, contentItems.id, generateSlug(input.title), 'untitled', contentId);
     }
   }
   if (input.subtitle !== undefined) updates.subtitle = input.subtitle;
@@ -497,37 +487,33 @@ export async function toggleBuildMark(
   contentId: string,
   userId: string,
 ): Promise<{ marked: boolean; count: number }> {
-  const existing = await db
-    .select()
-    .from(contentBuilds)
-    .where(and(eq(contentBuilds.contentId, contentId), eq(contentBuilds.userId, userId)))
-    .limit(1);
+  return db.transaction(async (tx) => {
+    const existing = await tx
+      .select()
+      .from(contentBuilds)
+      .where(and(eq(contentBuilds.contentId, contentId), eq(contentBuilds.userId, userId)))
+      .limit(1);
 
-  if (existing.length > 0) {
-    await db
-      .delete(contentBuilds)
-      .where(and(eq(contentBuilds.contentId, contentId), eq(contentBuilds.userId, userId)));
-    await db
+    if (existing.length > 0) {
+      await tx
+        .delete(contentBuilds)
+        .where(and(eq(contentBuilds.contentId, contentId), eq(contentBuilds.userId, userId)));
+      const [updated] = await tx
+        .update(contentItems)
+        .set({ buildCount: sql`GREATEST(${contentItems.buildCount} - 1, 0)` })
+        .where(eq(contentItems.id, contentId))
+        .returning({ buildCount: contentItems.buildCount });
+      return { marked: false, count: updated?.buildCount ?? 0 };
+    }
+
+    await tx.insert(contentBuilds).values({ contentId, userId });
+    const [updated] = await tx
       .update(contentItems)
-      .set({ buildCount: sql`GREATEST(${contentItems.buildCount} - 1, 0)` })
-      .where(eq(contentItems.id, contentId));
-    const [updated] = await db
-      .select({ buildCount: contentItems.buildCount })
-      .from(contentItems)
-      .where(eq(contentItems.id, contentId));
-    return { marked: false, count: updated?.buildCount ?? 0 };
-  }
-
-  await db.insert(contentBuilds).values({ contentId, userId });
-  await db
-    .update(contentItems)
-    .set({ buildCount: sql`${contentItems.buildCount} + 1` })
-    .where(eq(contentItems.id, contentId));
-  const [updated] = await db
-    .select({ buildCount: contentItems.buildCount })
-    .from(contentItems)
-    .where(eq(contentItems.id, contentId));
-  return { marked: true, count: updated?.buildCount ?? 0 };
+      .set({ buildCount: sql`${contentItems.buildCount} + 1` })
+      .where(eq(contentItems.id, contentId))
+      .returning({ buildCount: contentItems.buildCount });
+    return { marked: true, count: updated?.buildCount ?? 0 };
+  });
 }
 
 export async function isBuildMarked(
@@ -561,7 +547,7 @@ export async function forkContent(
   }
 
   const item = source[0]!;
-  const slug = await ensureUniqueSlug(db, `${item.slug}-fork-${Date.now()}`);
+  const slug = await ensureUniqueSlugFor(db, contentItems, contentItems.slug, contentItems.id, `${item.slug}-fork-${Date.now()}`, 'fork');
   const previewToken = crypto.randomUUID().replace(/-/g, '');
 
   const [forked] = await db

@@ -3,11 +3,8 @@ import { getUserByUsername, unfollowUser } from '@commonpub/server';
 export default defineEventHandler(async (event): Promise<{ unfollowed: boolean }> => {
   const db = useDB();
   const user = requireAuth(event);
-  const username = getRouterParam(event, 'username');
+  const { username } = parseParams(event, { username: 'string' });
 
-  if (!username) {
-    throw createError({ statusCode: 400, statusMessage: 'Username is required' });
-  }
 
   const target = await getUserByUsername(db, username);
   if (!target) {

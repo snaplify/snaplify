@@ -37,6 +37,7 @@ const { data: products } = useLazyFetch<{ items: Array<{ id: string; name: strin
 useSeoMeta({
   title: () => hub.value ? `${hub.value.name} — CommonPub` : 'Hub — CommonPub',
   description: () => hub.value?.description || '',
+  ogImage: '/og-default.png',
 });
 
 const { isAuthenticated } = useAuth();

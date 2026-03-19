@@ -3,7 +3,7 @@ import { deleteDocsPage } from '@commonpub/server';
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const pageId = getRouterParam(event, 'pageId')!;
+  const { pageId } = parseParams(event, { pageId: 'uuid' });
 
   const result = await deleteDocsPage(db, pageId, user.id);
   if (!result) {

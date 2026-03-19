@@ -11,7 +11,8 @@ import {
 } from '@commonpub/schema';
 import { calculatePathProgress, isPathComplete } from '@commonpub/learning';
 import { generateVerificationCode } from '@commonpub/learning';
-import { generateSlug } from './utils.js';
+import { generateSlug } from '../utils.js';
+import { ensureUniqueSlugFor, USER_REF_SELECT, normalizePagination, countRows } from '../query.js';
 import type {
   DB,
   LearningPathListItem,
@@ -19,7 +20,7 @@ import type {
   EnrollmentItem,
   CertificateItem,
   LearningPathFilters,
-} from './types.js';
+} from '../types.js';
 
 // --- Path CRUD ---
 
@@ -47,8 +48,7 @@ export async function listPaths(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
   const moduleCountSubquery = db
     .select({
@@ -59,7 +59,7 @@ export async function listPaths(
     .groupBy(learningModules.pathId)
     .as('mc');
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         path: learningPaths,
@@ -78,10 +78,7 @@ export async function listPaths(
       .orderBy(desc(learningPaths.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(learningPaths)
-      .where(where),
+    countRows(db, learningPaths, where),
   ]);
 
   const items: LearningPathListItem[] = rows.map((row) => ({
@@ -101,7 +98,7 @@ export async function listPaths(
     author: row.author,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function getPathBySlug(
@@ -112,12 +109,7 @@ export async function getPathBySlug(
   const rows = await db
     .select({
       path: learningPaths,
-      author: {
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      },
+      author: USER_REF_SELECT,
     })
     .from(learningPaths)
     .innerJoin(users, eq(learningPaths.authorId, users.id))
@@ -220,7 +212,7 @@ export async function createPath(
     estimatedHours?: number;
   },
 ): Promise<LearningPathDetail> {
-  const slug = await ensureUniquePathSlug(db, generateSlug(input.title));
+  const slug = await ensureUniqueSlugFor(db, learningPaths, learningPaths.slug, learningPaths.id, generateSlug(input.title), 'untitled');
 
   const [path] = await db
     .insert(learningPaths)
@@ -264,7 +256,7 @@ export async function updatePath(
   if (input.title !== undefined) {
     updates.title = input.title;
     if (input.title !== current.title) {
-      updates.slug = await ensureUniquePathSlug(db, generateSlug(input.title), pathId);
+      updates.slug = await ensureUniqueSlugFor(db, learningPaths, learningPaths.slug, learningPaths.id, generateSlug(input.title), 'untitled', pathId);
     }
   }
   if (input.description !== undefined) updates.description = input.description;
@@ -917,30 +909,3 @@ export async function getCompletedLessonIds(
   return new Set(rows.map((r) => r.lessonId));
 }
 
-// --- Helpers ---
-
-async function ensureUniquePathSlug(
-  db: DB,
-  slug: string,
-  excludeId?: string,
-): Promise<string> {
-  if (!slug) {
-    slug = `untitled-${Date.now()}`;
-  }
-
-  const conditions = [eq(learningPaths.slug, slug)];
-  if (excludeId) {
-    const { ne } = await import('drizzle-orm');
-    conditions.push(ne(learningPaths.id, excludeId));
-  }
-
-  const existing = await db
-    .select({ id: learningPaths.id })
-    .from(learningPaths)
-    .where(and(...conditions))
-    .limit(1);
-
-  if (existing.length === 0) return slug;
-
-  return `${slug}-${Date.now()}`;
-}

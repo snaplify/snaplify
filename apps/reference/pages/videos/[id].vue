@@ -11,12 +11,8 @@ useSeoMeta({
   description: () => video.value?.description ?? '',
 });
 
-// Track view
-onMounted(() => {
-  if (videoId.value) {
-    $fetch(`/api/videos/${videoId.value}`, { method: 'POST' }).catch(() => {});
-  }
-});
+// Track view — GET already handles view counting server-side
+// No separate POST needed (the server route increments viewCount on GET)
 
 function buildEmbedUrl(url: string): string | null {
   const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);

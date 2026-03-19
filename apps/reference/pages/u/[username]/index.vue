@@ -4,6 +4,8 @@ const username = route.params.username as string;
 
 useSeoMeta({
   title: `${username} — CommonPub`,
+  ogTitle: `${username} — CommonPub`,
+  ogImage: '/og-default.png',
 });
 
 import type { Serialized, UserProfile } from '@commonpub/server';

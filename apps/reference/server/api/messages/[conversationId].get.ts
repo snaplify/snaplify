@@ -4,7 +4,7 @@ import type { MessageItem } from '@commonpub/server';
 export default defineEventHandler(async (event): Promise<MessageItem[]> => {
   const db = useDB();
   const user = await requireAuth(event);
-  const conversationId = getRouterParam(event, 'conversationId')!;
+  const { conversationId } = parseParams(event, { conversationId: 'uuid' });
 
   const messages = await getConversationMessages(db, conversationId, user.id);
   await markMessagesRead(db, conversationId, user.id);

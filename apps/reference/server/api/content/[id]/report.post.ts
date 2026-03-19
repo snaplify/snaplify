@@ -4,11 +4,7 @@ import { createReportSchema } from '@commonpub/schema';
 export default defineEventHandler(async (event): Promise<{ id: string }> => {
   const db = useDB();
   const user = requireAuth(event);
-  const id = getRouterParam(event, 'id');
-
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Content ID is required' });
-  }
+  const { id } = parseParams(event, { id: 'uuid' });
 
   const body = await readBody(event);
   const parsed = createReportSchema.safeParse({ ...body, targetId: id });

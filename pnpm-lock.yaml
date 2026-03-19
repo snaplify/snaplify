@@ -291,6 +291,25 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.5.0)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@2.0.1))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
+  packages/infra:
+    dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.1010.0
+        version: 3.1010.0
+      sharp:
+        specifier: ^0.34.5
+        version: 0.34.5
+    devDependencies:
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
+      '@types/sharp':
+        specifier: ^0.32.0
+        version: 0.32.0
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   packages/learning:
     dependencies:
       '@commonpub/config':
@@ -362,9 +381,6 @@ importers:
 
   packages/server:
     dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.1010.0
-        version: 3.1010.0
       '@commonpub/auth':
         specifier: workspace:*
         version: link:../auth
@@ -374,6 +390,9 @@ importers:
       '@commonpub/docs':
         specifier: workspace:*
         version: link:../docs
+      '@commonpub/infra':
+        specifier: workspace:*
+        version: link:../infra
       '@commonpub/learning':
         specifier: workspace:*
         version: link:../learning
@@ -389,9 +408,6 @@ importers:
       isomorphic-dompurify:
         specifier: ^3.3.0
         version: 3.3.0(@noble/hashes@2.0.1)
-      sharp:
-        specifier: ^0.34.5
-        version: 0.34.5
     devDependencies:
       '@electric-sql/pglite':
         specifier: ^0.3.16
@@ -399,9 +415,6 @@ importers:
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
-      '@types/sharp':
-        specifier: ^0.32.0
-        version: 0.32.0
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10

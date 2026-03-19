@@ -5,16 +5,7 @@ import { createLearningPathSchema } from '@commonpub/schema';
 export default defineEventHandler(async (event): Promise<LearningPathDetail> => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
+  const input = await parseBody(event, createLearningPathSchema);
 
-  const parsed = createLearningPathSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
-
-  return createPath(db, user.id, parsed.data);
+  return createPath(db, user.id, input);
 });

@@ -5,29 +5,19 @@ import { contestTransitionSchema } from '@commonpub/schema';
 export default defineEventHandler(async (event): Promise<{ transitioned: boolean; newStatus: ContestStatus }> => {
   const db = useDB();
   const user = requireAuth(event);
-  const slug = getRouterParam(event, 'slug');
-
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: 'Contest slug is required' });
-  }
-
-  const body = await readBody(event);
-  const parsed = contestTransitionSchema.safeParse(body);
-
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid input', data: parsed.error.flatten() });
-  }
+  const { slug } = parseParams(event, { slug: 'string' });
+  const input = await parseBody(event, contestTransitionSchema);
 
   const contest = await getContestBySlug(db, slug);
   if (!contest) {
     throw createError({ statusCode: 404, statusMessage: 'Contest not found' });
   }
 
-  const result = await transitionContestStatus(db, contest.id, user.id, parsed.data.status);
+  const result = await transitionContestStatus(db, contest.id, user.id, input.status);
 
   if (!result.transitioned) {
     throw createError({ statusCode: 400, statusMessage: result.error || 'Transition failed' });
   }
 
-  return { transitioned: true, newStatus: parsed.data.status };
+  return { transitioned: true, newStatus: input.status };
 });

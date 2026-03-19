@@ -207,7 +207,9 @@ const sortOptions = [
 
 <style scoped>
 .cpub-explore {
-  max-width: 1000px;
+  max-width: var(--content-max-width, 960px);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
 }
 
 .cpub-explore-header {

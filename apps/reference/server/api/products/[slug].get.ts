@@ -3,11 +3,8 @@ import type { ProductDetail } from '@commonpub/server';
 
 export default defineEventHandler(async (event): Promise<ProductDetail> => {
   const db = useDB();
-  const slug = getRouterParam(event, 'slug');
+  const { slug } = parseParams(event, { slug: 'string' });
 
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: 'Slug is required' });
-  }
 
   const product = await getProductBySlug(db, slug);
 

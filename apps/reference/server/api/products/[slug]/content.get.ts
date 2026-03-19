@@ -8,11 +8,8 @@ const querySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, 'slug');
+  const { slug } = parseParams(event, { slug: 'string' });
 
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: 'Slug is required' });
-  }
 
   const product = await getProductBySlug(db, slug);
   if (!product) {

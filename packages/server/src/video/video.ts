@@ -1,6 +1,7 @@
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { videos, videoCategories, users } from '@commonpub/schema';
-import type { DB } from './types.js';
+import type { DB } from '../types.js';
+import { normalizePagination, countRows } from '../query.js';
 
 import type { VideoPlatform } from '@commonpub/schema';
 
@@ -49,10 +50,9 @@ export async function listVideos(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         video: videos,
@@ -65,10 +65,7 @@ export async function listVideos(
       .orderBy(desc(videos.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(videos)
-      .where(where),
+    countRows(db, videos, where),
   ]);
 
   const items: VideoListItem[] = rows.map((row) => ({
@@ -88,7 +85,7 @@ export async function listVideos(
     createdAt: row.video.createdAt,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function getVideoById(

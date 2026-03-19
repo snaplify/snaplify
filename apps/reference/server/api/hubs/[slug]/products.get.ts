@@ -13,12 +13,9 @@ const productQuerySchema = z.object({
 
 export default defineEventHandler(async (event): Promise<PaginatedResponse<ProductListItem>> => {
   const db = useDB();
-  const slug = getRouterParam(event, 'slug');
+  const { slug } = parseParams(event, { slug: 'string' });
   const filters = productQuerySchema.parse(getQuery(event));
 
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: 'Hub slug is required' });
-  }
 
   const hub = await getHubBySlug(db, slug);
   if (!hub) {

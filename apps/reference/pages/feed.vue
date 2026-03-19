@@ -6,28 +6,46 @@ useSeoMeta({
 
 const { isAuthenticated } = useAuth();
 const activeFilter = ref('all');
-const page = ref(0);
+const loadingMore = ref(false);
+const allLoaded = ref(false);
 
-const { data, refresh, status } = await useFetch('/api/content', {
-  query: computed(() => ({
-    status: 'published',
-    type: activeFilter.value === 'all' ? undefined : activeFilter.value,
-    sort: 'recent',
-    limit: 12,
-    offset: page.value * 12,
-  })),
-  watch: [activeFilter],
+const contentQuery = computed(() => ({
+  status: 'published',
+  type: activeFilter.value === 'all' ? undefined : activeFilter.value,
+  sort: 'recent',
+  limit: 12,
+}));
+
+const { data, status } = await useFetch('/api/content', {
+  query: contentQuery,
+  watch: [contentQuery],
 });
 
 const items = computed(() => data.value?.items ?? []);
 const total = computed(() => data.value?.total ?? 0);
 
-function loadMore(): void {
-  page.value++;
-  refresh();
+async function loadMore(): Promise<void> {
+  if (!data.value?.items) return;
+  loadingMore.value = true;
+  try {
+    const nextOffset = data.value.items.length;
+    const more = await $fetch<{ items: Array<Record<string, unknown>> }>('/api/content', {
+      query: { ...contentQuery.value, offset: nextOffset },
+    });
+    if (more?.items?.length) {
+      data.value.items.push(...(more.items as typeof data.value.items));
+    }
+    if (!more?.items?.length || more.items.length < 12) {
+      allLoaded.value = true;
+    }
+  } catch {
+    allLoaded.value = true;
+  } finally {
+    loadingMore.value = false;
+  }
 }
 
-watch(activeFilter, () => { page.value = 0; });
+watch(activeFilter, () => { allLoaded.value = false; });
 
 const filters = [
   { value: 'all', label: 'All', icon: 'fa-solid fa-layer-group' },
@@ -74,9 +92,9 @@ const filters = [
     </div>
 
     <!-- Load More -->
-    <div v-if="items.length >= 12 && items.length < total" class="feed-more">
-      <button class="cpub-btn" @click="loadMore" :disabled="status === 'pending'">
-        {{ status === 'pending' ? 'Loading...' : 'Load More' }}
+    <div v-if="!allLoaded && items.length >= 12" class="feed-more">
+      <button class="cpub-btn" @click="loadMore" :disabled="loadingMore">
+        {{ loadingMore ? 'Loading...' : 'Load More' }}
       </button>
     </div>
   </div>

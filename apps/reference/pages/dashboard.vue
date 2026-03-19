@@ -203,7 +203,9 @@ const totalLikes = computed(() =>
 
 <style scoped>
 .cpub-dash {
-  max-width: 800px;
+  max-width: var(--content-max-width, 960px);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
 }
 
 .cpub-dash-header {

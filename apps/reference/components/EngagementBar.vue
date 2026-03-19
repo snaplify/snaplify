@@ -15,45 +15,28 @@ const emit = defineEmits<{
   comment: [];
 }>();
 
-const liked = ref(props.isLiked ?? false);
-const bookmarked = ref(props.isBookmarked ?? false);
-const likes = ref(props.likeCount);
+const contentId = computed(() => props.targetId);
+const contentType = computed(() => props.targetType);
+const { liked, bookmarked, likeCount, toggleLike, toggleBookmark, share, setInitialState } = useEngagement(contentId, contentType);
 
-watch(() => props.isLiked, (v) => { liked.value = v ?? false; });
-watch(() => props.isBookmarked, (v) => { bookmarked.value = v ?? false; });
-watch(() => props.likeCount, (v) => { likes.value = v; });
+// Sync initial state from props
+watch(() => [props.isLiked, props.isBookmarked, props.likeCount] as const, ([l, b, c]) => {
+  setInitialState(l ?? false, b ?? false, c);
+}, { immediate: true });
 
-async function toggleLike(): Promise<void> {
-  const prev = liked.value;
-  const prevCount = likes.value;
-  liked.value = !liked.value;
-  likes.value += liked.value ? 1 : -1;
-
-  try {
-    await $fetch('/api/social/like', {
-      method: 'POST',
-      body: { targetType: props.targetType, targetId: props.targetId },
-    });
-    emit('like');
-  } catch {
-    liked.value = prev;
-    likes.value = prevCount;
-  }
+async function handleLike(): Promise<void> {
+  await toggleLike();
+  emit('like');
 }
 
-async function toggleBookmark(): Promise<void> {
-  const prev = bookmarked.value;
-  bookmarked.value = !bookmarked.value;
+async function handleBookmark(): Promise<void> {
+  await toggleBookmark();
+  emit('bookmark');
+}
 
-  try {
-    await $fetch('/api/social/bookmark', {
-      method: 'POST',
-      body: { targetType: props.targetType, targetId: props.targetId },
-    });
-    emit('bookmark');
-  } catch {
-    bookmarked.value = prev;
-  }
+async function handleShare(): Promise<void> {
+  await share();
+  emit('share');
 }
 </script>
 
@@ -64,10 +47,10 @@ async function toggleBookmark(): Promise<void> {
       :class="{ 'cpub-engage-active': liked }"
       :aria-pressed="liked"
       aria-label="Like"
-      @click="toggleLike"
+      @click="handleLike"
     >
       <i :class="liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
-      <span>{{ likes }}</span>
+      <span>{{ likeCount }}</span>
     </button>
 
     <button class="cpub-engage-btn" aria-label="Comments" @click="$emit('comment')">
@@ -80,12 +63,12 @@ async function toggleBookmark(): Promise<void> {
       :class="{ 'cpub-engage-active': bookmarked }"
       :aria-pressed="bookmarked"
       aria-label="Bookmark"
-      @click="toggleBookmark"
+      @click="handleBookmark"
     >
       <i :class="bookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'"></i>
     </button>
 
-    <button class="cpub-engage-btn" aria-label="Share" @click="$emit('share')">
+    <button class="cpub-engage-btn" aria-label="Share" @click="handleShare">
       <i class="fa-solid fa-share-nodes"></i>
     </button>
   </div>
@@ -112,6 +95,7 @@ async function toggleBookmark(): Promise<void> {
   color: var(--text-dim);
   cursor: pointer;
   transition: all 0.15s;
+  min-height: 44px;
 }
 
 .cpub-engage-btn:hover {

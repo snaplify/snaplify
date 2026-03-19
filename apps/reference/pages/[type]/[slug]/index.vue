@@ -7,11 +7,14 @@ const slug = computed(() => route.params.slug as string);
 
 // Pass cookies so SSR can resolve auth (needed to view own drafts)
 const reqHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
-const { data: content } = useLazyFetch(() => `/api/content/${slug.value}`, { headers: reqHeaders });
+const { data: content, pending: contentPending } = useLazyFetch(() => `/api/content/${slug.value}`, { headers: reqHeaders });
 
 useSeoMeta({
   title: () => content.value?.title ? `${content.value.title} — CommonPub` : 'CommonPub',
   description: () => content.value?.seoDescription || content.value?.description || '',
+  ogImage: () => content.value?.coverImageUrl || '/og-default.png',
+  ogTitle: () => content.value?.title || 'CommonPub',
+  ogDescription: () => content.value?.seoDescription || content.value?.description || '',
 });
 
 const { user } = useAuth();
@@ -67,7 +70,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="enrichedContent">
+  <div v-if="contentPending" class="cpub-loading" aria-live="polite">Loading content...</div>
+  <div v-else-if="enrichedContent">
     <!-- Edit button overlay -->
     <div v-if="isOwner" class="cpub-view-edit-bar">
       <NuxtLink :to="`/${enrichedContent.type}/${enrichedContent.slug}/edit`" class="cpub-edit-btn" aria-label="Edit">

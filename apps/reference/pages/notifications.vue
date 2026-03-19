@@ -67,7 +67,9 @@ async function deleteNotification(id: string): Promise<void> {
 
 <style scoped>
 .cpub-notifications-page {
-  max-width: 720px;
+  max-width: var(--content-max-width, 960px);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
 }
 
 .cpub-notif-header {

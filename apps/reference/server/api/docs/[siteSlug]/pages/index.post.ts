@@ -4,19 +4,10 @@ import { createDocsPageSchema } from '@commonpub/schema';
 export default defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const siteSlug = getRouterParam(event, 'siteSlug')!;
-  const body = await readBody(event);
+  const { siteSlug } = parseParams(event, { siteSlug: 'string' });
+  const input = await parseBody(event, createDocsPageSchema);
 
-  const parsed = createDocsPageSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
-
-  const data = { ...parsed.data };
+  const data = { ...input };
 
   // If no versionId provided, resolve from the site's default version
   if (!data.versionId) {

@@ -38,8 +38,7 @@ function blocksToHtml(blocks: unknown): string {
 
 export default defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, 'slug')!;
-  const lessonSlug = getRouterParam(event, 'lessonSlug')!;
+  const { slug, lessonSlug } = parseParams(event, { slug: 'string', lessonSlug: 'string' });
 
   const result = await getLessonBySlug(db, slug, lessonSlug);
   if (!result) {

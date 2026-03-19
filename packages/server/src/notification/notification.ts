@@ -1,6 +1,7 @@
 import { eq, and, desc, sql, isNull } from 'drizzle-orm';
 import { notifications, users } from '@commonpub/schema';
-import type { DB } from './types.js';
+import type { DB } from '../types.js';
+import { normalizePagination, countRows } from '../query.js';
 
 export interface NotificationItem {
   id: string;
@@ -41,10 +42,9 @@ export async function listNotifications(
   }
 
   const where = and(...conditions);
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         notification: notifications,
@@ -57,10 +57,7 @@ export async function listNotifications(
       .orderBy(desc(notifications.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(notifications)
-      .where(where),
+    countRows(db, notifications, where),
   ]);
 
   const items: NotificationItem[] = rows.map((row) => ({
@@ -76,7 +73,7 @@ export async function listNotifications(
     createdAt: row.notification.createdAt,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function getUnreadCount(db: DB, userId: string): Promise<number> {

@@ -9,22 +9,13 @@ const shareContentSchema = z.object({
 export default defineEventHandler(async (event): Promise<HubPostItem> => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, 'slug') as string;
-  const body = await readBody(event);
-
-  const parsed = shareContentSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
+  const { slug } = parseParams(event, { slug: 'string' });
+  const input = await parseBody(event, shareContentSchema);
 
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: 'Hub not found' });
   }
 
-  return shareContent(db, user.id, hub.id, parsed.data.contentId);
+  return shareContent(db, user.id, hub.id, input.contentId);
 });

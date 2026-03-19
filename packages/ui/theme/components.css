@@ -35,7 +35,7 @@
 
 .cpub-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.cpub-btn-sm { padding: 4px 10px; font-size: 11px; }
+.cpub-btn-sm { padding: 4px 10px; font-size: 11px; min-height: 44px; }
 .cpub-btn-lg { padding: 12px 24px; font-size: 14px; font-weight: 600; }
 
 .cpub-btn-ghost {
@@ -50,7 +50,7 @@
 .cpub-tag {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  font-size: var(--text-xs, 12px);
   font-family: var(--font-mono);
   padding: 2px 8px;
   border: 1px solid var(--border2);
@@ -133,8 +133,8 @@
 }
 
 .cpub-page-btn {
-  width: 32px;
-  height: 32px;
+  min-width: 44px;
+  min-height: 44px;
   border: 2px solid var(--border);
   background: var(--surface);
   color: var(--text-dim);

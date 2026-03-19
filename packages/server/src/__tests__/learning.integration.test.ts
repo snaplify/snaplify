@@ -15,7 +15,7 @@ import {
   markLessonComplete,
   getUserEnrollments,
   getEnrollment,
-} from '../learning.js';
+} from '../learning/learning.js';
 
 describe('learning integration', () => {
   let db: DB;

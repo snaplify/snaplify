@@ -9,20 +9,10 @@ const submitEntrySchema = z.object({
 export default defineEventHandler(async (event): Promise<ContestEntryItem> => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, 'slug');
-  if (!slug) throw createError({ statusCode: 400, statusMessage: 'Slug required' });
+  const { slug } = parseParams(event, { slug: 'string' });
   const contest = await getContestBySlug(db, slug);
   if (!contest) throw createError({ statusCode: 404, statusMessage: 'Contest not found' });
-  const body = await readBody(event);
+  const input = await parseBody(event, submitEntrySchema);
 
-  const parsed = submitEntrySchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
-
-  return submitContestEntry(db, contest.id, parsed.data.contentId, user.id);
+  return submitContestEntry(db, contest.id, input.contentId, user.id);
 });

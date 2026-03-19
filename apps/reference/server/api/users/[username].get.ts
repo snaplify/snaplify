@@ -3,7 +3,7 @@ import type { UserProfile } from '@commonpub/server';
 
 export default defineEventHandler(async (event): Promise<UserProfile & { isFollowing: boolean }> => {
   const db = useDB();
-  const username = getRouterParam(event, 'username')!;
+  const { username } = parseParams(event, { username: 'string' });
 
   const profile = await getUserByUsername(db, username);
   if (!profile) {

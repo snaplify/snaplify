@@ -1,0 +1,25 @@
+export {
+  createAuditEntry,
+  listAuditLogs,
+  getPlatformStats,
+  listUsers,
+  updateUserRole,
+  updateUserStatus,
+  listReports,
+  resolveReport,
+  getInstanceSettings,
+  getInstanceSetting,
+  setInstanceSetting,
+  deleteUser,
+  removeContent,
+} from './admin.js';
+export type {
+  AuditEntry,
+  AuditLogItem,
+  AuditFilters,
+  PlatformStats,
+  UserListItem,
+  UserFilters,
+  ReportListItem,
+  ReportFilters,
+} from './admin.js';

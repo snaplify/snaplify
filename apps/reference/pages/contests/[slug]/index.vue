@@ -4,7 +4,11 @@ const slug = route.params.slug as string;
 
 const { data: contest } = useLazyFetch(`/api/contests/${slug}`);
 
-useSeoMeta({ title: () => `${contest.value?.title || 'Contest'} — CommonPub` });
+useSeoMeta({
+  title: () => `${contest.value?.title || 'Contest'} — CommonPub`,
+  ogTitle: () => `${contest.value?.title || 'Contest'} — CommonPub`,
+  ogImage: '/og-default.png',
+});
 
 // Fetch entries from API
 const { data: apiEntries } = useLazyFetch(`/api/contests/${slug}/entries`);
@@ -44,8 +48,13 @@ function toggleFaq(i: number): void {
 }
 
 // Vote state
+const toast = useToast();
 const votedEntries = ref<Set<string>>(new Set());
 async function toggleVote(entryId: string): Promise<void> {
+  if (!isAuthenticated.value) {
+    toast.error('Log in to vote');
+    return;
+  }
   try {
     await $fetch('/api/social/like', {
       method: 'POST',
@@ -54,7 +63,7 @@ async function toggleVote(entryId: string): Promise<void> {
     if (votedEntries.value.has(entryId)) votedEntries.value.delete(entryId);
     else votedEntries.value.add(entryId);
   } catch {
-    // silent — user may not be authenticated
+    toast.error('Failed to vote');
   }
 }
 
@@ -85,9 +94,10 @@ async function submitEntry(): Promise<void> {
     });
     showSubmitDialog.value = false;
     submitContentId.value = '';
+    toast.success('Entry submitted!');
     refreshNuxtData();
   } catch {
-    // silent
+    toast.error('Failed to submit entry');
   } finally {
     submitting.value = false;
   }
@@ -127,7 +137,7 @@ async function submitEntry(): Promise<void> {
 
         <!-- COUNTDOWN -->
         <div class="cpub-countdown-section">
-          <div class="cpub-countdown-label"><i class="fa fa-clock" style="margin-right:4px;color:var(--accent);"></i>Judging period ends in</div>
+          <div class="cpub-countdown-label"><i class="fa fa-clock" style="margin-right:4px;color:var(--accent);"></i>{{ c?.status === 'judging' ? 'Judging ends in' : c?.status === 'completed' ? 'Contest ended' : 'Submissions close in' }}</div>
           <div class="cpub-countdown-row">
             <div class="cpub-countdown-block">
               <div class="cpub-countdown-val">{{ countdown.days }}</div>

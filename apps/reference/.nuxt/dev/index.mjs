@@ -8,9 +8,9 @@ import { escapeHtml } from 'file:///Users/obsidian/Projects/ossuary-projects/sna
 import { ConsoleEmailAdapter, emailTemplates, shouldSkipRateLimit, getSecurityHeaders, RateLimitStore, listAuditLogs, removeContent, listReports, resolveReport, getInstanceSettings, setInstanceSetting, getPlatformStats, listUsers, deleteUser, updateUserRole, updateUserStatus, getCertificateByCode, toggleBuildMark, forkContent, deleteContent, getContentBySlug, updateContent, syncContentProducts, listContentProducts, addContentProduct, removeContentProduct, publishContent, onContentPublished, createReport, listContentVersions, incrementViewCount, listContent, createContent, getContestBySlug, listContestEntries, submitContestEntry, deleteContest, updateContest, judgeContestEntry, transitionContestStatus, listContests, createContest, getDocsSiteBySlug, deleteDocsSite, updateDocsSite, listDocsPages, deleteDocsPage, updateDocsPage, createDocsPage, reorderDocsPages, searchDocsPages, createDocsVersion, listDocsSites, createDocsSite, createStorageFromEnv, validateUpload, isProcessableImage, processImage, generateStorageKey, getHubBySlug, listBans, banUser, unbanUser, listHubGallery, deleteHub, updateHub, listInvites, createInvite, joinHub, leaveHub, listMembers, kickMember, changeRole, deletePost, listReplies, createReply, listPosts, createPost, listHubProducts, createProduct, shareContent, listHubs, createHub, getLessonBySlug, markLessonComplete, getPathBySlug, enroll, deletePath, updatePath, createLesson, deleteLesson, updateLesson, createModule, deleteModule, updateModule, publishPath, unenroll, getUserCertificates, getUserEnrollments, listPaths, createPath, getConversationMessages, markMessagesRead, sendMessage, listConversations, createConversation, deleteNotification, getUnreadCount, listNotifications, markNotificationRead, markAllNotificationsRead, deleteProduct, updateProduct, getProductBySlug, listProductContent, searchProducts, getUserByUsername, updateUserProfile, toggleBookmark, listUserBookmarks, listComments, createComment, deleteComment, isLiked, toggleLike, isFollowing, getUserContent, unfollowUser, followUser, listFollowers, listFollowing, getVideoById, incrementVideoViewCount, listVideoCategories, createVideoCategory, deleteVideoCategory, updateVideoCategory, listVideos, createVideo, getOrCreateActorKeypair, getFollowers, getFollowing } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/server/dist/index.js';
 import { z } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/zod@4.3.6/node_modules/zod/index.js';
 import * as schema from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/schema/dist/index.js';
-import { resolveReportSchema, adminSettingSchema, adminUpdateRoleSchema, adminUpdateStatusSchema, updateContentSchema, addContentProductSchema, createReportSchema, contentFiltersSchema, createContentSchema, updateContestSchema, judgeEntrySchema, contestTransitionSchema, contestFiltersSchema, createContestSchema, updateDocsSiteSchema, updateDocsPageSchema, createDocsPageSchema, createDocsVersionSchema, createDocsSiteSchema, files, banUserSchema, updateHubSchema, createInviteSchema, changeRoleSchema, createReplySchema, hubPostFiltersSchema, createPostSchema, productStatusSchema, productCategorySchema, createProductSchema, hubFiltersSchema, createHubSchema, updateLearningPathSchema, createLessonSchema, createModuleSchema, updateModuleSchema, learningPathFiltersSchema, createLearningPathSchema, sendMessageSchema, conversations, createConversationSchema, generateOpenAPISpec, updateProductSchema, updateProfileSchema, contentItems, commentTargetTypeSchema, createCommentSchema, likeTargetTypeSchema, contentTypeSchema, users, follows, createVideoCategorySchema, videoFiltersSchema, createVideoSchema } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/schema/dist/index.js';
-import { renderMarkdown } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/docs/dist/index.js';
+import { resolveReportSchema, adminSettingSchema, adminUpdateRoleSchema, adminUpdateStatusSchema, updateContentSchema, contentItems, addContentProductSchema, createReportSchema, contentFiltersSchema, createContentSchema, updateContestSchema, judgeEntrySchema, contestTransitionSchema, contestFiltersSchema, createContestSchema, updateDocsSiteSchema, updateDocsPageSchema, createDocsPageSchema, createDocsVersionSchema, createDocsSiteSchema, files, banUserSchema, updateHubSchema, createInviteSchema, changeRoleSchema, createReplySchema, hubPostFiltersSchema, createPostSchema, productStatusSchema, productCategorySchema, createProductSchema, hubFiltersSchema, createHubSchema, updateLearningPathSchema, createLessonSchema, createModuleSchema, updateModuleSchema, learningPathFiltersSchema, createLearningPathSchema, sendMessageSchema, conversations, createConversationSchema, generateOpenAPISpec, updateProductSchema, updateProfileSchema, commentTargetTypeSchema, createCommentSchema, likeTargetTypeSchema, contentTypeSchema, users, follows, createVideoCategorySchema, videoFiltersSchema, createVideoSchema } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/schema/dist/index.js';
 import { and, eq, desc, sql, or, ilike } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/drizzle-orm@0.45.1_@electric-sql+pglite@0.3.16_gel@2.2.0_kysely@0.28.11_pg@8.20.0/node_modules/drizzle-orm/index.js';
+import { renderMarkdown } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/docs/dist/index.js';
 import { parseWebFingerResource, buildWebFingerResponse, processInboxActivity, buildNodeInfoResponse, generateOutboxCollection } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/packages/protocol/dist/index.js';
 import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/vue-bundle-renderer@2.2.0/node_modules/vue-bundle-renderer/dist/runtime.mjs';
 import { parseURL, withoutBase, joinURL, getQuery, withQuery, withTrailingSlash, decodePath, withLeadingSlash, withoutTrailingSlash, joinRelativeURL } from 'file:///Users/obsidian/Projects/ossuary-projects/snaplify/node_modules/.pnpm/ufo@1.6.3/node_modules/ufo/dist/index.mjs';
@@ -2179,22 +2179,7 @@ const plugins = [
 _zhVm5qprtYX102Z_f_cXuU2baFGsHZqzOLnWUI6gQ9U
 ];
 
-const assets = {
-  "/index.mjs": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"4139e-D7KJioTIKvei4Nehj7WhSJSoDzQ\"",
-    "mtime": "2026-03-19T11:18:45.905Z",
-    "size": 267166,
-    "path": "index.mjs"
-  },
-  "/index.mjs.map": {
-    "type": "application/json",
-    "etag": "\"cd806-1rAZ56US1+U/v3lx8z1PwZTdiNU\"",
-    "mtime": "2026-03-19T11:18:45.915Z",
-    "size": 841734,
-    "path": "index.mjs.map"
-  }
-};
+const assets = {};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
@@ -3466,10 +3451,54 @@ const audit_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: audit_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SLUG_REGEX = /^[a-z0-9][a-z0-9-]*$/;
+async function parseBody(event, schema) {
+  const body = await readBody(event);
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Validation failed",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return parsed.data;
+}
+function parseQueryParams(event, schema) {
+  const query = getQuery$1(event);
+  const parsed = schema.safeParse(query);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid query parameters",
+      data: { errors: parsed.error.flatten().fieldErrors }
+    });
+  }
+  return parsed.data;
+}
+function parseParams(event, spec) {
+  const result = {};
+  for (const [name, type] of Object.entries(spec)) {
+    const value = getRouterParam(event, name);
+    if (!value) {
+      throw createError({ statusCode: 400, statusMessage: `Missing parameter: ${name}` });
+    }
+    if (type === "uuid" && !UUID_REGEX.test(value)) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid ${name} format` });
+    }
+    if (type === "slug" && !SLUG_REGEX.test(value)) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid ${name} format` });
+    }
+    result[name] = value;
+  }
+  return result;
+}
+
 const _id__delete$c = defineEventHandler(async (event) => {
   const admin = requireAdmin(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   return removeContent(db, id, admin.id);
 });
 
@@ -3498,17 +3527,9 @@ const resolve_post = defineEventHandler(async (event) => {
   var _a;
   const admin = requireAdmin(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
-  const body = await readBody(event);
-  const parsed = resolveReportSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return resolveReport(db, id, parsed.data.resolution, (_a = parsed.data.status) != null ? _a : "resolved", admin.id);
+  const { id } = parseParams(event, { id: "uuid" });
+  const input = await parseBody(event, resolveReportSchema);
+  return resolveReport(db, id, input.resolution, (_a = input.status) != null ? _a : "resolved", admin.id);
 });
 
 const resolve_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3530,16 +3551,8 @@ const settings_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const settings_put = defineEventHandler(async (event) => {
   const admin = requireAdmin(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = adminSettingSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return setInstanceSetting(db, parsed.data.key, parsed.data.value, admin.id);
+  const input = await parseBody(event, adminSettingSchema);
+  return setInstanceSetting(db, input.key, input.value, admin.id);
 });
 
 const settings_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3578,7 +3591,7 @@ const users_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const _id__delete$a = defineEventHandler(async (event) => {
   const admin = requireAdmin(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   return deleteUser(db, id, admin.id);
 });
 
@@ -3590,17 +3603,9 @@ const _id__delete$b = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const role_put = defineEventHandler(async (event) => {
   const admin = requireAdmin(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
-  const body = await readBody(event);
-  const parsed = adminUpdateRoleSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return updateUserRole(db, id, parsed.data.role, admin.id);
+  const { id } = parseParams(event, { id: "uuid" });
+  const input = await parseBody(event, adminUpdateRoleSchema);
+  return updateUserRole(db, id, input.role, admin.id);
 });
 
 const role_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3611,17 +3616,9 @@ const role_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty
 const status_put = defineEventHandler(async (event) => {
   const admin = requireAdmin(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
-  const body = await readBody(event);
-  const parsed = adminUpdateStatusSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return updateUserStatus(db, id, parsed.data.status, admin.id);
+  const { id } = parseParams(event, { id: "uuid" });
+  const input = await parseBody(event, adminUpdateStatusSchema);
+  return updateUserStatus(db, id, input.status, admin.id);
 });
 
 const status_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3631,7 +3628,7 @@ const status_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 
 const _code__get = defineEventHandler(async (event) => {
   const db = useDB();
-  const code = getRouterParam(event, "code");
+  const { code } = parseParams(event, { code: "string" });
   const result = await getCertificateByCode(db, code);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Certificate not found" });
@@ -3647,7 +3644,7 @@ const _code__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const build_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   return toggleBuildMark(db, id, user.id);
 });
 
@@ -3659,7 +3656,7 @@ const build_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const fork_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   return forkContent(db, id, user.id);
 });
 
@@ -3671,7 +3668,7 @@ const fork_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_delete$8 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   const deleted = await deleteContent(db, id, user.id);
   if (!deleted) {
     throw createError({ statusCode: 404, statusMessage: "Content not found or not owned by you" });
@@ -3686,7 +3683,7 @@ const index_delete$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 
 const index_get$A = defineEventHandler(async (event) => {
   const db = useDB();
-  const slugOrId = getRouterParam(event, "id");
+  const { id: slugOrId } = parseParams(event, { id: "string" });
   const user = getOptionalUser(event);
   const content = await getContentBySlug(db, slugOrId, user == null ? void 0 : user.id);
   if (!content) {
@@ -3703,21 +3700,9 @@ const index_get$B = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_put$8 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!id || !uuidRegex.test(id)) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid content ID" });
-  }
-  const body = await readBody(event);
-  const parsed = updateContentSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  const content = await updateContent(db, id, user.id, parsed.data);
+  const { id } = parseParams(event, { id: "uuid" });
+  const input = await parseBody(event, updateContentSchema);
+  const content = await updateContent(db, id, user.id, input);
   if (!content) {
     throw createError({ statusCode: 404, statusMessage: "Content not found or not owned by you" });
   }
@@ -3731,10 +3716,11 @@ const index_put$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 
 const productsSync_post = defineEventHandler(async (event) => {
   const db = useDB();
-  requireAuth(event);
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
+  const user = requireAuth(event);
+  const { id } = parseParams(event, { id: "uuid" });
+  const [content] = await db.select({ authorId: contentItems.authorId }).from(contentItems).where(and(eq(contentItems.id, id), eq(contentItems.authorId, user.id))).limit(1);
+  if (!content) {
+    throw createError({ statusCode: 403, statusMessage: "Not authorized to modify this content" });
   }
   const body = await readBody(event);
   if (!Array.isArray(body == null ? void 0 : body.items)) {
@@ -3750,10 +3736,7 @@ const productsSync_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defin
 
 const products_get$2 = defineEventHandler(async (event) => {
   const db = useDB();
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
-  }
+  const { id } = parseParams(event, { id: "uuid" });
   return listContentProducts(db, id);
 });
 
@@ -3764,17 +3747,14 @@ const products_get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 
 const products_post$2 = defineEventHandler(async (event) => {
   const db = useDB();
-  requireAuth(event);
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
+  const user = requireAuth(event);
+  const { id } = parseParams(event, { id: "uuid" });
+  const input = await parseBody(event, addContentProductSchema);
+  const [content] = await db.select({ authorId: contentItems.authorId }).from(contentItems).where(and(eq(contentItems.id, id), eq(contentItems.authorId, user.id))).limit(1);
+  if (!content) {
+    throw createError({ statusCode: 403, statusMessage: "Not authorized to modify this content" });
   }
-  const body = await readBody(event);
-  const parsed = addContentProductSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
-  }
-  const result = await addContentProduct(db, id, parsed.data);
+  const result = await addContentProduct(db, id, input);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Product not found or already linked" });
   }
@@ -3788,11 +3768,11 @@ const products_post$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePro
 
 const _productId__delete = defineEventHandler(async (event) => {
   const db = useDB();
-  requireAuth(event);
-  const id = getRouterParam(event, "id");
-  const productId = getRouterParam(event, "productId");
-  if (!id || !productId) {
-    throw createError({ statusCode: 400, statusMessage: "Content ID and Product ID are required" });
+  const user = requireAuth(event);
+  const { id, productId } = parseParams(event, { id: "uuid", productId: "uuid" });
+  const [content] = await db.select({ authorId: contentItems.authorId }).from(contentItems).where(and(eq(contentItems.id, id), eq(contentItems.authorId, user.id))).limit(1);
+  if (!content) {
+    throw createError({ statusCode: 403, statusMessage: "Not authorized to modify this content" });
   }
   const removed = await removeContentProduct(db, id, productId);
   if (!removed) {
@@ -3810,7 +3790,7 @@ const publish_post$2 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
   const config = useConfig();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   const content = await publishContent(db, id, user.id);
   if (!content) {
     throw createError({ statusCode: 404, statusMessage: "Content not found or not owned by you" });
@@ -3827,10 +3807,7 @@ const publish_post$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const report_post = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
-  }
+  const { id } = parseParams(event, { id: "uuid" });
   const body = await readBody(event);
   const parsed = createReportSchema.safeParse({ ...body, targetId: id });
   if (!parsed.success) {
@@ -3846,10 +3823,7 @@ const report_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 
 const versions_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Content ID is required" });
-  }
+  const { id } = parseParams(event, { id: "uuid" });
   return listContentVersions(db, id);
 });
 
@@ -3860,7 +3834,7 @@ const versions_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 
 const view_post = defineEventHandler(async (event) => {
   const db = useDB();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   await incrementViewCount(db, id);
   return { success: true };
 });
@@ -3890,16 +3864,8 @@ const index_get$z = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_post$g = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = createContentSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createContent(db, user.id, parsed.data);
+  const input = await parseBody(event, createContentSchema);
+  return createContent(db, user.id, input);
 });
 
 const index_post$h = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3909,8 +3875,7 @@ const index_post$h = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 
 const entries_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  if (!slug) throw createError({ statusCode: 400, statusMessage: "Slug required" });
+  const { slug } = parseParams(event, { slug: "string" });
   const contest = await getContestBySlug(db, slug);
   if (!contest) throw createError({ statusCode: 404, statusMessage: "Contest not found" });
   return listContestEntries(db, contest.id);
@@ -3927,20 +3892,11 @@ const submitEntrySchema = z.object({
 const entries_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  if (!slug) throw createError({ statusCode: 400, statusMessage: "Slug required" });
+  const { slug } = parseParams(event, { slug: "string" });
   const contest = await getContestBySlug(db, slug);
   if (!contest) throw createError({ statusCode: 404, statusMessage: "Contest not found" });
-  const body = await readBody(event);
-  const parsed = submitEntrySchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return submitContestEntry(db, contest.id, parsed.data.contentId, user.id);
+  const input = await parseBody(event, submitEntrySchema);
+  return submitContestEntry(db, contest.id, input.contentId, user.id);
 });
 
 const entries_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -3951,10 +3907,7 @@ const entries_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const index_delete$6 = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const slug = getRouterParam(event, "slug");
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: "Contest slug is required" });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
   const contest = await getContestBySlug(db, slug);
   if (!contest) {
     throw createError({ statusCode: 404, statusMessage: "Contest not found" });
@@ -3973,8 +3926,7 @@ const index_delete$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 
 const index_get$w = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  if (!slug) throw createError({ statusCode: 400, statusMessage: "Slug required" });
+  const { slug } = parseParams(event, { slug: "string" });
   const contest = await getContestBySlug(db, slug);
   if (!contest) throw createError({ statusCode: 404, statusMessage: "Contest not found" });
   return contest;
@@ -3988,18 +3940,9 @@ const index_get$x = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_put$6 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  if (!slug) throw createError({ statusCode: 400, statusMessage: "Slug required" });
-  const body = await readBody(event);
-  const parsed = updateContestSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  const result = await updateContest(db, slug, user.id, parsed.data);
+  const { slug } = parseParams(event, { slug: "string" });
+  const input = await parseBody(event, updateContestSchema);
+  const result = await updateContest(db, slug, user.id, input);
   if (!result) throw createError({ statusCode: 403, statusMessage: "Not authorized or contest not found" });
   return result;
 });
@@ -4012,16 +3955,8 @@ const index_put$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const judge_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = judgeEntrySchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  await judgeContestEntry(db, parsed.data.entryId, parsed.data.score, user.id);
+  const input = await parseBody(event, judgeEntrySchema);
+  await judgeContestEntry(db, input.entryId, input.score, user.id);
   return { success: true };
 });
 
@@ -4033,24 +3968,17 @@ const judge_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const transition_post = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const slug = getRouterParam(event, "slug");
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: "Contest slug is required" });
-  }
-  const body = await readBody(event);
-  const parsed = contestTransitionSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
+  const input = await parseBody(event, contestTransitionSchema);
   const contest = await getContestBySlug(db, slug);
   if (!contest) {
     throw createError({ statusCode: 404, statusMessage: "Contest not found" });
   }
-  const result = await transitionContestStatus(db, contest.id, user.id, parsed.data.status);
+  const result = await transitionContestStatus(db, contest.id, user.id, input.status);
   if (!result.transitioned) {
     throw createError({ statusCode: 400, statusMessage: result.error || "Transition failed" });
   }
-  return { transitioned: true, newStatus: parsed.data.status };
+  return { transitioned: true, newStatus: input.status };
 });
 
 const transition_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4072,16 +4000,8 @@ const index_get$v = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_post$e = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = createContestSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createContest(db, { ...parsed.data, createdBy: user.id });
+  const input = await parseBody(event, createContestSchema);
+  return createContest(db, { ...input, createdBy: user.id });
 });
 
 const index_post$f = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4092,7 +4012,7 @@ const index_post$f = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const index_delete$4 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
@@ -4107,7 +4027,7 @@ const index_delete$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 
 const index_get$s = defineEventHandler(async (event) => {
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
@@ -4126,21 +4046,13 @@ const index_get$t = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_put$4 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
-  const body = await readBody(event);
-  const parsed = updateDocsSiteSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
+  const input = await parseBody(event, updateDocsSiteSchema);
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
   }
-  return updateDocsSite(db, result.site.id, user.id, parsed.data);
+  return updateDocsSite(db, result.site.id, user.id, input);
 });
 
 const index_put$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4154,7 +4066,7 @@ const navQuerySchema = z.object({
 const nav_get = defineEventHandler(async (event) => {
   var _a, _b, _c, _d;
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
   const query = navQuerySchema.parse(getQuery$1(event));
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
@@ -4172,7 +4084,7 @@ const nav_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty(
 const _pageId__delete = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const pageId = getRouterParam(event, "pageId");
+  const { pageId } = parseParams(event, { pageId: "uuid" });
   const result = await deleteDocsPage(db, pageId, user.id);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Page not found or not authorized" });
@@ -4188,8 +4100,7 @@ const _pageId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineP
 const _pageId__get = defineEventHandler(async (event) => {
   var _a, _b;
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
-  const pageSlug = getRouterParam(event, "pageId");
+  const { siteSlug, pageId: pageSlug } = parseParams(event, { siteSlug: "string", pageId: "string" });
   const query = getQuery$1(event);
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
@@ -4215,17 +4126,9 @@ const _pageId__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const _pageId__put = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const pageId = getRouterParam(event, "pageId");
-  const body = await readBody(event);
-  const parsed = updateDocsPageSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return updateDocsPage(db, pageId, user.id, parsed.data);
+  const { pageId } = parseParams(event, { pageId: "uuid" });
+  const input = await parseBody(event, updateDocsPageSchema);
+  return updateDocsPage(db, pageId, user.id, input);
 });
 
 const _pageId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4238,7 +4141,7 @@ const pagesQuerySchema = z.object({
 });
 const index_get$q = defineEventHandler(async (event) => {
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
   const query = pagesQuerySchema.parse(getQuery$1(event));
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) {
@@ -4264,17 +4167,9 @@ const index_post$c = defineEventHandler(async (event) => {
   var _a;
   const user = requireAuth(event);
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
-  const body = await readBody(event);
-  const parsed = createDocsPageSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  const data = { ...parsed.data };
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
+  const input = await parseBody(event, createDocsPageSchema);
+  const data = { ...input };
   if (!data.versionId) {
     const result = await getDocsSiteBySlug(db, siteSlug);
     if (!result) {
@@ -4301,8 +4196,8 @@ const reorder_post = defineEventHandler(async (event) => {
   var _a;
   const user = requireAuth(event);
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
-  const body = reorderSchema.parse(await readBody(event));
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
+  const body = await parseBody(event, reorderSchema);
   const site = await getDocsSiteBySlug(db, siteSlug);
   if (!site) throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
   const version = (_a = site.versions.find((v) => v.isDefault)) != null ? _a : site.versions[0];
@@ -4325,7 +4220,7 @@ const searchQuerySchema$1 = z.object({
 const search_get = defineEventHandler(async (event) => {
   var _a, _b, _c, _d;
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
   const query = searchQuerySchema$1.parse(getQuery$1(event));
   const result = await getDocsSiteBySlug(db, siteSlug);
   if (!result) throw createError({ statusCode: 404, statusMessage: "Docs site not found" });
@@ -4342,17 +4237,9 @@ const search_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const versions_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const siteSlug = getRouterParam(event, "siteSlug");
-  const body = await readBody(event);
-  const parsed = createDocsVersionSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createDocsVersion(db, siteSlug, user.id, parsed.data);
+  const { siteSlug } = parseParams(event, { siteSlug: "string" });
+  const input = await parseBody(event, createDocsVersionSchema);
+  return createDocsVersion(db, siteSlug, user.id, input);
 });
 
 const versions_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4373,16 +4260,8 @@ const index_get$p = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_post$a = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = createDocsSiteSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createDocsSite(db, user.id, parsed.data);
+  const input = await parseBody(event, createDocsSiteSchema);
+  return createDocsSite(db, user.id, input);
 });
 
 const index_post$b = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4398,10 +4277,7 @@ function getStorage$1() {
 const _id__delete$8 = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "File ID is required" });
-  }
+  const { id } = parseParams(event, { id: "uuid" });
   const result = await db.delete(files).where(and(eq(files.id, id), eq(files.uploaderId, user.id))).returning({ id: files.id, storageKey: files.storageKey });
   if (result.length === 0) {
     throw createError({ statusCode: 404, statusMessage: "File not found or not owned by you" });
@@ -4534,7 +4410,7 @@ const health_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const bans_get = defineEventHandler(async (event) => {
   requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
@@ -4550,16 +4426,8 @@ const bans_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty
 const bans_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const parsed = banUserSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
+  const input = await parseBody(event, banUserSchema);
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
@@ -4568,9 +4436,9 @@ const bans_post = defineEventHandler(async (event) => {
     db,
     user.id,
     hub.id,
-    parsed.data.userId,
-    parsed.data.reason,
-    parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : void 0
+    input.userId,
+    input.reason,
+    input.expiresAt ? new Date(input.expiresAt) : void 0
   );
 });
 
@@ -4582,8 +4450,7 @@ const bans_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const _userId__delete$2 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const userId = getRouterParam(event, "userId");
+  const { slug, userId } = parseParams(event, { slug: "string", userId: "uuid" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
@@ -4604,10 +4471,7 @@ const feed_xml_get$2 = defineEventHandler(async (event) => {
   const db = useDB();
   const config = useRuntimeConfig();
   const siteUrl = config.public.siteUrl;
-  const slug = getRouterParam(event, "slug");
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: "Hub slug required" });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
@@ -4656,11 +4520,8 @@ const galleryQuerySchema = z.object({
 });
 const gallery_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const query = galleryQuerySchema.parse(getQuery$1(event));
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: "Hub slug is required" });
-  }
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
@@ -4676,7 +4537,7 @@ const gallery_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const index_delete$2 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const hub = await getHubBySlug(db, slug, user.id);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
@@ -4695,7 +4556,7 @@ const index_delete$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 
 const index_get$m = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const user = getOptionalUser(event);
   const community = await getHubBySlug(db, slug, user == null ? void 0 : user.id);
   if (!community) {
@@ -4712,21 +4573,13 @@ const index_get$n = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_put$2 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
+  const { slug } = parseParams(event, { slug: "string" });
   const hub = await getHubBySlug(db, slug, user.id);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
   }
-  const parsed = updateHubSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  const updated = await updateHub(db, hub.id, user.id, parsed.data);
+  const input = await parseBody(event, updateHubSchema);
+  const updated = await updateHub(db, hub.id, user.id, input);
   if (!updated) {
     throw createError({ statusCode: 403, statusMessage: "Not authorized to update this hub" });
   }
@@ -4741,7 +4594,7 @@ const index_put$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const invites_get = defineEventHandler(async (event) => {
   requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
@@ -4757,16 +4610,8 @@ const invites_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const invites_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const parsed = createInviteSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
+  const input = await parseBody(event, createInviteSchema);
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
@@ -4775,8 +4620,8 @@ const invites_post = defineEventHandler(async (event) => {
     db,
     user.id,
     hub.id,
-    parsed.data.maxUses,
-    parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : void 0
+    input.maxUses,
+    input.expiresAt ? new Date(input.expiresAt) : void 0
   );
 });
 
@@ -4788,12 +4633,14 @@ const invites_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const join_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
   }
-  return joinHub(db, user.id, community.id);
+  const body = await readBody(event).catch(() => null);
+  const inviteToken = typeof (body == null ? void 0 : body.inviteToken) === "string" ? body.inviteToken : void 0;
+  return joinHub(db, user.id, community.id, inviteToken);
 });
 
 const join_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4804,7 +4651,7 @@ const join_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const leave_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
@@ -4819,7 +4666,7 @@ const leave_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 
 const members_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
@@ -4835,8 +4682,7 @@ const members_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const _userId__delete = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const userId = getRouterParam(event, "userId");
+  const { slug, userId } = parseParams(event, { slug: "string", userId: "uuid" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
@@ -4852,22 +4698,13 @@ const _userId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineP
 const _userId__put = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const userId = getRouterParam(event, "userId");
-  const body = await readBody(event);
-  const parsed = changeRoleSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
+  const { slug, userId } = parseParams(event, { slug: "string", userId: "uuid" });
+  const input = await parseBody(event, changeRoleSchema);
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
   }
-  return changeRole(db, user.id, hub.id, userId, parsed.data.role);
+  return changeRole(db, user.id, hub.id, userId, input.role);
 });
 
 const _userId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4878,8 +4715,7 @@ const _userId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const _postId__delete = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const postId = getRouterParam(event, "postId");
+  const { slug, postId } = parseParams(event, { slug: "string", postId: "uuid" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
@@ -4894,7 +4730,7 @@ const _postId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineP
 
 const replies_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const postId = getRouterParam(event, "postId");
+  const { postId } = parseParams(event, { postId: "uuid" });
   return listReplies(db, postId);
 });
 
@@ -4906,7 +4742,7 @@ const replies_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const replies_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const postId = getRouterParam(event, "postId");
+  const { postId } = parseParams(event, { postId: "uuid" });
   const body = await readBody(event);
   const parsed = createReplySchema.safeParse({ ...body, postId });
   if (!parsed.success) {
@@ -4926,7 +4762,7 @@ const replies_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 
 const index_get$k = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const filters = hubPostFiltersSchema.parse(getQuery$1(event));
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
@@ -4943,21 +4779,13 @@ const index_get$l = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_post$8 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
+  const { slug } = parseParams(event, { slug: "string" });
   const community = await getHubBySlug(db, slug);
   if (!community) {
     throw createError({ statusCode: 404, statusMessage: "Community not found" });
   }
-  const parsed = createPostSchema.safeParse({ hubId: community.id, ...body });
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createPost(db, user.id, parsed.data);
+  const input = await parseBody(event, createPostSchema);
+  return createPost(db, user.id, { hubId: community.id, ...input });
 });
 
 const index_post$9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -4974,11 +4802,8 @@ const productQuerySchema = z.object({
 });
 const products_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const filters = productQuerySchema.parse(getQuery$1(event));
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: "Hub slug is required" });
-  }
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
@@ -4994,20 +4819,13 @@ const products_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const products_post = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const slug = getRouterParam(event, "slug");
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: "Hub slug is required" });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
   const hub = await getHubBySlug(db, slug, user.id);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
   }
-  const body = await readBody(event);
-  const parsed = createProductSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
-  }
-  return createProduct(db, user.id, hub.id, parsed.data);
+  const input = await parseBody(event, createProductSchema);
+  return createProduct(db, user.id, hub.id, input);
 });
 
 const products_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5021,21 +4839,13 @@ const shareContentSchema = z.object({
 const share_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const parsed = shareContentSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
+  const input = await parseBody(event, shareContentSchema);
   const hub = await getHubBySlug(db, slug);
   if (!hub) {
     throw createError({ statusCode: 404, statusMessage: "Hub not found" });
   }
-  return shareContent(db, user.id, hub.id, parsed.data.contentId);
+  return shareContent(db, user.id, hub.id, input.contentId);
 });
 
 const share_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5057,16 +4867,8 @@ const index_get$j = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_post$6 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = createHubSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createHub(db, user.id, parsed.data);
+  const input = await parseBody(event, createHubSchema);
+  return createHub(db, user.id, input);
 });
 
 const index_post$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5077,12 +4879,11 @@ const index_post$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const complete_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const lessonSlug = getRouterParam(event, "lessonSlug");
+  const { slug, lessonSlug } = parseParams(event, { slug: "string", lessonSlug: "string" });
   const body = await readBody(event).catch(() => ({}));
-  const lesson = await getLessonBySlug(db, slug, lessonSlug);
-  if (!lesson) throw createError({ statusCode: 404, statusMessage: "Lesson not found" });
-  return markLessonComplete(db, user.id, lesson.id, body == null ? void 0 : body.quizScore, body == null ? void 0 : body.quizPassed);
+  const result = await getLessonBySlug(db, slug, lessonSlug);
+  if (!result) throw createError({ statusCode: 404, statusMessage: "Lesson not found" });
+  return markLessonComplete(db, user.id, result.lesson.id, body == null ? void 0 : body.quizScore, body == null ? void 0 : body.quizPassed);
 });
 
 const complete_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5127,8 +4928,7 @@ function blocksToHtml(blocks) {
 const index_get$g = defineEventHandler(async (event) => {
   var _a;
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const lessonSlug = getRouterParam(event, "lessonSlug");
+  const { slug, lessonSlug } = parseParams(event, { slug: "string", lessonSlug: "string" });
   const result = await getLessonBySlug(db, slug, lessonSlug);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Lesson not found" });
@@ -5157,7 +4957,7 @@ const index_get$h = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const enroll_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const path = await getPathBySlug(db, slug, user.id);
   if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
   return enroll(db, user.id, path.id);
@@ -5171,7 +4971,7 @@ const enroll_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const index_delete = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const path = await getPathBySlug(db, slug, user.id);
   if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
   return deletePath(db, path.id, user.id);
@@ -5184,7 +4984,7 @@ const index_delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 
 const index_get$e = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const user = getOptionalUser(event);
   const path = await getPathBySlug(db, slug, user == null ? void 0 : user.id);
   if (!path) {
@@ -5201,19 +5001,11 @@ const index_get$f = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_put = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const parsed = updateLearningPathSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
+  const input = await parseBody(event, updateLearningPathSchema);
   const path = await getPathBySlug(db, slug, user.id);
   if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
-  return updatePath(db, path.id, user.id, parsed.data);
+  return updatePath(db, path.id, user.id, input);
 });
 
 const index_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5224,16 +5016,8 @@ const index_put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const lessons_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = createLessonSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createLesson(db, user.id, parsed.data);
+  const input = await parseBody(event, createLessonSchema);
+  return createLesson(db, user.id, input);
 });
 
 const lessons_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5244,7 +5028,7 @@ const lessons_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const _lessonId__delete = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const lessonId = getRouterParam(event, "lessonId");
+  const { lessonId } = parseParams(event, { lessonId: "uuid" });
   const deleted = await deleteLesson(db, lessonId, user.id);
   if (!deleted) {
     throw createError({ statusCode: 404, statusMessage: "Lesson not found or not authorized" });
@@ -5267,9 +5051,9 @@ const updateLessonSchema = z.object({
 const _lessonId__put = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const lessonId = getRouterParam(event, "lessonId");
-  const body = updateLessonSchema.parse(await readBody(event));
-  const result = await updateLesson(db, lessonId, user.id, body);
+  const { lessonId } = parseParams(event, { lessonId: "uuid" });
+  const input = await parseBody(event, updateLessonSchema);
+  const result = await updateLesson(db, lessonId, user.id, input);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Lesson not found or not authorized" });
   }
@@ -5284,19 +5068,11 @@ const _lessonId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePr
 const modules_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  const body = await readBody(event);
-  const parsed = createModuleSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
+  const input = await parseBody(event, createModuleSchema);
   const path = await getPathBySlug(db, slug, user.id);
   if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
-  return createModule(db, user.id, { ...parsed.data, pathId: path.id });
+  return createModule(db, user.id, { ...input, pathId: path.id });
 });
 
 const modules_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5307,7 +5083,7 @@ const modules_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const _moduleId__delete = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const moduleId = getRouterParam(event, "moduleId");
+  const { moduleId } = parseParams(event, { moduleId: "uuid" });
   const deleted = await deleteModule(db, moduleId, user.id);
   if (!deleted) {
     throw createError({ statusCode: 404, statusMessage: "Module not found or not authorized" });
@@ -5323,17 +5099,9 @@ const _moduleId__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defin
 const _moduleId__put = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const moduleId = getRouterParam(event, "moduleId");
-  const body = await readBody(event);
-  const parsed = updateModuleSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return updateModule(db, moduleId, user.id, parsed.data);
+  const { moduleId } = parseParams(event, { moduleId: "uuid" });
+  const input = await parseBody(event, updateModuleSchema);
+  return updateModule(db, moduleId, user.id, input);
 });
 
 const _moduleId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5344,7 +5112,7 @@ const _moduleId__put$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePr
 const publish_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const path = await getPathBySlug(db, slug, user.id);
   if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
   return publishPath(db, path.id, user.id);
@@ -5358,7 +5126,7 @@ const publish_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const unenroll_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
+  const { slug } = parseParams(event, { slug: "string" });
   const path = await getPathBySlug(db, slug, user.id);
   if (!path) throw createError({ statusCode: 404, statusMessage: "Path not found" });
   return unenroll(db, user.id, path.id);
@@ -5411,16 +5179,8 @@ const index_get$d = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_post$4 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = createLearningPathSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createPath(db, user.id, parsed.data);
+  const input = await parseBody(event, createLearningPathSchema);
+  return createPath(db, user.id, input);
 });
 
 const index_post$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5431,7 +5191,7 @@ const index_post$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const _conversationId__get = defineEventHandler(async (event) => {
   const db = useDB();
   const user = await requireAuth(event);
-  const conversationId = getRouterParam(event, "conversationId");
+  const { conversationId } = parseParams(event, { conversationId: "uuid" });
   const messages = await getConversationMessages(db, conversationId, user.id);
   await markMessagesRead(db, conversationId, user.id);
   return messages;
@@ -5445,17 +5205,9 @@ const _conversationId__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.de
 const _conversationId__post = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const conversationId = getRouterParam(event, "conversationId");
-  const body = await readBody(event);
-  const parsed = sendMessageSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return sendMessage(db, conversationId, user.id, parsed.data.body);
+  const { conversationId } = parseParams(event, { conversationId: "uuid" });
+  const input = await parseBody(event, sendMessageSchema);
+  return sendMessage(db, conversationId, user.id, input.body);
 });
 
 const _conversationId__post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5466,7 +5218,7 @@ const _conversationId__post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.d
 const info_get = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const conversationId = getRouterParam(event, "conversationId");
+  const { conversationId } = parseParams(event, { conversationId: "uuid" });
   const rows = await db.select().from(conversations).where(
     and(
       eq(conversations.id, conversationId),
@@ -5490,10 +5242,7 @@ const info_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty
 const stream_get$2 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const userId = user.id;
-  const conversationId = getRouterParam(event, "conversationId");
-  if (!conversationId) {
-    throw createError({ statusCode: 400, statusMessage: "Conversation ID required" });
-  }
+  const { conversationId } = parseParams(event, { conversationId: "uuid" });
   const db = useDB();
   setResponseHeader(event, "Content-Type", "text/event-stream");
   setResponseHeader(event, "Cache-Control", "no-cache");
@@ -5577,16 +5326,8 @@ const index_get$b = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_post$2 = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const body = await readBody(event);
-  const parsed = createConversationSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  const participants = parsed.data.participants;
+  const input = await parseBody(event, createConversationSchema);
+  const participants = input.participants;
   if (!participants.includes(user.id)) {
     participants.push(user.id);
   }
@@ -5601,7 +5342,7 @@ const index_post$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
 const _id__delete$6 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   await deleteNotification(db, id, user.id);
   return { success: true };
 });
@@ -5730,10 +5471,7 @@ const openapi_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const _id__delete$4 = defineEventHandler(async (event) => {
   const db = useDB();
   requireAdmin(event);
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Product ID is required" });
-  }
+  const { id } = parseParams(event, { id: "uuid" });
   const deleted = await deleteProduct(db, id);
   if (!deleted) {
     throw createError({ statusCode: 404, statusMessage: "Product not found" });
@@ -5749,16 +5487,9 @@ const _id__delete$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const _id__put$2 = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Product ID is required" });
-  }
-  const body = await readBody(event);
-  const parsed = updateProductSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
-  }
-  const product = await updateProduct(db, id, user.id, parsed.data);
+  const { id } = parseParams(event, { id: "uuid" });
+  const input = await parseBody(event, updateProductSchema);
+  const product = await updateProduct(db, id, user.id, input);
   if (!product) {
     throw createError({ statusCode: 404, statusMessage: "Product not found" });
   }
@@ -5772,10 +5503,7 @@ const _id__put$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty
 
 const _slug__get = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: "Slug is required" });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
   const product = await getProductBySlug(db, slug);
   if (!product) {
     throw createError({ statusCode: 404, statusMessage: "Product not found" });
@@ -5794,10 +5522,7 @@ const querySchema = z.object({
 });
 const content_get$2 = defineEventHandler(async (event) => {
   const db = useDB();
-  const slug = getRouterParam(event, "slug");
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: "Slug is required" });
-  }
+  const { slug } = parseParams(event, { slug: "string" });
   const product = await getProductBySlug(db, slug);
   if (!product) {
     throw createError({ statusCode: 404, statusMessage: "Product not found" });
@@ -5857,12 +5582,8 @@ const profile_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 const profile_put = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const body = await readBody(event);
-  const parsed = updateProfileSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid input", data: parsed.error.flatten() });
-  }
-  const profile = await updateUserProfile(db, user.id, parsed.data);
+  const input = await parseBody(event, updateProfileSchema);
+  const profile = await updateUserProfile(db, user.id, input);
   if (!profile) {
     throw createError({ statusCode: 404, statusMessage: "Profile not found" });
   }
@@ -5920,16 +5641,8 @@ const toggleBookmarkSchema = z.object({
 const bookmark_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = toggleBookmarkSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return toggleBookmark(db, user.id, parsed.data.targetType, parsed.data.targetId);
+  const input = await parseBody(event, toggleBookmarkSchema);
+  return toggleBookmark(db, user.id, input.targetType, input.targetId);
 });
 
 const bookmark_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5971,16 +5684,8 @@ const comments_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const comments_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = createCommentSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createComment(db, user.id, parsed.data);
+  const input = await parseBody(event, createCommentSchema);
+  return createComment(db, user.id, input);
 });
 
 const comments_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5991,7 +5696,7 @@ const comments_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePro
 const _id__delete$2 = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const id = getRouterParam(event, "id");
+  const { id } = parseParams(event, { id: "uuid" });
   const deleted = await deleteComment(db, id, user.id);
   if (!deleted) {
     throw createError({ statusCode: 404, statusMessage: "Comment not found or not owned by you" });
@@ -6011,7 +5716,7 @@ const likeQuerySchema = z.object({
 const like_get = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const query = likeQuerySchema.parse(getQuery$1(event));
+  const query = parseQueryParams(event, likeQuerySchema);
   const liked = await isLiked(db, user.id, query.targetType, query.targetId);
   return { liked };
 });
@@ -6028,16 +5733,8 @@ const toggleLikeSchema = z.object({
 const like_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = toggleLikeSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return toggleLike(db, user.id, parsed.data.targetType, parsed.data.targetId);
+  const input = await parseBody(event, toggleLikeSchema);
+  return toggleLike(db, user.id, input.targetType, input.targetId);
 });
 
 const like_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -6059,7 +5756,7 @@ const stats_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const _username__get = defineEventHandler(async (event) => {
   var _a;
   const db = useDB();
-  const username = getRouterParam(event, "username");
+  const { username } = parseParams(event, { username: "string" });
   const profile = await getUserByUsername(db, username);
   if (!profile) {
     throw createError({ statusCode: 404, statusMessage: "User not found" });
@@ -6085,7 +5782,7 @@ const userContentQuerySchema = z.object({
 });
 const content_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const username = getRouterParam(event, "username");
+  const { username } = parseParams(event, { username: "string" });
   const query = userContentQuerySchema.parse(getQuery$1(event));
   const user = await getUserByUsername(db, username);
   if (!user) {
@@ -6107,10 +5804,7 @@ const feed_xml_get = defineEventHandler(async (event) => {
   const db = useDB();
   const config = useRuntimeConfig();
   const siteUrl = config.public.siteUrl;
-  const username = getRouterParam(event, "username");
-  if (!username) {
-    throw createError({ statusCode: 400, statusMessage: "Username required" });
-  }
+  const { username } = parseParams(event, { username: "string" });
   const user = await getUserByUsername(db, username);
   if (!user) {
     throw createError({ statusCode: 404, statusMessage: "User not found" });
@@ -6161,10 +5855,7 @@ const feed_xml_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
 const follow_delete = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const username = getRouterParam(event, "username");
-  if (!username) {
-    throw createError({ statusCode: 400, statusMessage: "Username is required" });
-  }
+  const { username } = parseParams(event, { username: "string" });
   const target = await getUserByUsername(db, username);
   if (!target) {
     throw createError({ statusCode: 404, statusMessage: "User not found" });
@@ -6180,10 +5871,7 @@ const follow_delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePro
 const follow_post = defineEventHandler(async (event) => {
   const db = useDB();
   const user = requireAuth(event);
-  const username = getRouterParam(event, "username");
-  if (!username) {
-    throw createError({ statusCode: 400, statusMessage: "Username is required" });
-  }
+  const { username } = parseParams(event, { username: "string" });
   const target = await getUserByUsername(db, username);
   if (!target) {
     throw createError({ statusCode: 404, statusMessage: "User not found" });
@@ -6202,11 +5890,8 @@ const paginationSchema$1 = z.object({
 });
 const followers_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const username = getRouterParam(event, "username");
+  const { username } = parseParams(event, { username: "string" });
   const query = paginationSchema$1.parse(getQuery$1(event));
-  if (!username) {
-    throw createError({ statusCode: 400, statusMessage: "Username is required" });
-  }
   const target = await getUserByUsername(db, username);
   if (!target) {
     throw createError({ statusCode: 404, statusMessage: "User not found" });
@@ -6225,11 +5910,8 @@ const paginationSchema = z.object({
 });
 const following_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const username = getRouterParam(event, "username");
+  const { username } = parseParams(event, { username: "string" });
   const query = paginationSchema.parse(getQuery$1(event));
-  if (!username) {
-    throw createError({ statusCode: 400, statusMessage: "Username is required" });
-  }
   const target = await getUserByUsername(db, username);
   if (!target) {
     throw createError({ statusCode: 404, statusMessage: "User not found" });
@@ -6244,7 +5926,7 @@ const following_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePro
 
 const learning_get = defineEventHandler(async (event) => {
   const db = useDB();
-  const username = getRouterParam(event, "username");
+  const { username } = parseParams(event, { username: "string" });
   const profile = await getUserByUsername(db, username);
   if (!profile) {
     throw createError({ statusCode: 404, statusMessage: "User not found" });
@@ -6321,8 +6003,7 @@ const index_get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 
 const _id__get = defineEventHandler(async (event) => {
   const db = useDB();
-  const id = getRouterParam(event, "id");
-  if (!id) throw createError({ statusCode: 400, statusMessage: "ID required" });
+  const { id } = parseParams(event, { id: "uuid" });
   const video = await getVideoById(db, id);
   if (!video) throw createError({ statusCode: 404, statusMessage: "Video not found" });
   await incrementVideoViewCount(db, id);
@@ -6345,15 +6026,10 @@ const categories_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePr
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const categories_post = defineEventHandler(async (event) => {
-  var _a, _b;
   requireAdmin(event);
-  const body = await readBody(event);
-  const parsed = createVideoCategorySchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: (_b = (_a = parsed.error.issues[0]) == null ? void 0 : _a.message) != null ? _b : "Invalid input" });
-  }
   const db = useDB();
-  return createVideoCategory(db, parsed.data);
+  const input = await parseBody(event, createVideoCategorySchema);
+  return createVideoCategory(db, input);
 });
 
 const categories_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -6363,10 +6039,7 @@ const categories_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineP
 
 const _id__delete = defineEventHandler(async (event) => {
   requireAdmin(event);
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Category ID required" });
-  }
+  const { id } = parseParams(event, { id: "uuid" });
   const db = useDB();
   const deleted = await deleteVideoCategory(db, id);
   if (!deleted) {
@@ -6381,19 +6054,11 @@ const _id__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const _id__put = defineEventHandler(async (event) => {
-  var _a, _b;
   requireAdmin(event);
-  const id = getRouterParam(event, "id");
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: "Category ID required" });
-  }
-  const body = await readBody(event);
-  const parsed = createVideoCategorySchema.partial().safeParse(body);
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: (_b = (_a = parsed.error.issues[0]) == null ? void 0 : _a.message) != null ? _b : "Invalid input" });
-  }
+  const { id } = parseParams(event, { id: "uuid" });
+  const input = await parseBody(event, createVideoCategorySchema.partial());
   const db = useDB();
-  const result = await updateVideoCategory(db, id, parsed.data);
+  const result = await updateVideoCategory(db, id, input);
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: "Category not found" });
   }
@@ -6419,16 +6084,8 @@ const index_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
 const index_post = defineEventHandler(async (event) => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
-  const parsed = createVideoSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-      data: { errors: parsed.error.flatten().fieldErrors }
-    });
-  }
-  return createVideo(db, { ...parsed.data, authorId: user.id });
+  const input = await parseBody(event, createVideoSchema);
+  return createVideo(db, { ...input, authorId: user.id });
 });
 
 const index_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

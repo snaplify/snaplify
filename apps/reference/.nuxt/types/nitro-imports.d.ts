@@ -86,7 +86,10 @@ declare global {
   const lazyEventHandler: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').lazyEventHandler
   const nitroPlugin: typeof import('../../../../node_modules/.pnpm/nitropack@2.13.1_@electric-sql+pglite@0.3.16_drizzle-orm@0.45.1_@electric-sql+pglite@0._fb8747653afa1f897429d548c9ddc9d2/node_modules/nitropack/dist/runtime/internal/plugin').nitroPlugin
   const notFound: typeof import('../../server/utils/errors').notFound
+  const parseBody: typeof import('../../server/utils/validate').parseBody
   const parseCookies: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').parseCookies
+  const parseParams: typeof import('../../server/utils/validate').parseParams
+  const parseQueryParams: typeof import('../../server/utils/validate').parseQueryParams
   const promisifyNodeListener: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').promisifyNodeListener
   const proxyRequest: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').proxyRequest
   const readBody: typeof import('../../../../node_modules/.pnpm/h3@1.15.6/node_modules/h3').readBody
@@ -163,3 +166,4 @@ export { requireAuth, requireAdmin, getOptionalUser } from '/Users/obsidian/Proj
 export { useConfig } from '/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server/utils/config';
 export { useDB } from '/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server/utils/db';
 export { validationError, notFound, forbidden, badRequest } from '/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server/utils/errors';
+export { parseBody, parseQueryParams, parseParams } from '/Users/obsidian/Projects/ossuary-projects/snaplify/apps/reference/server/utils/validate';

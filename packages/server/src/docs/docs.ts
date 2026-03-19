@@ -2,8 +2,9 @@ import { eq, and, desc, sql, asc } from 'drizzle-orm';
 import { docsSites, docsVersions, docsPages, docsNav, users } from '@commonpub/schema';
 import { buildPagePath } from '@commonpub/docs';
 import type { DocsPage } from '@commonpub/docs';
-import type { DB } from './types.js';
-import { generateSlug } from './utils.js';
+import type { DB } from '../types.js';
+import { generateSlug } from '../utils.js';
+import { ensureUniqueSlugFor, normalizePagination, countRows } from '../query.js';
 
 // --- Site CRUD ---
 
@@ -24,10 +25,9 @@ export async function listDocsSites(
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
-  const limit = Math.min(filters.limit ?? 20, 100);
-  const offset = filters.offset ?? 0;
+  const { limit, offset } = normalizePagination(filters);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         site: docsSites,
@@ -43,10 +43,7 @@ export async function listDocsSites(
       .orderBy(desc(docsSites.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(docsSites)
-      .where(where),
+    countRows(db, docsSites, where),
   ]);
 
   const items = rows.map((row) => ({
@@ -54,7 +51,7 @@ export async function listDocsSites(
     owner: row.owner,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 export async function getDocsSiteBySlug(
@@ -100,7 +97,7 @@ export async function createDocsSite(
   ownerId: string,
   input: { name: string; slug?: string; description?: string },
 ): Promise<typeof docsSites.$inferSelect> {
-  const slug = await ensureUniqueDocsSiteSlug(db, input.slug || generateSlug(input.name));
+  const slug = await ensureUniqueSlugFor(db, docsSites, docsSites.slug, docsSites.id, input.slug || generateSlug(input.name), 'docs');
 
   const [site] = await db
     .insert(docsSites)
@@ -140,7 +137,7 @@ export async function updateDocsSite(
   if (input.name !== undefined) {
     updates.name = input.name;
     if (input.name !== existing[0]!.name) {
-      updates.slug = await ensureUniqueDocsSiteSlug(db, generateSlug(input.name), siteId);
+      updates.slug = await ensureUniqueSlugFor(db, docsSites, docsSites.slug, docsSites.id, generateSlug(input.name), 'docs', siteId);
     }
   }
   if (input.description !== undefined) updates.description = input.description;
@@ -397,6 +394,11 @@ export async function updateDocsPage(
 
   if (page.length === 0) return null;
 
+  // Prevent circular parent reference
+  if (input.parentId !== undefined && input.parentId === pageId) {
+    throw new Error('A page cannot be its own parent');
+  }
+
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (input.title !== undefined) updates.title = input.title;
   if (input.slug !== undefined) updates.slug = input.slug;
@@ -552,27 +554,3 @@ export async function searchDocsPages(
   return results;
 }
 
-// --- Helpers ---
-
-async function ensureUniqueDocsSiteSlug(
-  db: DB,
-  slug: string,
-  excludeId?: string,
-): Promise<string> {
-  if (!slug) slug = `docs-${Date.now()}`;
-
-  const conditions = [eq(docsSites.slug, slug)];
-  if (excludeId) {
-    const { ne } = await import('drizzle-orm');
-    conditions.push(ne(docsSites.id, excludeId));
-  }
-
-  const existing = await db
-    .select({ id: docsSites.id })
-    .from(docsSites)
-    .where(and(...conditions))
-    .limit(1);
-
-  if (existing.length === 0) return slug;
-  return `${slug}-${Date.now()}`;
-}

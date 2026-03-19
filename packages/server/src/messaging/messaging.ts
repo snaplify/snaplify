@@ -1,6 +1,6 @@
 import { eq, and, desc, sql, isNull } from 'drizzle-orm';
 import { conversations, messages, users } from '@commonpub/schema';
-import type { DB } from './types.js';
+import type { DB } from '../types.js';
 
 export interface ConversationItem {
   id: string;

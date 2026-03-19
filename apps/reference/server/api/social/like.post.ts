@@ -10,16 +10,7 @@ const toggleLikeSchema = z.object({
 export default defineEventHandler(async (event): Promise<{ liked: boolean }> => {
   const user = requireAuth(event);
   const db = useDB();
-  const body = await readBody(event);
+  const input = await parseBody(event, toggleLikeSchema);
 
-  const parsed = toggleLikeSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
-
-  return toggleLike(db, user.id, parsed.data.targetType, parsed.data.targetId);
+  return toggleLike(db, user.id, input.targetType, input.targetId);
 });

@@ -13,11 +13,8 @@ export default defineEventHandler(async (event) => {
   const db = useDB();
   const config = useRuntimeConfig();
   const siteUrl = config.public.siteUrl as string;
-  const username = getRouterParam(event, 'username');
+  const { username } = parseParams(event, { username: 'string' });
 
-  if (!username) {
-    throw createError({ statusCode: 400, statusMessage: 'Username required' });
-  }
 
   const user = await getUserByUsername(db, username);
   if (!user) {

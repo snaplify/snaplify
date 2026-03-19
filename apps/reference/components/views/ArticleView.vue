@@ -32,6 +32,30 @@ const tocHeadings = computed(() => {
     });
 });
 
+const { isAuthenticated } = useAuth();
+const toast = useToast();
+const followingAuthor = ref((props.content as Record<string, unknown>).isFollowingAuthor as boolean ?? false);
+
+async function handleFollowAuthor(): Promise<void> {
+  if (!isAuthenticated.value) {
+    await navigateTo(`/auth/login?redirect=/article/${props.content.slug}`);
+    return;
+  }
+  const username = props.content.author?.username;
+  if (!username) return;
+  try {
+    if (followingAuthor.value) {
+      await $fetch(`/api/users/${username}/follow`, { method: 'DELETE' });
+      followingAuthor.value = false;
+    } else {
+      await $fetch(`/api/users/${username}/follow`, { method: 'POST' });
+      followingAuthor.value = true;
+    }
+  } catch {
+    toast.error('Failed to update follow');
+  }
+}
+
 const config = useRuntimeConfig();
 useJsonLd({
   type: 'article',
@@ -110,7 +134,7 @@ useJsonLd({
 
       <!-- ARTICLE BODY WITH TOC SIDEBAR -->
       <div v-if="tocHeadings.length > 0" class="cpub-article-body-layout">
-        <aside class="cpub-article-toc-sidebar">
+        <aside class="cpub-article-toc-sidebar" aria-label="Table of contents">
           <TOCNav :headings="tocHeadings" />
         </aside>
       </div>
@@ -156,7 +180,10 @@ useJsonLd({
               <div class="cpub-author-card-stat"><span class="n">{{ content.author.totalViews ?? 0 }}</span><span class="l">total views</span></div>
             </div>
             <div class="cpub-author-card-actions">
-              <button class="cpub-btn cpub-btn-sm"><i class="fa-solid fa-rss"></i> Follow</button>
+              <button class="cpub-btn cpub-btn-sm" @click="handleFollowAuthor">
+                <i :class="followingAuthor ? 'fa-solid fa-user-check' : 'fa-solid fa-rss'"></i>
+                {{ followingAuthor ? 'Following' : 'Follow' }}
+              </button>
             </div>
           </div>
         </div>
@@ -201,13 +228,17 @@ useJsonLd({
 @media (min-width: 1200px) {
   .cpub-article-body-layout {
     position: fixed;
-    right: 24px;
+    right: max(24px, calc((100vw - 720px) / 2 - 240px));
     top: 120px;
     width: 200px;
     z-index: 10;
+    pointer-events: none;
   }
   .cpub-article-toc-sidebar {
     display: block;
+    pointer-events: auto;
+    position: sticky;
+    top: 80px;
   }
 }
 
@@ -617,24 +648,6 @@ useJsonLd({
   display: flex;
   gap: 8px;
 }
-
-/* ── BUTTONS ── */
-.cpub-btn {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background var(--transition-fast);
-}
-
-.cpub-btn:hover { background: var(--surface2); }
-.cpub-btn-sm { padding: 4px 10px; font-size: 11px; }
 
 /* ── RELATED ARTICLES ── */
 .cpub-section-head {

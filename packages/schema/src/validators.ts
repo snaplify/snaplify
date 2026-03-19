@@ -240,8 +240,8 @@ export const createProductSchema = z.object({
   datasheetUrl: optionalUrl(),
   pricing: z
     .object({
-      min: z.number().optional(),
-      max: z.number().optional(),
+      min: z.number().min(0).optional(),
+      max: z.number().min(0).optional(),
       currency: z.string().max(3).optional(),
     })
     .optional(),

@@ -11,7 +11,7 @@ import {
   incrementViewCount,
   createContentVersion,
   listContentVersions,
-} from '../content.js';
+} from '../content/content.js';
 
 describe('content integration', () => {
   let db: DB;

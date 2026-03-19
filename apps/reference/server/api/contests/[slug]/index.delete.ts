@@ -3,11 +3,8 @@ import { getContestBySlug, deleteContest } from '@commonpub/server';
 export default defineEventHandler(async (event): Promise<{ deleted: boolean }> => {
   const db = useDB();
   const user = requireAuth(event);
-  const slug = getRouterParam(event, 'slug');
+  const { slug } = parseParams(event, { slug: 'string' });
 
-  if (!slug) {
-    throw createError({ statusCode: 400, statusMessage: 'Contest slug is required' });
-  }
 
   const contest = await getContestBySlug(db, slug);
   if (!contest) {

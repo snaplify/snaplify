@@ -5,7 +5,7 @@ export default defineEventHandler(async (event): Promise<ContentDetail> => {
   const user = requireAuth(event);
   const db = useDB();
   const config = useConfig();
-  const id = getRouterParam(event, 'id')!;
+  const { id } = parseParams(event, { id: 'uuid' });
 
   const content = await publishContent(db, id, user.id);
   if (!content) {

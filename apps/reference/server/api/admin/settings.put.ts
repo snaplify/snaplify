@@ -4,16 +4,7 @@ import { adminSettingSchema } from '@commonpub/schema';
 export default defineEventHandler(async (event): Promise<void> => {
   const admin = requireAdmin(event);
   const db = useDB();
-  const body = await readBody(event);
+  const input = await parseBody(event, adminSettingSchema);
 
-  const parsed = adminSettingSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation failed',
-      data: { errors: parsed.error.flatten().fieldErrors },
-    });
-  }
-
-  return setInstanceSetting(db, parsed.data.key, parsed.data.value, admin.id);
+  return setInstanceSetting(db, input.key, input.value, admin.id);
 });

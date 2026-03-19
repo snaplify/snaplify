@@ -9,9 +9,10 @@ import {
   users,
 } from '@commonpub/schema';
 import type { CommonPubConfig } from '@commonpub/config';
-import type { DB, CommentItem } from './types.js';
+import type { DB, CommentItem } from '../types.js';
 import type { LikeTargetType, CommentTargetType } from '@commonpub/schema';
-import { federateLike } from './federation.js';
+import { federateLike } from '../federation/federation.js';
+import { USER_REF_SELECT, USER_REF_WITH_BIO_SELECT, normalizePagination, countRows } from '../query.js';
 
 export type { CommentItem };
 
@@ -118,12 +119,7 @@ export async function listComments(
   const rows = await db
     .select({
       comment: comments,
-      author: {
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      },
+      author: USER_REF_SELECT,
     })
     .from(comments)
     .innerJoin(users, eq(comments.authorId, users.id))
@@ -199,12 +195,7 @@ export async function createComment(
   }
 
   const author = await db
-    .select({
-      id: users.id,
-      username: users.username,
-      displayName: users.displayName,
-      avatarUrl: users.avatarUrl,
-    })
+    .select(USER_REF_SELECT)
     .from(users)
     .where(eq(users.id, authorId))
     .limit(1);
@@ -233,18 +224,28 @@ export async function deleteComment(
 
   if (existing.length === 0) return false;
 
+  // Count child replies that will be cascade-deleted
+  const childCount = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(comments)
+    .where(eq(comments.parentId, commentId));
+  const totalDeleted = 1 + (childCount[0]?.count ?? 0);
+
+  // Delete the comment (child replies with parentId pointing here become orphaned,
+  // so delete them explicitly)
+  await db.delete(comments).where(eq(comments.parentId, commentId));
   await db.delete(comments).where(eq(comments.id, commentId));
 
-  // Update denormalized count
+  // Update denormalized count (subtract parent + all children)
   if (existing[0]!.targetType === 'post') {
     await db
       .update(hubPosts)
-      .set({ replyCount: sql`GREATEST(${hubPosts.replyCount} - 1, 0)` })
+      .set({ replyCount: sql`GREATEST(${hubPosts.replyCount} - ${totalDeleted}, 0)` })
       .where(eq(hubPosts.id, existing[0]!.targetId));
   } else {
     await db
       .update(contentItems)
-      .set({ commentCount: sql`GREATEST(${contentItems.commentCount} - 1, 0)` })
+      .set({ commentCount: sql`GREATEST(${contentItems.commentCount} - ${totalDeleted}, 0)` })
       .where(eq(contentItems.id, existing[0]!.targetId));
   }
 
@@ -302,12 +303,11 @@ export async function listUserBookmarks(
   userId: string,
   opts: { limit?: number; offset?: number } = {},
 ): Promise<{ items: BookmarkItem[]; total: number }> {
-  const limit = Math.min(opts.limit ?? 20, 100);
-  const offset = opts.offset ?? 0;
+  const { limit, offset } = normalizePagination(opts);
 
   const where = eq(bookmarks.userId, userId);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
         bookmark: bookmarks,
@@ -332,10 +332,7 @@ export async function listUserBookmarks(
       .orderBy(desc(bookmarks.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(bookmarks)
-      .where(where),
+    countRows(db, bookmarks, where),
   ]);
 
   const items: BookmarkItem[] = rows.map((row) => ({
@@ -355,7 +352,7 @@ export async function listUserBookmarks(
       : null,
   }));
 
-  return { items, total: countResult[0]?.count ?? 0 };
+  return { items, total };
 }
 
 // --- Federation Hook ---
@@ -429,21 +426,14 @@ export async function listFollowers(
   userId: string,
   opts: { limit?: number; offset?: number } = {},
 ): Promise<{ items: FollowUserItem[]; total: number }> {
-  const limit = Math.min(opts.limit ?? 20, 100);
-  const offset = opts.offset ?? 0;
+  const { limit, offset } = normalizePagination(opts);
 
   const where = eq(follows.followingId, userId);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
-        user: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-          bio: users.bio,
-        },
+        user: USER_REF_WITH_BIO_SELECT,
         followedAt: follows.createdAt,
       })
       .from(follows)
@@ -452,10 +442,7 @@ export async function listFollowers(
       .orderBy(desc(follows.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(follows)
-      .where(where),
+    countRows(db, follows, where),
   ]);
 
   return {
@@ -464,7 +451,7 @@ export async function listFollowers(
       bio: row.user.bio ?? null,
       followedAt: row.followedAt,
     })),
-    total: countResult[0]?.count ?? 0,
+    total,
   };
 }
 
@@ -473,21 +460,14 @@ export async function listFollowing(
   userId: string,
   opts: { limit?: number; offset?: number } = {},
 ): Promise<{ items: FollowUserItem[]; total: number }> {
-  const limit = Math.min(opts.limit ?? 20, 100);
-  const offset = opts.offset ?? 0;
+  const { limit, offset } = normalizePagination(opts);
 
   const where = eq(follows.followerId, userId);
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db
       .select({
-        user: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-          bio: users.bio,
-        },
+        user: USER_REF_WITH_BIO_SELECT,
         followedAt: follows.createdAt,
       })
       .from(follows)
@@ -496,10 +476,7 @@ export async function listFollowing(
       .orderBy(desc(follows.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(follows)
-      .where(where),
+    countRows(db, follows, where),
   ]);
 
   return {
@@ -508,7 +485,7 @@ export async function listFollowing(
       bio: row.user.bio ?? null,
       followedAt: row.followedAt,
     })),
-    total: countResult[0]?.count ?? 0,
+    total,
   };
 }
 
