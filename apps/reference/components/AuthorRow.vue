@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  author: { username: string; displayName?: string; avatar?: string };
+  author: { username: string; displayName?: string; avatarUrl?: string | null };
   date: string;
   readTime?: string;
 }>();
@@ -9,7 +9,7 @@ defineProps<{
 <template>
   <div class="cpub-author-row">
     <NuxtLink :to="`/u/${author.username}`" class="cpub-author-avatar">
-      <img v-if="author.avatar" :src="author.avatar" :alt="author.displayName || author.username" />
+      <img v-if="author.avatarUrl" :src="author.avatarUrl" :alt="author.displayName || author.username" />
       <span v-else class="cpub-author-initials">{{ (author.displayName || author.username).charAt(0).toUpperCase() }}</span>
     </NuxtLink>
     <div class="cpub-author-info">

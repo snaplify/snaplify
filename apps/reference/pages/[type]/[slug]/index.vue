@@ -84,7 +84,7 @@ onMounted(() => {
   <div v-if="contentPending" class="cpub-loading" aria-live="polite">Loading content...</div>
   <div v-else-if="enrichedContent">
     <!-- Edit button overlay -->
-    <div v-if="isOwner" class="cpub-view-edit-bar">
+    <div v-if="isOwner && enrichedContent.type !== 'explainer'" class="cpub-view-edit-bar">
       <NuxtLink :to="`/${enrichedContent.type}/${enrichedContent.slug}/edit`" class="cpub-edit-btn" aria-label="Edit">
         <i class="fa-solid fa-pen"></i> Edit
       </NuxtLink>

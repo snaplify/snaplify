@@ -80,6 +80,9 @@ const contentId = computed(() => props.content?.id);
 const contentType = computed(() => props.content?.type ?? 'explainer');
 const { bookmarked, toggleBookmark, share } = useEngagement(contentId, contentType);
 
+const { user } = useAuth();
+const isOwner = computed(() => user.value?.id === props.content?.author?.id);
+
 const runtimeConfig = useRuntimeConfig();
 useJsonLd({
   type: 'article',
@@ -167,6 +170,15 @@ onUnmounted(() => { document.removeEventListener('keydown', onKeydown); });
       <button class="cpub-icon-btn" title="Share" @click="share">
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
       </button>
+      <NuxtLink
+        v-if="isOwner"
+        :to="`/${content.type}/${content.slug}/edit`"
+        class="cpub-icon-btn cpub-edit-link"
+        title="Edit explainer"
+        aria-label="Edit explainer"
+      >
+        <i class="fa-solid fa-pen"></i>
+      </NuxtLink>
     </header>
 
     <!-- MAIN LAYOUT -->
@@ -191,6 +203,22 @@ onUnmounted(() => { document.removeEventListener('keydown', onKeydown); });
             </a>
           </li>
         </ul>
+
+        <!-- Author info -->
+        <div v-if="content.author" class="cpub-sidebar-author">
+          <NuxtLink :to="`/u/${content.author.username}`" class="cpub-sidebar-author-avatar">
+            <img v-if="content.author.avatarUrl" :src="content.author.avatarUrl" :alt="content.author.displayName || content.author.username" />
+            <span v-else class="cpub-sidebar-author-initials">{{ (content.author.displayName || content.author.username).charAt(0).toUpperCase() }}</span>
+          </NuxtLink>
+          <div class="cpub-sidebar-author-info">
+            <NuxtLink :to="`/u/${content.author.username}`" class="cpub-sidebar-author-name">
+              {{ content.author.displayName || content.author.username }}
+            </NuxtLink>
+            <time class="cpub-sidebar-author-date" :datetime="new Date(content.publishedAt || content.createdAt).toISOString()">
+              {{ new Date(content.publishedAt || content.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}
+            </time>
+          </div>
+        </div>
       </nav>
 
       <!-- MAIN CONTENT — one section at a time -->
@@ -200,6 +228,18 @@ onUnmounted(() => { document.removeEventListener('keydown', onKeydown); });
             <!-- Section Header (from sectionHeader block data) -->
             <div v-if="currentSection?.tag" class="cpub-section-tag">{{ currentSection.tag }}</div>
             <h1 class="cpub-section-title">{{ currentSection?.title || content.title }}</h1>
+
+            <!-- Author byline (mobile only — desktop shows in sidebar) -->
+            <div v-if="activeSection === 0 && content.author" class="cpub-mobile-author">
+              <NuxtLink :to="`/u/${content.author.username}`" class="cpub-mobile-author-link">
+                {{ content.author.displayName || content.author.username }}
+              </NuxtLink>
+              <span class="cpub-mobile-author-sep">&middot;</span>
+              <time :datetime="new Date(content.publishedAt || content.createdAt).toISOString()">
+                {{ new Date(content.publishedAt || content.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}
+              </time>
+            </div>
+
             <p v-if="currentSection?.body" class="cpub-section-intro">{{ currentSection.body }}</p>
 
             <!-- Section body blocks -->
@@ -394,6 +434,83 @@ onUnmounted(() => { document.removeEventListener('keydown', onKeydown); });
 .cpub-toc-item.completed .cpub-toc-num { color: var(--green-border); }
 .cpub-toc-label { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* ── SIDEBAR AUTHOR ── */
+.cpub-sidebar-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 2px solid var(--border);
+  margin-top: auto;
+}
+.cpub-sidebar-author-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--surface3);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.cpub-sidebar-author-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cpub-sidebar-author-initials {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.cpub-sidebar-author-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cpub-sidebar-author-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cpub-sidebar-author-name:hover { color: var(--accent); }
+.cpub-sidebar-author-date {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* ── EDIT LINK ── */
+.cpub-edit-link {
+  text-decoration: none;
+}
+
+/* ── MOBILE AUTHOR (hidden on desktop, shown when sidebar hidden) ── */
+.cpub-mobile-author {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-bottom: 20px;
+}
+.cpub-mobile-author-link {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-weight: 500;
+}
+.cpub-mobile-author-link:hover { color: var(--accent); }
+.cpub-mobile-author-sep { color: var(--text-faint); }
+.cpub-mobile-author time { font-family: var(--font-mono); font-size: 11px; }
+
 /* ── MAIN CONTENT ── */
 .cpub-explainer-main {
   flex: 1;
@@ -561,6 +678,7 @@ onUnmounted(() => { document.removeEventListener('keydown', onKeydown); });
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .cpub-explainer-sidebar { display: none; }
+  .cpub-mobile-author { display: flex; }
   .cpub-content-wrap { padding: 24px 16px 48px; }
   .cpub-section-nav { flex-direction: column; gap: 16px; }
   .cpub-section-title { font-size: 24px; }

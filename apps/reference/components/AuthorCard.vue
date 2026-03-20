@@ -3,7 +3,7 @@ defineProps<{
   author: {
     username: string;
     displayName?: string;
-    avatar?: string;
+    avatarUrl?: string | null;
     bio?: string;
     followerCount?: number;
     contentCount?: number;
@@ -15,7 +15,7 @@ defineProps<{
   <div class="cpub-author-card">
     <div class="cpub-author-card-top">
       <NuxtLink :to="`/u/${author.username}`" class="cpub-author-card-avatar">
-        <img v-if="author.avatar" :src="author.avatar" :alt="author.displayName || author.username" />
+        <img v-if="author.avatarUrl" :src="author.avatarUrl" :alt="author.displayName || author.username" />
         <span v-else class="cpub-author-card-initials">{{ (author.displayName || author.username).charAt(0).toUpperCase() }}</span>
       </NuxtLink>
       <div>
