@@ -17,7 +17,9 @@ export interface StorageAdapter {
 
 /** Generate a unique storage key from original filename */
 export function generateStorageKey(originalName: string, purpose: string): string {
-  const ext = originalName.includes('.') ? originalName.split('.').pop() : '';
+  const rawExt = originalName.includes('.') ? originalName.split('.').pop() ?? '' : '';
+  // Sanitize extension: only allow alphanumeric characters to prevent path traversal
+  const ext = rawExt.replace(/[^a-zA-Z0-9]/g, '');
   const id = randomUUID();
   return `${purpose}/${id}${ext ? `.${ext}` : ''}`;
 }
@@ -34,6 +36,12 @@ export class LocalStorageAdapter implements StorageAdapter {
 
   async upload(key: string, data: Buffer | Readable, _mimeType: string): Promise<string> {
     const filePath = join(this.basePath, key);
+    // Guard against path traversal — resolved path must be within basePath
+    const resolvedBase = join(this.basePath, '.');
+    const resolvedFile = join(filePath, '.');
+    if (!resolvedFile.startsWith(resolvedBase)) {
+      throw new Error('Invalid storage key: path traversal detected');
+    }
     await mkdir(dirname(filePath), { recursive: true });
 
     if (Buffer.isBuffer(data)) {
@@ -57,6 +65,11 @@ export class LocalStorageAdapter implements StorageAdapter {
 
   async delete(key: string): Promise<void> {
     const filePath = join(this.basePath, key);
+    const resolvedBase = join(this.basePath, '.');
+    const resolvedFile = join(filePath, '.');
+    if (!resolvedFile.startsWith(resolvedBase)) {
+      throw new Error('Invalid storage key: path traversal detected');
+    }
     try {
       await unlink(filePath);
     } catch (err) {

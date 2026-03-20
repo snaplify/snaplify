@@ -86,6 +86,7 @@ The implementation plan is at `docs/plan-v2.md`. Reference documentation is at `
 | `editor`     | `@commonpub/editor`    | TipTap extensions + block types          |
 | `explainer`  | `@commonpub/explainer` | Interactive module runtime               |
 | `learning`   | `@commonpub/learning`  | Learning path engine                     |
+| `infra`      | `@commonpub/infra`     | Storage, image processing, email, security |
 | `test-utils` | `@commonpub/test-utils`| Shared test helpers                      |
 
 ### Apps

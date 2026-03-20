@@ -54,6 +54,26 @@ export function useAuth() {
     await navigateTo('/');
   }
 
+  /**
+   * Refresh the session from the server.
+   * Call on app mount to detect expired sessions and sync SSR-hydrated state.
+   */
+  async function refreshSession(): Promise<void> {
+    if (import.meta.server) return;
+    try {
+      const data = await $fetch<{ user: ClientAuthUser | null; session: ClientAuthSession | null }>(
+        '/api/auth/get-session',
+        { credentials: 'include' },
+      );
+      user.value = data?.user ?? null;
+      session.value = data?.session ?? null;
+    } catch {
+      // Session invalid or server unreachable — clear client state
+      user.value = null;
+      session.value = null;
+    }
+  }
+
   return {
     user: readonly(user),
     session: readonly(session),
@@ -62,5 +82,6 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    refreshSession,
   };
 }

@@ -2,6 +2,8 @@
 /**
  * Callout block — variant picker (info/tip/warning/danger) + editable body.
  */
+import { sanitizeBlockHtml } from '~/composables/useSanitize';
+
 const props = defineProps<{
   content: Record<string, unknown>;
 }>();
@@ -30,7 +32,7 @@ function cycleVariant(): void {
 
 function onBodyInput(event: Event): void {
   const el = event.target as HTMLElement;
-  emit('update', { html: el.innerHTML, variant: variant.value });
+  emit('update', { html: sanitizeBlockHtml(el.innerHTML), variant: variant.value });
 }
 </script>
 

@@ -16,7 +16,17 @@ export function useDB(): DB {
     throw new Error('DATABASE_URL is not configured. Set NUXT_DATABASE_URL environment variable.');
   }
 
-  const pool = new pg.Pool({ connectionString: databaseUrl });
+  // Guard against default auth secret in production
+  if (process.env.NODE_ENV === 'production' && config.authSecret === 'dev-secret-change-me') {
+    throw new Error('NUXT_AUTH_SECRET must be set in production. Do not use the default dev secret.');
+  }
+
+  const pool = new pg.Pool({
+    connectionString: databaseUrl,
+    max: 20,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 5_000,
+  });
   db = drizzle(pool, { schema });
 
   return db;

@@ -23,17 +23,18 @@ import { createContentItemSchema, updateUserProfileSchema } from '@commonpub/sch
 
 | Module       | Tables                                                                                       | Purpose                                    |
 | ------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `auth`       | `users`, `sessions`, `accounts`, `organizations`, `members`, `federatedAccounts`, `oauthClients`, `verifications` | User identity, auth sessions, OAuth, SSO   |
-| `content`    | `contentItems`, `contentForks`, `tags`, `contentTags`                                        | Articles, projects, guides, blog posts     |
-| `social`     | `likes`, `comments`, `follows`, `bookmarks`, `notifications`                                 | Social interactions and engagement         |
-| `community`  | `communities`, `communityMembers`, `communityPosts`, `communityReplies`, `communityBans`     | Community spaces with moderation           |
-| `learning`   | `learningPaths`, `learningModules`, `lessons`, `enrollments`, `lessonProgress`, `certificates`| Learning paths, progress, certificates     |
-| `docs`       | `docsSites`, `docsVersions`, `docsPages`                                                     | Versioned documentation sites              |
+| `auth`       | `users`, `sessions`, `accounts`, `organizations`, `members`, `federatedAccounts`, `oauthClients`, `oauthCodes`, `verifications` | User identity, auth sessions, OAuth, SSO   |
+| `content`    | `contentItems`, `contentVersions`, `contentForks`, `contentBuilds`, `tags`, `contentTags`    | Articles, projects, blog posts, explainers |
+| `social`     | `likes`, `comments`, `follows`, `bookmarks`, `notifications`, `reports`, `conversations`, `messages` | Social interactions, messaging, reports    |
+| `hub`        | `hubs`, `hubMembers`, `hubPosts`, `hubPostReplies`, `hubBans`, `hubInvites`, `hubShares`     | Hub spaces (community/product/company) with moderation |
+| `product`    | `products`, `contentProducts`                                                                | Product catalog and BOM linking            |
+| `learning`   | `learningPaths`, `learningModules`, `learningLessons`, `enrollments`, `lessonProgress`, `certificates` | Learning paths, progress, certificates     |
+| `docs`       | `docsSites`, `docsVersions`, `docsPages`, `docsNav`                                          | Versioned documentation sites              |
 | `federation` | `remoteActors`, `activities`, `followRelationships`, `actorKeypairs`                         | ActivityPub federation state               |
-| `admin`      | `auditLogs`, `reports`, `instanceSettings`                                                   | Admin panel, moderation, instance config   |
-| `video`      | `videos`                                                                                     | Video content type                         |
-| `contest`    | `contests`, `contestEntries`, `contestVotes`                                                 | Contest/competition system                 |
-| `files`      | `uploads`                                                                                    | File upload tracking                       |
+| `admin`      | `instanceSettings`, `auditLogs`                                                              | Admin panel and instance config            |
+| `video`      | `videos`, `videoCategories`                                                                  | Video content and categories               |
+| `contest`    | `contests`, `contestEntries`                                                                 | Contest/competition system                 |
+| `files`      | `files`                                                                                      | File upload tracking                       |
 | `enums`      | (none)                                                                                       | Shared PostgreSQL enums                    |
 | `validators` | (none)                                                                                       | Zod schemas for input validation           |
 
@@ -44,7 +45,7 @@ All enums are defined as PostgreSQL enum types via Drizzle's `pgEnum`:
 - `userRoleEnum`: `member`, `moderator`, `admin`
 - `userStatusEnum`: `active`, `suspended`, `banned`
 - `profileVisibilityEnum`: `public`, `private`
-- `contentTypeEnum`: `project`, `article`, `guide`, `blog`, `explainer`
+- `contentTypeEnum`: `project`, `article`, `blog`, `explainer`
 - `contentStatusEnum`: `draft`, `published`, `archived`
 - `contentVisibilityEnum`: `public`, `unlisted`, `private`
 - `difficultyEnum`: `beginner`, `intermediate`, `advanced`

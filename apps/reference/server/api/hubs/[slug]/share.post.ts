@@ -17,5 +17,9 @@ export default defineEventHandler(async (event): Promise<HubPostItem> => {
     throw createError({ statusCode: 404, statusMessage: 'Hub not found' });
   }
 
-  return shareContent(db, user.id, hub.id, input.contentId);
+  const post = await shareContent(db, user.id, hub.id, input.contentId);
+  if (!post) {
+    throw createError({ statusCode: 400, statusMessage: 'Cannot share. You must be a hub member and the content must exist.' });
+  }
+  return post;
 });

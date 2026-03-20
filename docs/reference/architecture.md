@@ -6,7 +6,6 @@
 graph TD
     subgraph Apps
         REF["apps/reference<br/>(Nuxt 3)"]
-        LAND["apps/landing<br/>(static site)"]
     end
 
     subgraph Packages
@@ -14,6 +13,8 @@ graph TD
         CONFIG["@commonpub/config<br/>defineCommonPubConfig()"]
         PROTO["@commonpub/protocol<br/>Fedify + AP types"]
         AUTH["@commonpub/auth<br/>Better Auth wrapper"]
+        SERVER["@commonpub/server<br/>Business logic"]
+        INFRA["@commonpub/infra<br/>Storage, image, email, security"]
         UI["@commonpub/ui<br/>Vue 3 components + theme"]
         EDITOR["@commonpub/editor<br/>TipTap extensions"]
         DOCS["@commonpub/docs<br/>Docs module"]
@@ -28,17 +29,18 @@ graph TD
         MEILI["Meilisearch"]
     end
 
-    REF --> SCHEMA
-    REF --> CONFIG
-    REF --> PROTO
+    REF --> SERVER
     REF --> AUTH
     REF --> UI
     REF --> EDITOR
-    REF --> DOCS
-    REF --> EXPLAINER
-    REF --> LEARNING
-    LAND --> UI
+    REF --> INFRA
 
+    SERVER --> SCHEMA
+    SERVER --> CONFIG
+    SERVER --> AUTH
+    SERVER --> PROTO
+    SERVER --> DOCS
+    SERVER --> LEARNING
     AUTH --> SCHEMA
     AUTH --> CONFIG
     PROTO --> SCHEMA
@@ -238,12 +240,12 @@ stateDiagram-v2
     end note
 ```
 
-### Community Membership
+### Hub Membership
 
 ```mermaid
 stateDiagram-v2
-    [*] --> member: joinCommunity()<br/>(open policy)
-    [*] --> pending_approval: joinCommunity()<br/>(approval policy)
+    [*] --> member: joinHub()<br/>(open policy)
+    [*] --> pending_approval: joinHub()<br/>(approval policy)
     [*] --> invited: createInvite()
     pending_approval --> member: approve
     invited --> member: accept invite

@@ -1,7 +1,12 @@
 <script setup lang="ts">
 const props = defineProps<{ content: Record<string, unknown> }>();
 
-const url = computed(() => (props.content.url as string) || '');
+const url = computed(() => {
+  const raw = (props.content.url as string) || '';
+  // Only allow http/https URLs — block javascript:, data:, etc.
+  if (raw && (raw.startsWith('https://') || raw.startsWith('http://'))) return raw;
+  return '';
+});
 </script>
 
 <template>

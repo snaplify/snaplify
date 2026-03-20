@@ -25,13 +25,15 @@ const { config, warnings } = defineCommonPubConfig({
     description: 'A maker community for hardware hackers',
     contactEmail: 'admin@hack.build',
     maxUploadSize: 10 * 1024 * 1024, // 10MB
-    contentTypes: ['project', 'article', 'guide', 'blog'],
+    contentTypes: ['project', 'article', 'blog', 'explainer'],
   },
   features: {
     content: true,
     social: true,
-    communities: true,
+    hubs: true,
     docs: true,
+    video: true,
+    contests: false,
     learning: true,
     explainers: true,
     federation: false,
@@ -57,9 +59,9 @@ All features are gated behind flags. No feature code runs unless its flag is `tr
 | -------------- | ------- | ---------------------------------------------- |
 | `content`      | `true`  | Content CRUD, publishing, slugs                |
 | `social`       | `true`  | Likes, comments, follows, bookmarks            |
-| `communities`  | `true`  | Community spaces, membership, moderation       |
+| `hubs`         | `true`  | Hub system (community/product/company types)   |
 | `docs`         | `true`  | Documentation module (CodeMirror, versioning)  |
-| `video`        | `false` | Video content type                             |
+| `video`        | `true`  | Video content type                             |
 | `contests`     | `false` | Contest/competition system                     |
 | `learning`     | `true`  | Learning paths, enrollment, certificates       |
 | `explainers`   | `true`  | Interactive explainer modules                  |

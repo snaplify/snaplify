@@ -14,5 +14,9 @@ export default defineEventHandler(async (event): Promise<ContestEntryItem> => {
   if (!contest) throw createError({ statusCode: 404, statusMessage: 'Contest not found' });
   const input = await parseBody(event, submitEntrySchema);
 
-  return submitContestEntry(db, contest.id, input.contentId, user.id);
+  const entry = await submitContestEntry(db, contest.id, input.contentId, user.id);
+  if (!entry) {
+    throw createError({ statusCode: 400, statusMessage: 'Cannot submit entry. Contest may not be active, or content is not published or not owned by you.' });
+  }
+  return entry;
 });

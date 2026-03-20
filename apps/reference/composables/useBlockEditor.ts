@@ -32,6 +32,7 @@ const BLOCK_DEFAULTS: Record<string, () => Record<string, unknown>> = {
   mathNotation: () => ({ expression: '', display: false }),
   bulletList: () => ({ html: '' }),
   orderedList: () => ({ html: '' }),
+  sectionHeader: () => ({ tag: '', title: '', body: '' }),
 };
 
 function generateId(): string {

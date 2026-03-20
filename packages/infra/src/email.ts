@@ -72,6 +72,16 @@ export class ConsoleEmailAdapter implements EmailAdapter {
   }
 }
 
+/** Escape HTML special characters to prevent injection in email templates */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 /** Email template builder with inline styles */
 function wrapTemplate(siteName: string, body: string): string {
   return `<!DOCTYPE html>
@@ -96,13 +106,15 @@ function wrapTemplate(siteName: string, body: string): string {
 /** Pre-built email templates */
 export const emailTemplates = {
   verification(siteName: string, verifyUrl: string): EmailMessage & { to: '' } {
+    const safeName = escapeHtml(siteName);
+    const safeUrl = escapeHtml(verifyUrl);
     return {
       to: '' as const,
-      subject: `Verify your email — ${siteName}`,
-      html: wrapTemplate(siteName, `
+      subject: `Verify your email -- ${siteName}`,
+      html: wrapTemplate(safeName, `
         <h2 style="color:#fff;margin:0 0 16px;">Verify your email</h2>
         <p>Click the button below to verify your email address and activate your account.</p>
-        <a href="${verifyUrl}" style="display:inline-block;background:#5b9cf6;color:#000;padding:12px 24px;text-decoration:none;font-weight:600;margin:16px 0;border:2px solid #5b9cf6;">Verify Email</a>
+        <a href="${safeUrl}" style="display:inline-block;background:#5b9cf6;color:#000;padding:12px 24px;text-decoration:none;font-weight:600;margin:16px 0;border:2px solid #5b9cf6;">Verify Email</a>
         <p style="color:#888;font-size:14px;">If you didn't create an account, you can safely ignore this email.</p>
       `),
       text: `Verify your email: ${verifyUrl}`,
@@ -110,13 +122,15 @@ export const emailTemplates = {
   },
 
   passwordReset(siteName: string, resetUrl: string): EmailMessage & { to: '' } {
+    const safeName = escapeHtml(siteName);
+    const safeUrl = escapeHtml(resetUrl);
     return {
       to: '' as const,
-      subject: `Reset your password — ${siteName}`,
-      html: wrapTemplate(siteName, `
+      subject: `Reset your password -- ${siteName}`,
+      html: wrapTemplate(safeName, `
         <h2 style="color:#fff;margin:0 0 16px;">Reset your password</h2>
         <p>Click the button below to reset your password. This link expires in 1 hour.</p>
-        <a href="${resetUrl}" style="display:inline-block;background:#5b9cf6;color:#000;padding:12px 24px;text-decoration:none;font-weight:600;margin:16px 0;border:2px solid #5b9cf6;">Reset Password</a>
+        <a href="${safeUrl}" style="display:inline-block;background:#5b9cf6;color:#000;padding:12px 24px;text-decoration:none;font-weight:600;margin:16px 0;border:2px solid #5b9cf6;">Reset Password</a>
         <p style="color:#888;font-size:14px;">If you didn't request this, you can safely ignore this email.</p>
       `),
       text: `Reset your password: ${resetUrl}`,
@@ -128,15 +142,17 @@ export const emailTemplates = {
     username: string,
     notifications: Array<{ text: string; url: string }>,
   ): EmailMessage & { to: '' } {
+    const safeName = escapeHtml(siteName);
+    const safeUsername = escapeHtml(username);
     const items = notifications
-      .map((n) => `<li style="margin-bottom:8px;"><a href="${n.url}" style="color:#5b9cf6;text-decoration:none;">${n.text}</a></li>`)
+      .map((n) => `<li style="margin-bottom:8px;"><a href="${escapeHtml(n.url)}" style="color:#5b9cf6;text-decoration:none;">${escapeHtml(n.text)}</a></li>`)
       .join('');
 
     return {
       to: '' as const,
-      subject: `${notifications.length} new notification${notifications.length === 1 ? '' : 's'} — ${siteName}`,
-      html: wrapTemplate(siteName, `
-        <h2 style="color:#fff;margin:0 0 16px;">Hi ${username},</h2>
+      subject: `${notifications.length} new notification${notifications.length === 1 ? '' : 's'} -- ${siteName}`,
+      html: wrapTemplate(safeName, `
+        <h2 style="color:#fff;margin:0 0 16px;">Hi ${safeUsername},</h2>
         <p>Here's what you missed:</p>
         <ul style="padding-left:20px;">${items}</ul>
       `),
@@ -150,13 +166,17 @@ export const emailTemplates = {
     contestUrl: string,
     message: string,
   ): EmailMessage & { to: '' } {
+    const safeName = escapeHtml(siteName);
+    const safeTitle = escapeHtml(contestTitle);
+    const safeUrl = escapeHtml(contestUrl);
+    const safeMessage = escapeHtml(message);
     return {
       to: '' as const,
-      subject: `${contestTitle} — ${siteName}`,
-      html: wrapTemplate(siteName, `
-        <h2 style="color:#fff;margin:0 0 16px;">${contestTitle}</h2>
-        <p>${message}</p>
-        <a href="${contestUrl}" style="display:inline-block;background:#5b9cf6;color:#000;padding:12px 24px;text-decoration:none;font-weight:600;margin:16px 0;border:2px solid #5b9cf6;">View Contest</a>
+      subject: `${contestTitle} -- ${siteName}`,
+      html: wrapTemplate(safeName, `
+        <h2 style="color:#fff;margin:0 0 16px;">${safeTitle}</h2>
+        <p>${safeMessage}</p>
+        <a href="${safeUrl}" style="display:inline-block;background:#5b9cf6;color:#000;padding:12px 24px;text-decoration:none;font-weight:600;margin:16px 0;border:2px solid #5b9cf6;">View Contest</a>
       `),
       text: `${contestTitle}: ${message}\n${contestUrl}`,
     };
@@ -168,14 +188,18 @@ export const emailTemplates = {
     verificationCode: string,
     certificateUrl: string,
   ): EmailMessage & { to: '' } {
+    const safeName = escapeHtml(siteName);
+    const safeTitle = escapeHtml(pathTitle);
+    const safeCode = escapeHtml(verificationCode);
+    const safeUrl = escapeHtml(certificateUrl);
     return {
       to: '' as const,
-      subject: `Certificate earned: ${pathTitle} — ${siteName}`,
-      html: wrapTemplate(siteName, `
+      subject: `Certificate earned: ${pathTitle} -- ${siteName}`,
+      html: wrapTemplate(safeName, `
         <h2 style="color:#fff;margin:0 0 16px;">Congratulations!</h2>
-        <p>You've earned a certificate for completing <strong>${pathTitle}</strong>.</p>
-        <p>Verification code: <code style="background:#1a1a1a;padding:4px 8px;border:1px solid #333;color:#5b9cf6;">${verificationCode}</code></p>
-        <a href="${certificateUrl}" style="display:inline-block;background:#5b9cf6;color:#000;padding:12px 24px;text-decoration:none;font-weight:600;margin:16px 0;border:2px solid #5b9cf6;">View Certificate</a>
+        <p>You've earned a certificate for completing <strong>${safeTitle}</strong>.</p>
+        <p>Verification code: <code style="background:#1a1a1a;padding:4px 8px;border:1px solid #333;color:#5b9cf6;">${safeCode}</code></p>
+        <a href="${safeUrl}" style="display:inline-block;background:#5b9cf6;color:#000;padding:12px 24px;text-decoration:none;font-weight:600;margin:16px 0;border:2px solid #5b9cf6;">View Certificate</a>
       `),
       text: `Certificate earned for ${pathTitle}. Code: ${verificationCode}\n${certificateUrl}`,
     };

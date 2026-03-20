@@ -93,9 +93,10 @@ export default defineEventHandler(async (event) => {
         return sendWebResponse(event, response);
       }
     } catch (err: unknown) {
+      console.error('[auth] Route handler error:', err instanceof Error ? err.message : err);
       throw createError({
         statusCode: 500,
-        statusMessage: `Auth error: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        statusMessage: 'Authentication service error',
       });
     }
   }

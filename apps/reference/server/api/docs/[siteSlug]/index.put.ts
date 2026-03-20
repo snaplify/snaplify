@@ -12,5 +12,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Docs site not found' });
   }
 
-  return updateDocsSite(db, result.site.id, user.id, input);
+  const updated = await updateDocsSite(db, result.site.id, user.id, input);
+  if (!updated) {
+    throw createError({ statusCode: 403, statusMessage: 'Not authorized to update this docs site' });
+  }
+  return updated;
 });

@@ -22,6 +22,7 @@ export {
   interactiveSliderContentSchema,
   checkpointContentSchema,
   mathNotationContentSchema,
+  sectionHeaderContentSchema,
 } from './blocks/schemas.js';
 export type {
   TextContent,
@@ -43,6 +44,7 @@ export type {
   InteractiveSliderContent,
   CheckpointContent,
   MathNotationContent,
+  SectionHeaderContent,
 } from './blocks/schemas.js';
 export {
   registerBlock,

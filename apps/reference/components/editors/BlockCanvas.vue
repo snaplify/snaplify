@@ -32,6 +32,7 @@ import QuizBlock from './blocks/QuizBlock.vue';
 import SliderBlock from './blocks/SliderBlock.vue';
 import CheckpointBlock from './blocks/CheckpointBlock.vue';
 import MathBlock from './blocks/MathBlock.vue';
+import SectionHeaderBlock from './blocks/SectionHeaderBlock.vue';
 
 const BLOCK_COMPONENTS: Record<string, Component> = {
   paragraph: TextBlock,
@@ -61,6 +62,7 @@ const BLOCK_COMPONENTS: Record<string, Component> = {
   math: MathBlock,
   bulletList: TextBlock,
   orderedList: TextBlock,
+  sectionHeader: SectionHeaderBlock,
 };
 
 const props = defineProps<{
@@ -261,6 +263,9 @@ function isTextBlock(type: string): boolean {
 
 <template>
   <div class="cpub-block-canvas" @click.self="onCanvasClick">
+    <!-- Page card wrapper — mimics document editing feel -->
+    <div class="cpub-canvas-page">
+
     <!-- Empty state — click to create first paragraph -->
     <div v-if="blockEditor.isEmpty.value" class="cpub-canvas-empty" @click="addFirstBlock">
       <div class="cpub-canvas-empty-icon"><i class="fa-solid fa-pen-nib"></i></div>
@@ -317,6 +322,8 @@ function isTextBlock(type: string): boolean {
       </div>
     </template>
 
+    </div><!-- /.cpub-canvas-page -->
+
     <!-- Floating text toolbar -->
     <Teleport to="body">
       <div
@@ -347,9 +354,33 @@ function isTextBlock(type: string): boolean {
 
 <style scoped>
 .cpub-block-canvas {
-  padding: 16px 48px 80px;
+  padding: 36px 0 52px;
   min-height: 300px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cpub-canvas-page {
+  width: 100%;
+  max-width: 680px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 4px 4px 0 var(--border);
+  padding: 44px 56px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .cpub-canvas-page {
+    border: none;
+    box-shadow: none;
+    padding: 16px;
+  }
+  .cpub-block-canvas {
+    padding: 8px 0 48px;
+  }
 }
 
 .cpub-canvas-empty {

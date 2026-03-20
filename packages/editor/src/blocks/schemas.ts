@@ -124,14 +124,23 @@ export const interactiveSliderContentSchema = z.object({
   label: z.string(),
   min: z.number(),
   max: z.number(),
-  step: z.number(),
+  step: z.number().positive(),
   defaultValue: z.number(),
   states: z.array(z.object({
-    range: z.tuple([z.number(), z.number()]),
+    range: z.tuple([z.number(), z.number()]).refine(
+      ([lo, hi]) => lo <= hi,
+      { message: 'range[0] must be <= range[1]' },
+    ),
     label: z.string(),
     color: z.string().optional(),
   })),
-});
+}).refine(
+  (data) => data.min < data.max,
+  { message: 'min must be less than max' },
+).refine(
+  (data) => data.defaultValue >= data.min && data.defaultValue <= data.max,
+  { message: 'defaultValue must be within [min, max]' },
+);
 export type InteractiveSliderContent = z.infer<typeof interactiveSliderContentSchema>;
 
 export const checkpointContentSchema = z.object({
@@ -144,3 +153,10 @@ export const mathNotationContentSchema = z.object({
   display: z.boolean().optional(),
 });
 export type MathNotationContent = z.infer<typeof mathNotationContentSchema>;
+
+export const sectionHeaderContentSchema = z.object({
+  tag: z.string(),
+  title: z.string(),
+  body: z.string().optional(),
+});
+export type SectionHeaderContent = z.infer<typeof sectionHeaderContentSchema>;

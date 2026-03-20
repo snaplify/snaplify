@@ -1,6 +1,7 @@
 import { users, follows } from '@commonpub/schema';
-import { sql, desc, ilike, or } from 'drizzle-orm';
+import { sql, desc, ilike, or, and, isNull } from 'drizzle-orm';
 import { z } from 'zod';
+import { escapeLike } from '@commonpub/server';
 
 const usersQuerySchema = z.object({
   q: z.string().max(200).optional(),
@@ -17,20 +18,20 @@ export default defineEventHandler(async (event) => {
   const offset = query.offset ?? 0;
   const search = query.q || query.search;
 
-  const conditions = [];
+  const conditions = [isNull(users.deletedAt)];
   if (search) {
-    const term = `%${search}%`;
-    conditions.push(or(ilike(users.username, term), ilike(users.displayName, term)));
+    const term = `%${escapeLike(search)}%`;
+    conditions.push(or(ilike(users.username, term), ilike(users.displayName, term))!);
   }
 
-  const where = conditions.length > 0 ? conditions[0] : undefined;
+  const where = and(...conditions);
 
   const rows = await db
     .select({
       id: users.id,
       username: users.username,
       displayName: users.displayName,
-      headline: users.bio,
+      headline: users.headline,
       avatarUrl: users.avatarUrl,
       createdAt: users.createdAt,
     })

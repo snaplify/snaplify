@@ -2,7 +2,7 @@
 
 ## Standard
 
-WCAG 2.1 AA (Standing Rule 8)
+WCAG 2.1 AA (Standing Rule 12)
 
 ## Testing Approach
 

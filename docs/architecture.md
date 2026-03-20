@@ -9,17 +9,17 @@
                          │                              │
                          │  ┌────────┐  ┌───────────┐  │
                          │  │ Pages  │  │ Components│  │
-                         │  │ (47)   │  │ (79+)     │  │
+                         │  │ (61)   │  │ (85+)     │  │
                          │  └───┬────┘  └─────┬─────┘  │
                          │      │             │        │
                          │  ┌───┴─────────────┴───┐    │
-                         │  │   Composables (8)    │    │
+                         │  │   Composables (9)    │    │
                          │  │   useAuth, useToast  │    │
                          │  │   useBlockEditor ... │    │
                          │  └──────────┬───────────┘    │
                          │             │                │
                          │  ┌──────────┴───────────┐    │
-                         │  │  Nitro Server (97     │    │
+                         │  │  Nitro Server (142    │    │
                          │  │  API routes)          │    │
                          │  └──────────┬───────────┘    │
                          └─────────────┼────────────────┘
@@ -29,12 +29,12 @@
     ┌─────────┴──────────┐   ┌────────┴────────┐    ┌─────────┴──────────┐
     │  @commonpub/server │   │ @commonpub/auth │    │ @commonpub/protocol│
     │  Business Logic    │   │ Better Auth     │    │ ActivityPub        │
-    │  (41 files)        │   │ SSO, Guards     │    │ WebFinger, OAuth   │
+    │  (36 files)        │   │ SSO, Guards     │    │ WebFinger, OAuth   │
     └─────────┬──────────┘   └────────┬────────┘    └─────────┬──────────┘
               │                        │                        │
     ┌─────────┴────────────────────────┴────────────────────────┴──────────┐
     │                        @commonpub/schema                             │
-    │              Drizzle Tables (20) + Zod Validators (40+)              │
+    │              Drizzle Tables (53) + Zod Validators (40+)              │
     └──────────────────────────────┬───────────────────────────────────────┘
                                    │
                           ┌────────┴────────┐
@@ -43,17 +43,17 @@
 
     ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
     │@commonpub/ui │  │@commonpub/   │  │@commonpub/   │  │@commonpub/   │
-    │ 24 Vue       │  │  editor      │  │  docs        │  │  config      │
-    │ components   │  │ 19 TipTap    │  │ Markdown     │  │ Feature      │
-    │ + themes     │  │ extensions   │  │ rendering    │  │ flags (11)   │
+    │ 22 Vue       │  │  editor      │  │  docs        │  │  config      │
+    │ components   │  │ 20 TipTap    │  │ Markdown     │  │ Feature      │
+    │ + themes     │  │ extensions   │  │ rendering    │  │ flags (10)   │
     └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘
 
-    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-    │@commonpub/   │  │@commonpub/   │  │@commonpub/   │
-    │  explainer   │  │  learning    │  │  test-utils  │
-    │ Interactive  │  │ Paths,       │  │ Factories    │
-    │ modules      │  │ certificates │  │ + mocks      │
-    └──────────────┘  └──────────────┘  └──────────────┘
+    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+    │@commonpub/   │  │@commonpub/   │  │@commonpub/   │  │@commonpub/   │
+    │  explainer   │  │  learning    │  │  infra       │  │  test-utils  │
+    │ Interactive  │  │ Paths,       │  │ Storage,     │  │ Factories    │
+    │ modules      │  │ certificates │  │ email, image │  │ + mocks      │
+    └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘
 ```
 
 ## Package Dependency Graph
@@ -70,10 +70,11 @@ schema ─────────── (no deps, foundation)
   │     ├── explainer ── (editor, schema, config)
   │     └── learning ─── (schema, config, explainer, editor)
   │
-  └── server ──────────── (all packages above + sharp, dompurify)
+  └── server ──────────── (all packages above + dompurify)
 
-ui ─────────────── (vue, standalone)
-test-utils ─────── (schema, config)
+infra ─────────── (sharp, @aws-sdk/client-s3)
+ui ────────────── (vue, standalone)
+test-utils ────── (schema, config)
 ```
 
 ## Content Lifecycle
@@ -230,7 +231,7 @@ test-utils ─────── (schema, config)
   └──────────────┘
 ```
 
-## Page Map
+## Page Map (61 pages)
 
 ```
 /                          Home (tabbed feed, sidebar)
@@ -252,11 +253,16 @@ test-utils ─────── (schema, config)
 
 /dashboard                 User dashboard (content/bookmarks/learning)
 /u/[username]              User profile (5 tabs)
+/u/[username]/followers    Follower list
+/u/[username]/following    Following list
 /settings                  Settings shell
 /settings/profile          Profile editor
 /settings/account          Password change, account deletion
 /settings/notifications    Notification preferences
 /settings/appearance       Theme switcher
+
+/products                  Product catalog
+/products/[slug]           Product detail
 
 /hubs                      Hub listing
 /hubs/create               Create hub
@@ -269,24 +275,32 @@ test-utils ─────── (schema, config)
 /learn/[slug]              Path detail
 /learn/[slug]/edit         Path editor
 /learn/[slug]/[lessonSlug] Lesson view
+/learn/[slug]/[lessonSlug]/edit  Lesson editor
 
 /docs                      Documentation sites index
+/docs/create               Create docs site
 /docs/[siteSlug]           Docs site with navigation
 /docs/[siteSlug]/edit      Docs page/version editor
 /docs/[siteSlug]/[...path] Docs page view
 
 /videos                    Video hub
 /videos/[id]               Video player
+/videos/submit             Video submission
 
 /contests                  Contest listing
+/contests/create           Create contest
 /contests/[slug]           Contest detail
+/contests/[slug]/edit      Contest editor
 /contests/[slug]/judge     Judging interface
 
 /messages                  Conversation list
-/messages/[id]             Message thread
+/messages/[conversationId] Message thread
 
 /notifications             Notification feed
 
+/cert/[code]               Certificate verification
+
+/tags                      Tag index
 /tags/[slug]               Tag-filtered content
 
 /admin                     Admin dashboard
@@ -297,7 +311,7 @@ test-utils ─────── (schema, config)
 /admin/content             Content moderation
 ```
 
-## API Route Map (97 routes)
+## API Route Map (142 routes)
 
 | Domain | Routes | Description |
 |--------|--------|-------------|

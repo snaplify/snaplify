@@ -120,10 +120,10 @@ The warnings are Vue compiler warnings in component files. These do not affect f
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Unit tests | 118 | 117 passing, 1 pre-existing failure (nodeinfo) |
-| Build tasks | 13 | All passing |
+| Unit tests | 880+ | All passing |
+| Build tasks | 13 | All passing (12 packages + reference app) |
 
-Note: Test counts reflect the current test suite after restructure. Additional E2E and component tests are planned.
+Note: Additional E2E and component tests are planned.
 
 ---
 
@@ -154,5 +154,5 @@ Lighthouse scores require a running instance. Now unblocked by zod v4 fix. Targe
 1. ~~Fix better-auth/zod v4 compatibility blocker~~ Done
 2. Run Docker compose successfully
 3. Run Lighthouse audit on deployed instance
-4. Verify all launch checklist items at `docs/launch-checklist.md`
+4. Verify all launch checklist items
 5. Tag v1.0.0

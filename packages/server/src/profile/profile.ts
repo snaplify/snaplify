@@ -1,4 +1,4 @@
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, isNull } from 'drizzle-orm';
 import { contentItems, users, follows } from '@commonpub/schema';
 import type { ContentType } from '@commonpub/schema';
 import type { DB, ContentListItem, UserProfile } from '../types.js';
@@ -8,7 +8,7 @@ export async function getUserByUsername(db: DB, username: string): Promise<UserP
   const rows = await db
     .select()
     .from(users)
-    .where(eq(users.username, username))
+    .where(and(eq(users.username, username), isNull(users.deletedAt)))
     .limit(1);
 
   if (rows.length === 0) return null;

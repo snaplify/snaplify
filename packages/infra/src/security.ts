@@ -10,14 +10,17 @@
 /** Build CSP directives with optional nonce for script-src */
 export function buildCspDirectives(nonce?: string): Record<string, string> {
   const scriptSrc = nonce ? `'self' 'nonce-${nonce}'` : "'self'";
-  const styleSrc = nonce ? `'self' 'nonce-${nonce}'` : "'self' 'unsafe-inline'";
+  const styleSrc = nonce
+    ? `'self' 'nonce-${nonce}' https://cdnjs.cloudflare.com`
+    : "'self' 'unsafe-inline' https://cdnjs.cloudflare.com";
   return {
     'default-src': "'self'",
     'script-src': scriptSrc,
     'style-src': styleSrc,
     'img-src': "'self' data: https:",
-    'font-src': "'self'",
+    'font-src': "'self' https://cdnjs.cloudflare.com",
     'connect-src': "'self'",
+    'frame-src': "'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com",
     'frame-ancestors': "'none'",
     'base-uri': "'self'",
     'form-action': "'self'",
@@ -136,6 +139,7 @@ export class RateLimitStore {
 /** Default rate limit tiers by route prefix */
 export const DEFAULT_TIERS: Record<string, RateLimitTier> = {
   auth: { limit: 5, windowMs: 60_000 },
+  upload: { limit: 10, windowMs: 60_000 },
   social: { limit: 30, windowMs: 60_000 },
   federation: { limit: 60, windowMs: 60_000 },
   api: { limit: 60, windowMs: 60_000 },
@@ -146,6 +150,9 @@ export const DEFAULT_TIERS: Record<string, RateLimitTier> = {
 export function getTierForPath(pathname: string): RateLimitTier {
   if (pathname.startsWith('/auth/') || pathname.startsWith('/api/auth/')) {
     return DEFAULT_TIERS.auth!;
+  }
+  if (pathname.startsWith('/api/files/upload')) {
+    return DEFAULT_TIERS.upload!;
   }
   if (pathname.startsWith('/api/social/')) {
     return DEFAULT_TIERS.social!;
@@ -167,6 +174,7 @@ export function getTierForPath(pathname: string): RateLimitTier {
 export function shouldSkipRateLimit(pathname: string): boolean {
   return (
     pathname.startsWith('/_app/') ||
+    pathname.startsWith('/_nuxt/') ||
     pathname.startsWith('/favicon') ||
     pathname.endsWith('.css') ||
     pathname.endsWith('.js') ||
@@ -180,14 +188,21 @@ export function shouldSkipRateLimit(pathname: string): boolean {
 /**
  * Framework-agnostic rate limit check.
  * Returns the check result plus headers to set on the response.
+ *
+ * When userId is provided (authenticated request), the rate limit key
+ * is based on the user ID instead of the IP. This prevents authenticated
+ * users on shared IPs from being blocked by other users' traffic, and
+ * gives them a separate quota.
  */
 export function checkRateLimit(
   store: RateLimitStore,
   ip: string,
   pathname: string,
+  userId?: string,
 ): { result: RateLimitResult; headers: Record<string, string> } {
   const tier = getTierForPath(pathname);
-  const key = `${ip}:${pathname.split('/').slice(0, 3).join('/')}`;
+  const routePrefix = pathname.split('/').slice(0, 3).join('/');
+  const key = userId ? `user:${userId}:${routePrefix}` : `ip:${ip}:${routePrefix}`;
   const result = store.check(key, tier);
 
   const headers: Record<string, string> = {

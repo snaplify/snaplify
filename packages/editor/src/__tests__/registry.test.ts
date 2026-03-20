@@ -70,7 +70,7 @@ describe('Block Registry', () => {
     it('registers all core block types', () => {
       registerCoreBlocks();
       const blocks = listBlocks();
-      expect(blocks).toHaveLength(19);
+      expect(blocks).toHaveLength(20);
       const types = blocks.map((b) => b.type).sort();
       expect(types).toContain('text');
       expect(types).toContain('heading');
@@ -91,12 +91,13 @@ describe('Block Registry', () => {
       expect(types).toContain('interactiveSlider');
       expect(types).toContain('checkpoint');
       expect(types).toContain('mathNotation');
+      expect(types).toContain('sectionHeader');
     });
 
     it('is idempotent', () => {
       registerCoreBlocks();
       registerCoreBlocks();
-      expect(listBlocks()).toHaveLength(19);
+      expect(listBlocks()).toHaveLength(20);
     });
   });
 });

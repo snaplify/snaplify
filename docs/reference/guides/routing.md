@@ -4,7 +4,7 @@
 
 ---
 
-## Pages (50 total)
+## Pages (61 total)
 
 ### Public
 
@@ -29,7 +29,11 @@
 | `/docs` | Documentation sites directory |
 | `/docs/[siteSlug]` | Documentation site |
 | `/docs/[siteSlug]/[...pagePath]` | Documentation page |
+| `/tags` | Tag index |
 | `/tags/[slug]` | Content by tag |
+| `/products` | Product catalog |
+| `/products/[slug]` | Product detail |
+| `/cert/[code]` | Certificate verification |
 | `/about` | About page |
 | `/feed` | RSS feed viewer |
 
@@ -50,12 +54,19 @@
 | `/dashboard` | User dashboard — content, bookmarks, learning | Yes |
 | `/create` | Content type selector → editor | Yes |
 | `/[type]/[slug]/edit` | Content editor (article, blog, project, explainer) | Yes (author) |
+| `/u/[username]/followers` | Follower list | No |
+| `/u/[username]/following` | Following list | No |
 | `/hubs/create` | Create new hub | Yes |
 | `/hubs/[slug]/settings` | Hub settings (name, description, rules, privacy) | Yes (owner/admin) |
 | `/learn/create` | Create learning path | Yes |
 | `/learn/[slug]/edit` | Edit learning path modules/lessons | Yes (author) |
+| `/learn/[slug]/[lessonSlug]/edit` | Edit lesson | Yes (author) |
+| `/docs/create` | Create docs site | Yes |
 | `/docs/[siteSlug]/edit` | Edit documentation site | Yes (owner) |
+| `/contests/create` | Create contest | Yes |
+| `/contests/[slug]/edit` | Edit contest | Yes (author) |
 | `/contests/[slug]/judge` | Contest judging interface | Yes (judge) |
+| `/videos/submit` | Submit video | Yes |
 | `/messages` | Conversations list | Yes |
 | `/messages/[conversationId]` | Conversation thread | Yes |
 | `/notifications` | Notification list | Yes |
@@ -78,7 +89,7 @@
 
 ---
 
-## API Endpoints (120+)
+## API Endpoints (142)
 
 ### Content
 

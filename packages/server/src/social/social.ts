@@ -1,4 +1,4 @@
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, or, desc, sql, inArray, isNull } from 'drizzle-orm';
 import {
   likes,
   comments,
@@ -115,7 +115,32 @@ export async function listComments(
   db: DB,
   targetType: CommentTargetType,
   targetId: string,
+  limit?: number,
+  offset?: number,
 ): Promise<CommentItem[]> {
+  const safeLimit = Math.min(limit ?? 20, 100);
+  const safeOffset = offset ?? 0;
+
+  // Step 1: Fetch paginated root comment IDs
+  const rootRows = await db
+    .select({ id: comments.id })
+    .from(comments)
+    .where(
+      and(
+        eq(comments.targetType, targetType),
+        eq(comments.targetId, targetId),
+        isNull(comments.parentId),
+      ),
+    )
+    .orderBy(desc(comments.createdAt))
+    .limit(safeLimit)
+    .offset(safeOffset);
+
+  if (rootRows.length === 0) return [];
+
+  const rootIds = rootRows.map((r) => r.id);
+
+  // Step 2: Fetch root comments + all their direct children in one query
   const rows = await db
     .select({
       comment: comments,
@@ -127,6 +152,10 @@ export async function listComments(
       and(
         eq(comments.targetType, targetType),
         eq(comments.targetId, targetId),
+        or(
+          and(isNull(comments.parentId), inArray(comments.id, rootIds)),
+          inArray(comments.parentId, rootIds),
+        ),
       ),
     )
     .orderBy(desc(comments.createdAt));
@@ -149,11 +178,15 @@ export async function listComments(
     commentMap.set(item.id, item);
   }
 
+  // Preserve root ordering from the paginated query
+  for (const rootId of rootIds) {
+    const item = commentMap.get(rootId);
+    if (item) rootComments.push(item);
+  }
+
   for (const item of commentMap.values()) {
     if (item.parentId && commentMap.has(item.parentId)) {
       commentMap.get(item.parentId)!.replies!.push(item);
-    } else {
-      rootComments.push(item);
     }
   }
 

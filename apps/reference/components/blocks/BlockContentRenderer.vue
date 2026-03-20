@@ -23,6 +23,7 @@ import BlockSliderView from './BlockSliderView.vue';
 import BlockCheckpointView from './BlockCheckpointView.vue';
 import BlockMathView from './BlockMathView.vue';
 import BlockGalleryView from './BlockGalleryView.vue';
+import BlockSectionHeaderView from './BlockSectionHeaderView.vue';
 import type { BlockTuple } from '@commonpub/editor';
 
 const props = defineProps<{
@@ -61,6 +62,7 @@ const componentMap: Record<string, unknown> = {
   mathNotation: BlockMathView,
   math: BlockMathView,
   gallery: BlockGalleryView,
+  sectionHeader: BlockSectionHeaderView,
 };
 
 const visibleBlocks = computed(() => {

@@ -5,6 +5,8 @@ node_modules/
 dist/
 .svelte-kit/
 build/
+.nuxt/
+.output/
 
 # Turborepo
 .turbo/
@@ -13,6 +15,8 @@ build/
 .env
 .env.local
 .env.*.local
+apps/**/.env
+!apps/**/.env.example
 
 # IDE
 .vscode/
@@ -28,6 +32,9 @@ Thumbs.db
 coverage/
 test-results/
 playwright-report/
+
+# Local uploads
+uploads/
 
 # Misc
 *.log

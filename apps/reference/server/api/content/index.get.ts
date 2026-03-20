@@ -12,5 +12,7 @@ export default defineEventHandler(async (event): Promise<PaginatedResponse<Conte
   return listContent(db, {
     ...filters,
     status: isOwnContent ? filters.status : (filters.status ?? 'published'),
+    // Only show public content unless viewing own content
+    visibility: isOwnContent ? filters.visibility : 'public',
   });
 });

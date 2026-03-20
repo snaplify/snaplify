@@ -14,7 +14,12 @@ const password = ref('');
 const error = ref('');
 const loading = ref(false);
 
-const redirectTo = computed(() => (route.query.redirect as string) || '/');
+const redirectTo = computed(() => {
+  const raw = (route.query.redirect as string) || '/';
+  // Prevent open redirect — only allow relative paths
+  if (raw.startsWith('/') && !raw.startsWith('//')) return raw;
+  return '/';
+});
 
 async function handleSubmit(): Promise<void> {
   error.value = '';

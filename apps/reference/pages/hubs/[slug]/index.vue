@@ -6,7 +6,8 @@ import type { Serialized, HubDetail, HubPostItem, HubMemberItem, PaginatedRespon
 
 const { data: hub, pending: hubPending, error: hubError, refresh: refreshHub } = useLazyFetch<Serialized<HubDetail>>(() => `/api/hubs/${slug.value}`);
 const { data: posts } = useLazyFetch<Serialized<PaginatedResponse<HubPostItem>>>(() => `/api/hubs/${slug.value}/posts`, { default: () => ({ items: [], total: 0 }) });
-const { data: members } = useLazyFetch<Serialized<HubMemberItem>[]>(() => `/api/hubs/${slug.value}/members`);
+const { data: membersData } = useLazyFetch<{ items: Serialized<HubMemberItem>[]; total: number }>(() => `/api/hubs/${slug.value}/members`);
+const members = computed(() => membersData.value?.items ?? []);
 
 const { data: gallery } = useLazyFetch(() => `/api/hubs/${slug.value}/gallery`, { default: () => ({ items: [], total: 0 }) });
 

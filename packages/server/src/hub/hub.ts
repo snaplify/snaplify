@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, ilike, inArray } from 'drizzle-orm';
+import { eq, and, or, desc, sql, ilike, inArray, isNull } from 'drizzle-orm';
 import {
   hubs,
   hubMembers,
@@ -26,7 +26,7 @@ import type {
   PostType,
 } from '../types.js';
 import { generateSlug, hasPermission, canManageRole } from '../utils.js';
-import { ensureUniqueSlugFor, USER_REF_SELECT, normalizePagination, countRows } from '../query.js';
+import { ensureUniqueSlugFor, USER_REF_SELECT, normalizePagination, countRows, escapeLike } from '../query.js';
 
 // --- Hub CRUD ---
 
@@ -34,10 +34,10 @@ export async function listHubs(
   db: DB,
   filters: HubFilters = {},
 ): Promise<{ items: HubListItem[]; total: number }> {
-  const conditions = [];
+  const conditions = [isNull(hubs.deletedAt)];
 
   if (filters.search) {
-    conditions.push(ilike(hubs.name, `%${filters.search}%`));
+    conditions.push(ilike(hubs.name, `%${escapeLike(filters.search)}%`));
   }
   if (filters.joinPolicy) {
     conditions.push(
@@ -99,7 +99,7 @@ export async function getHubBySlug(
     })
     .from(hubs)
     .innerJoin(users, eq(hubs.createdById, users.id))
-    .where(eq(hubs.slug, slug))
+    .where(and(eq(hubs.slug, slug), isNull(hubs.deletedAt)))
     .limit(1);
 
   if (rows.length === 0) return null;
@@ -250,7 +250,11 @@ export async function deleteHub(
     return false;
   }
 
-  await db.delete(hubs).where(eq(hubs.id, hubId));
+  // Soft delete — set deletedAt instead of destroying data
+  await db
+    .update(hubs)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(eq(hubs.id, hubId));
   return true;
 }
 
@@ -288,6 +292,10 @@ export async function joinHub(
     const tokenResult = await validateAndUseInvite(db, inviteToken);
     if (!tokenResult.valid) {
       return { joined: false, error: 'Invalid or expired invite token' };
+    }
+    // Verify the invite belongs to this specific hub
+    if (tokenResult.hubId !== hubId) {
+      return { joined: false, error: 'Invite token is not valid for this hub' };
     }
   }
 
@@ -369,24 +377,38 @@ export async function getMember(
   };
 }
 
-export async function listMembers(db: DB, hubId: string): Promise<HubMemberItem[]> {
-  const rows = await db
-    .select({
-      member: hubMembers,
-      user: USER_REF_SELECT,
-    })
-    .from(hubMembers)
-    .innerJoin(users, eq(hubMembers.userId, users.id))
-    .where(eq(hubMembers.hubId, hubId))
-    .orderBy(desc(hubMembers.joinedAt));
+export async function listMembers(
+  db: DB,
+  hubId: string,
+  opts: { limit?: number; offset?: number } = {},
+): Promise<{ items: HubMemberItem[]; total: number }> {
+  const { limit, offset } = normalizePagination(opts);
+  const where = eq(hubMembers.hubId, hubId);
 
-  return rows.map((row) => ({
+  const [rows, total] = await Promise.all([
+    db
+      .select({
+        member: hubMembers,
+        user: USER_REF_SELECT,
+      })
+      .from(hubMembers)
+      .innerJoin(users, eq(hubMembers.userId, users.id))
+      .where(where)
+      .orderBy(desc(hubMembers.joinedAt))
+      .limit(limit)
+      .offset(offset),
+    countRows(db, hubMembers, where),
+  ]);
+
+  const items = rows.map((row) => ({
     hubId: row.member.hubId,
     userId: row.member.userId,
     role: row.member.role,
     joinedAt: row.member.joinedAt,
     user: row.user,
   }));
+
+  return { items, total };
 }
 
 export async function changeRole(
@@ -782,7 +804,32 @@ export async function createReply(
   };
 }
 
-export async function listReplies(db: DB, postId: string): Promise<HubReplyItem[]> {
+export async function listReplies(
+  db: DB,
+  postId: string,
+  opts: { limit?: number; offset?: number } = {},
+): Promise<{ items: HubReplyItem[]; total: number }> {
+  const { limit, offset } = normalizePagination(opts);
+
+  // Fetch root replies with pagination
+  const rootWhere = and(eq(hubPostReplies.postId, postId), isNull(hubPostReplies.parentId));
+
+  const [rootRows, total] = await Promise.all([
+    db
+      .select({ id: hubPostReplies.id })
+      .from(hubPostReplies)
+      .where(rootWhere)
+      .orderBy(desc(hubPostReplies.createdAt))
+      .limit(limit)
+      .offset(offset),
+    countRows(db, hubPostReplies, rootWhere),
+  ]);
+
+  if (rootRows.length === 0) return { items: [], total };
+
+  const rootIds = rootRows.map((r) => r.id);
+
+  // Fetch root + children in one query
   const rows = await db
     .select({
       reply: hubPostReplies,
@@ -795,7 +842,15 @@ export async function listReplies(db: DB, postId: string): Promise<HubReplyItem[
     })
     .from(hubPostReplies)
     .innerJoin(users, eq(hubPostReplies.authorId, users.id))
-    .where(eq(hubPostReplies.postId, postId))
+    .where(
+      and(
+        eq(hubPostReplies.postId, postId),
+        or(
+          and(isNull(hubPostReplies.parentId), inArray(hubPostReplies.id, rootIds)),
+          inArray(hubPostReplies.parentId, rootIds),
+        ),
+      ),
+    )
     .orderBy(desc(hubPostReplies.createdAt));
 
   const replyMap = new Map<string, HubReplyItem>();
@@ -816,15 +871,19 @@ export async function listReplies(db: DB, postId: string): Promise<HubReplyItem[
     replyMap.set(item.id, item);
   }
 
+  // Preserve root ordering
+  for (const rootId of rootIds) {
+    const item = replyMap.get(rootId);
+    if (item) rootReplies.push(item);
+  }
+
   for (const item of replyMap.values()) {
     if (item.parentId && replyMap.has(item.parentId)) {
       replyMap.get(item.parentId)!.replies!.push(item);
-    } else {
-      rootReplies.push(item);
     }
   }
 
-  return rootReplies;
+  return { items: rootReplies, total };
 }
 
 export async function deleteReply(
@@ -929,7 +988,7 @@ export async function banUser(
     bannedById: actorId,
     reason: reason ?? null,
     expiresAt: expiresAt ?? null,
-  });
+  }).onConflictDoNothing();
 
   return { banned: true };
 }
@@ -983,33 +1042,31 @@ export async function checkBan(
   return ban;
 }
 
-export async function listBans(db: DB, hubId: string): Promise<HubBanItem[]> {
+export async function listBans(db: DB, hubId: string, opts: { limit?: number; offset?: number } = {}): Promise<HubBanItem[]> {
+  // Alias for the banner user (self-join on users table)
+  const bannerUser = {
+    bannerId: sql<string>`banner.id`.as('banner_id'),
+    bannerUsername: sql<string>`banner.username`.as('banner_username'),
+    bannerDisplayName: sql<string | null>`banner.display_name`.as('banner_display_name'),
+    bannerAvatarUrl: sql<string | null>`banner.avatar_url`.as('banner_avatar_url'),
+  };
+
+  const limit = Math.min(opts.limit ?? 50, 100);
+  const offset = opts.offset ?? 0;
+
   const rows = await db
     .select({
       ban: hubBans,
       user: USER_REF_SELECT,
+      ...bannerUser,
     })
     .from(hubBans)
     .innerJoin(users, eq(hubBans.userId, users.id))
+    .innerJoin(sql`users AS banner`, sql`banner.id = ${hubBans.bannedById}`)
     .where(eq(hubBans.hubId, hubId))
-    .orderBy(desc(hubBans.createdAt));
-
-  const banIds = rows.map((r) => r.ban.bannedById);
-  const uniqueBannerIds = [...new Set(banIds)];
-  const banners = new Map<
-    string,
-    { id: string; username: string; displayName: string | null; avatarUrl: string | null }
-  >();
-
-  if (uniqueBannerIds.length > 0) {
-    const bannerRows = await db
-      .select(USER_REF_SELECT)
-      .from(users)
-      .where(inArray(users.id, uniqueBannerIds));
-    for (const row of bannerRows) {
-      banners.set(row.id, row);
-    }
-  }
+    .orderBy(desc(hubBans.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   return rows.map((row) => ({
     id: row.ban.id,
@@ -1017,11 +1074,11 @@ export async function listBans(db: DB, hubId: string): Promise<HubBanItem[]> {
     expiresAt: row.ban.expiresAt,
     createdAt: row.ban.createdAt,
     user: row.user,
-    bannedBy: banners.get(row.ban.bannedById) ?? {
-      id: row.ban.bannedById,
-      username: 'unknown',
-      displayName: null,
-      avatarUrl: null,
+    bannedBy: {
+      id: row.bannerId,
+      username: row.bannerUsername,
+      displayName: row.bannerDisplayName,
+      avatarUrl: row.bannerAvatarUrl,
     },
   }));
 }
@@ -1116,7 +1173,10 @@ export async function revokeInvite(
   return true;
 }
 
-export async function listInvites(db: DB, hubId: string): Promise<HubInviteItem[]> {
+export async function listInvites(db: DB, hubId: string, opts: { limit?: number; offset?: number } = {}): Promise<HubInviteItem[]> {
+  const limit = Math.min(opts.limit ?? 50, 100);
+  const offset = opts.offset ?? 0;
+
   const rows = await db
     .select({
       invite: hubInvites,
@@ -1130,7 +1190,9 @@ export async function listInvites(db: DB, hubId: string): Promise<HubInviteItem[
     .from(hubInvites)
     .innerJoin(users, eq(hubInvites.createdById, users.id))
     .where(eq(hubInvites.hubId, hubId))
-    .orderBy(desc(hubInvites.createdAt));
+    .orderBy(desc(hubInvites.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   return rows.map((row) => ({
     id: row.invite.id,

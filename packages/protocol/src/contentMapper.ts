@@ -68,6 +68,14 @@ export function contentToArticle(
   return article;
 }
 
+/** Escape HTML for safe embedding in AP objects */
+function escapeHtmlForAP(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 /** Map a CommonPub comment to an AP Note */
 export function contentToNote(
   comment: CommentInput,
@@ -84,7 +92,7 @@ export function contentToNote(
     type: 'Note',
     id: objectId,
     attributedTo: actorUri,
-    content: comment.content,
+    content: escapeHtmlForAP(comment.content),
     to: [AP_PUBLIC],
     cc: [followersUri],
   };

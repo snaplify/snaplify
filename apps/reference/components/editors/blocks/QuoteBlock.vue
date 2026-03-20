@@ -2,6 +2,8 @@
 /**
  * Blockquote block — styled quote with editable body and attribution.
  */
+import { sanitizeBlockHtml } from '~/composables/useSanitize';
+
 const props = defineProps<{
   content: Record<string, unknown>;
 }>();
@@ -15,7 +17,7 @@ const attribution = computed(() => (props.content.attribution as string) ?? '');
 
 function onBodyInput(event: Event): void {
   const el = event.target as HTMLElement;
-  emit('update', { html: el.innerHTML, attribution: attribution.value });
+  emit('update', { html: sanitizeBlockHtml(el.innerHTML), attribution: attribution.value });
 }
 
 function onAttributionInput(event: Event): void {

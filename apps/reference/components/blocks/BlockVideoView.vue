@@ -7,15 +7,17 @@ const embedUrl = computed(() => {
   const u = url.value;
   if (!u) return '';
 
-  // YouTube
+  // YouTube — extract video ID and construct safe embed URL
   const ytMatch = u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
   if (ytMatch) return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`;
 
-  // Vimeo
+  // Vimeo — extract video ID and construct safe embed URL
   const vimeoMatch = u.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
 
-  return u;
+  // Only allow http/https URLs for unknown platforms — block javascript:, data:, etc.
+  if (u.startsWith('https://') || u.startsWith('http://')) return u;
+  return '';
 });
 
 const platform = computed(() => {

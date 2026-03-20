@@ -1,5 +1,5 @@
 import type { StorageAdapter } from './storage.js';
-import { generateStorageKey } from './storage.js';
+import { generateStorageKey, isProcessableImage } from './storage.js';
 
 /** Image variant sizes */
 export const IMAGE_VARIANTS = {
@@ -45,11 +45,22 @@ export async function processImage(
   originalName: string,
   purpose: string,
   storage: StorageAdapter,
+  mimeType?: string,
 ): Promise<ProcessedImage> {
+  // Validate MIME type before passing to sharp
+  if (mimeType && !isProcessableImage(mimeType)) {
+    throw new Error(`Cannot process image: unsupported type "${mimeType}"`);
+  }
+
   const sharp = (await import('sharp')).default;
 
-  // Get original metadata
-  const metadata = await sharp(data).metadata();
+  // Get original metadata (also validates the buffer is a real image)
+  let metadata: Awaited<ReturnType<ReturnType<typeof sharp>['metadata']>>;
+  try {
+    metadata = await sharp(data).metadata();
+  } catch {
+    throw new Error('Cannot process image: buffer is not a valid image');
+  }
   const originalWidth = metadata.width ?? 0;
   const originalHeight = metadata.height ?? 0;
 

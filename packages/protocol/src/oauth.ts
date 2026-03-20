@@ -1,3 +1,25 @@
+/** Timing-safe string comparison to prevent timing attacks on secrets */
+function timingSafeCompare(a: string, b: string): boolean {
+  const encoder = new TextEncoder();
+  const bufA = encoder.encode(a);
+  const bufB = encoder.encode(b);
+  // Pad shorter buffer to prevent length leakage
+  if (bufA.length !== bufB.length) {
+    // Compare against self to burn constant time, then return false
+    const dummy = new Uint8Array(bufA.length);
+    let result = 0;
+    for (let i = 0; i < bufA.length; i++) {
+      result |= bufA[i]! ^ dummy[i]!;
+    }
+    return false;
+  }
+  let result = 0;
+  for (let i = 0; i < bufA.length; i++) {
+    result |= bufA[i]! ^ bufB[i]!;
+  }
+  return result === 0;
+}
+
 export interface OAuthAuthorizeRequest {
   clientId: string;
   redirectUri: string;
@@ -64,7 +86,7 @@ export function validateTokenRequest(
     return { error: 'invalid_client', errorDescription: 'Client ID mismatch' };
   }
 
-  if (params.clientSecret !== client.clientSecret) {
+  if (!timingSafeCompare(params.clientSecret, client.clientSecret)) {
     return { error: 'invalid_client', errorDescription: 'Invalid client secret' };
   }
 

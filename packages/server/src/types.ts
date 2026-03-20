@@ -161,6 +161,9 @@ export interface ContentDetail extends ContentListItem {
   category: string | null;
   buildTime: string | null;
   estimatedCost: string | null;
+  estimatedMinutes: number | null;
+  licenseType: string | null;
+  series: string | null;
   visibility: 'public' | 'members' | 'private';
   isFeatured: boolean;
   seoDescription: string | null;

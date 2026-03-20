@@ -70,7 +70,7 @@ export const comments = pgTable('comments', {
   content: text('content').notNull(),
   likeCount: integer('like_count').default(0).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (t) => [
   index('idx_comments_author_id').on(t.authorId),
   index('idx_comments_target').on(t.targetType, t.targetId),
@@ -138,7 +138,9 @@ export const conversations = pgTable('conversations', {
   lastMessageAt: timestamp('last_message_at', { withTimezone: true }).defaultNow().notNull(),
   lastMessage: text('last_message'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => [
+  index('idx_conversations_participants_gin').using('gin', t.participants),
+]);
 
 export const messages = pgTable('messages', {
   id: uuid('id').defaultRandom().primaryKey(),

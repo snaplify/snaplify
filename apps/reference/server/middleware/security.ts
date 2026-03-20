@@ -17,7 +17,8 @@ export default defineEventHandler((event) => {
       || getRequestHeader(event, 'x-real-ip')
       || 'unknown';
 
-    const { result, headers: rlHeaders } = checkRateLimit(store, ip, pathname);
+    const userId = event.context.auth?.user?.id as string | undefined;
+    const { result, headers: rlHeaders } = checkRateLimit(store, ip, pathname, userId);
 
     for (const [key, value] of Object.entries(rlHeaders)) {
       setResponseHeader(event, key, value);
@@ -43,7 +44,7 @@ export default defineEventHandler((event) => {
     // In dev, allow unsafe-eval for HMR and inline styles for Nuxt
     if (isDev) {
       cspDirectives['script-src'] = "'self' 'unsafe-inline' 'unsafe-eval'";
-      cspDirectives['style-src'] = "'self' 'unsafe-inline'";
+      cspDirectives['style-src'] = "'self' 'unsafe-inline' https://cdnjs.cloudflare.com";
       cspDirectives['connect-src'] = "'self' ws: wss:";
     }
     setResponseHeader(event, 'Content-Security-Policy', buildCspHeader(cspDirectives));

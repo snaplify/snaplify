@@ -142,11 +142,11 @@ All notable changes to CommonPub are documented here.
 - Quiz engine with deterministic shuffle (mulberry32 seeded PRNG)
 - Progress tracker as pure state machine
 - Self-contained HTML export with inlined CSS + vanilla JS
-- 127 tests, 15 Svelte components, 10 routes
+- 127 tests (originally built with Svelte components; later rebuilt as framework-agnostic TypeScript)
 
 ### Phase 4: Reference App & Content System
 
-- SvelteKit reference app with content CRUD
+- Reference app with content CRUD (originally SvelteKit; later rebuilt on Nuxt 3 per ADR 025)
 - Rich block editor with 6 block types
 - Social features: likes, comments, follows
 - SEO: JSON-LD structured data, OpenGraph meta, sitemap
@@ -156,8 +156,8 @@ All notable changes to CommonPub are documented here.
 
 ### Phase 3: Core UI Kit & Block Editor
 
-- `@commonpub/ui` — 15 headless Svelte 5 components
-- `@commonpub/editor` — TipTap extensions with BlockTuple serialization
+- `@commonpub/ui` -- headless components (originally Svelte 5; later rebuilt as Vue 3 per ADR 025)
+- `@commonpub/editor` -- TipTap extensions with BlockTuple serialization
 - 4 theme CSS files with CSS custom properties
 - axe-core a11y testing on all components
 - 116 UI tests, 69 editor tests

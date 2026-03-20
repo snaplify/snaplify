@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
-import { sanitizeBlockHtml } from '~/composables/useSanitize';
-
 definePageMeta({ layout: false, middleware: 'auth' });
 
 const route = useRoute();
@@ -64,6 +62,9 @@ if (!isNew.value) {
       difficulty: (d.difficulty as string) || '',
       buildTime: (d.buildTime as string) || '',
       estimatedCost: (d.estimatedCost as string) || '',
+      estimatedMinutes: (d.estimatedMinutes as number) || undefined,
+      licenseType: (d.licenseType as string) || '',
+      series: (d.series as string) || '',
       category: (d.category as string) || '',
       subtitle: (d.subtitle as string) || '',
     };
@@ -208,6 +209,8 @@ async function silentSave(): Promise<void> {
 
 async function handleSave(): Promise<void> {
   if (saving.value || !title.value) return;
+  // Cancel any pending auto-save to prevent overlap
+  if (autoSaveTimer) { clearTimeout(autoSaveTimer); autoSaveTimer = null; }
   // Guard: if not new but no contentId, treat as new creation
   if (!isNew.value && !contentId.value) {
     isNew.value = true;
@@ -238,11 +241,27 @@ async function handleSave(): Promise<void> {
   }
 }
 
+// --- Enter preview (save in background, show immediately) ---
+function enterPreview(): void {
+  mode.value = 'preview';
+  // Fire-and-forget save so the draft is persisted as a checkpoint
+  if (isDirty.value && title.value && !saving.value && !isNew.value && contentId.value) {
+    if (autoSaveTimer) { clearTimeout(autoSaveTimer); autoSaveTimer = null; }
+    silentSave();
+  }
+}
+
 // --- Ctrl+S keyboard shortcut ---
 function onKeydown(event: KeyboardEvent): void {
   if ((event.metaKey || event.ctrlKey) && event.key === 's') {
     event.preventDefault();
+    // Cancel pending auto-save so Ctrl+S doesn't race with it
+    if (autoSaveTimer) { clearTimeout(autoSaveTimer); autoSaveTimer = null; }
     silentSave();
+  }
+  // Escape closes explainer preview overlay
+  if (event.key === 'Escape' && mode.value === 'preview' && contentType.value === 'explainer') {
+    mode.value = 'write';
   }
 }
 
@@ -253,16 +272,21 @@ onUnmounted(() => {
 });
 
 // --- Warn before unload if dirty ---
+function onBeforeUnload(event: BeforeUnloadEvent): void {
+  if (isDirty.value) {
+    event.preventDefault();
+  }
+}
+
 if (import.meta.client) {
-  window.addEventListener('beforeunload', (event: BeforeUnloadEvent) => {
-    if (isDirty.value) {
-      event.preventDefault();
-    }
-  });
+  onMounted(() => { window.addEventListener('beforeunload', onBeforeUnload); });
+  onUnmounted(() => { window.removeEventListener('beforeunload', onBeforeUnload); });
 }
 
 async function handlePublish(): Promise<void> {
   if (saving.value || !title.value) return;
+  // Cancel any pending auto-save to prevent overlap
+  if (autoSaveTimer) { clearTimeout(autoSaveTimer); autoSaveTimer = null; }
   saving.value = true;
   error.value = '';
 
@@ -328,7 +352,7 @@ async function handlePublish(): Promise<void> {
       </div>
       <div class="cpub-mode-tabs">
         <button :class="['cpub-mode-tab', { active: mode === 'write' }]" @click="mode = 'write'">Write</button>
-        <button :class="['cpub-mode-tab', { active: mode === 'preview' }]" @click="mode = 'preview'">Preview</button>
+        <button :class="['cpub-mode-tab', { active: mode === 'preview' }]" @click="enterPreview">Preview</button>
         <button :class="['cpub-mode-tab', { active: mode === 'code' }]" @click="mode = 'code'">Code</button>
       </div>
       <div class="cpub-topbar-spacer" />
@@ -361,43 +385,13 @@ async function handlePublish(): Promise<void> {
       </div>
     </div>
 
-    <!-- Preview mode -->
-    <div v-else-if="mode === 'preview'" class="cpub-editor-shell">
+    <!-- Preview mode: Generic (explainer also matches here as a hidden placeholder; actual preview is in the Teleport overlay below) -->
+    <div v-else-if="mode === 'preview'" class="cpub-editor-shell" :class="{ 'cpub-hidden': contentType === 'explainer' }">
       <div class="cpub-preview-canvas">
         <h1 class="cpub-preview-title">{{ title || 'Untitled' }}</h1>
         <p v-if="metadata.description" class="cpub-preview-desc">{{ metadata.description }}</p>
         <div class="cpub-preview-blocks">
-          <div v-for="block in blockEditor.blocks.value" :key="block.id" class="cpub-preview-block">
-            <template v-if="block.type === 'paragraph' || block.type === 'bulletList' || block.type === 'orderedList'">
-              <div v-html="sanitizeBlockHtml((block.content.html as string) || '')" />
-            </template>
-            <template v-else-if="block.type === 'heading'">
-              <component :is="`h${block.content.level ?? 2}`">{{ block.content.text }}</component>
-            </template>
-            <template v-else-if="block.type === 'code_block' || block.type === 'codeBlock'">
-              <pre class="cpub-preview-code"><code>{{ block.content.code }}</code></pre>
-            </template>
-            <template v-else-if="block.type === 'image' && block.content.src">
-              <figure>
-                <img :src="(block.content.src as string)" :alt="(block.content.alt as string) || ''" style="max-width:100%;" />
-                <figcaption v-if="block.content.caption" style="font-size:12px;color:var(--text-dim);margin-top:4px;">{{ block.content.caption }}</figcaption>
-              </figure>
-            </template>
-            <template v-else-if="block.type === 'blockquote'">
-              <blockquote style="border-left:4px solid var(--accent);padding-left:16px;font-style:italic;">
-                <div v-html="sanitizeBlockHtml((block.content.html as string) || '')" />
-                <cite v-if="block.content.attribution" style="display:block;margin-top:8px;font-size:12px;color:var(--text-dim);">— {{ block.content.attribution }}</cite>
-              </blockquote>
-            </template>
-            <template v-else-if="block.type === 'callout'">
-              <div style="padding:12px 16px;border-left:4px solid var(--accent);background:var(--accent-bg);">
-                <div v-html="sanitizeBlockHtml((block.content.html as string) || '')" />
-              </div>
-            </template>
-            <template v-else-if="block.type === 'horizontal_rule'">
-              <hr style="border:none;border-top:2px solid var(--border2);margin:16px 0;" />
-            </template>
-          </div>
+          <BlockContentRenderer :blocks="blockEditor.toBlockTuples()" />
         </div>
       </div>
     </div>
@@ -408,6 +402,51 @@ async function handlePublish(): Promise<void> {
         <pre class="cpub-code-view">{{ JSON.stringify(blockEditor.toBlockTuples(), null, 2) }}</pre>
       </div>
     </div>
+
+    <!-- Explainer preview: full-screen overlay (outside v-if chain, uses Teleport) -->
+    <Teleport to="body">
+      <div v-if="mode === 'preview' && contentType === 'explainer'" class="cpub-explainer-preview-overlay">
+        <button class="cpub-preview-close-btn" @click="mode = 'write'" aria-label="Close preview">
+          <i class="fa-solid fa-xmark"></i>
+          <span>Back to Editor</span>
+        </button>
+        <ViewsExplainerView
+          :content="{
+            id: contentId || 'preview',
+            type: 'explainer',
+            title: title || 'Untitled',
+            slug: (metadata.slug as string) || 'preview',
+            subtitle: null,
+            description: (metadata.description as string) || null,
+            content: blockEditor.toBlockTuples(),
+            coverImageUrl: (metadata.coverImageUrl as string) || null,
+            category: null,
+            difficulty: (metadata.difficulty as string) || null,
+            buildTime: null,
+            estimatedCost: null,
+            status: 'draft',
+            visibility: (metadata.visibility as string) || 'public',
+            isFeatured: false,
+            seoDescription: null,
+            previewToken: null,
+            parts: null,
+            sections: null,
+            viewCount: 0,
+            likeCount: 0,
+            commentCount: 0,
+            forkCount: 0,
+            publishedAt: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            licenseType: null,
+            series: null,
+            estimatedMinutes: null,
+            tags: [],
+            author: { id: '', username: '', displayName: null, avatarUrl: null },
+          }"
+        />
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -646,5 +685,51 @@ async function handlePublish(): Promise<void> {
   font-size: 12px;
   white-space: pre-wrap;
   margin: 0;
+}
+
+.cpub-hidden {
+  display: none;
+}
+</style>
+
+<style>
+/* Unscoped so Teleport overlay works */
+.cpub-explainer-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.cpub-preview-close-btn {
+  position: fixed;
+  top: 10px;
+  right: 16px;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--border);
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+
+.cpub-preview-close-btn:hover {
+  box-shadow: 2px 2px 0 var(--border);
+  transform: translate(1px, 1px);
+  background: var(--surface2);
+}
+
+.cpub-preview-close-btn i {
+  font-size: 12px;
 }
 </style>

@@ -8,7 +8,7 @@ import {
 } from '@commonpub/schema';
 import type { DB, UserRef } from '../types.js';
 import { generateSlug } from '../utils.js';
-import { ensureUniqueSlugFor, USER_REF_SELECT, normalizePagination, countRows } from '../query.js';
+import { ensureUniqueSlugFor, USER_REF_SELECT, normalizePagination, countRows, escapeLike } from '../query.js';
 
 // --- Types ---
 
@@ -219,7 +219,7 @@ export async function listHubProducts(
   const conditions = [eq(products.hubId, hubId)];
 
   if (filters.search) {
-    conditions.push(ilike(products.name, `%${filters.search}%`));
+    conditions.push(ilike(products.name, `%${escapeLike(filters.search)}%`));
   }
   if (filters.category) {
     conditions.push(eq(products.category, filters.category as typeof products.category.enumValues[number]));
@@ -265,7 +265,7 @@ export async function searchProducts(
   const conditions = [];
 
   if (filters.search) {
-    conditions.push(ilike(products.name, `%${filters.search}%`));
+    conditions.push(ilike(products.name, `%${escapeLike(filters.search)}%`));
   }
   if (filters.category) {
     conditions.push(eq(products.category, filters.category as typeof products.category.enumValues[number]));

@@ -11,7 +11,7 @@ useSeoMeta({
 });
 
 // Fetch entries from API
-const { data: apiEntries } = useLazyFetch(`/api/contests/${slug}/entries`);
+const { data: apiEntriesData } = useLazyFetch<{ items: any[]; total: number }>(`/api/contests/${slug}/entries`);
 
 const c = computed(() => contest.value);
 
@@ -68,7 +68,7 @@ async function toggleVote(entryId: string): Promise<void> {
 }
 
 const entries = computed(() => {
-  return apiEntries.value ?? [];
+  return apiEntriesData.value?.items ?? [];
 });
 
 const entryFilter = ref('all');

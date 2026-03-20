@@ -2,6 +2,7 @@ export {
   listConversations,
   getConversationMessages,
   createConversation,
+  findOrCreateConversation,
   sendMessage,
   markMessagesRead,
 } from './messaging.js';

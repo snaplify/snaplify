@@ -4,7 +4,8 @@ const slug = computed(() => route.params.slug as string);
 const toast = useToast();
 
 const { data: hub } = useLazyFetch(() => `/api/hubs/${slug.value}`);
-const { data: members, refresh } = useLazyFetch(() => `/api/hubs/${slug.value}/members`);
+const { data: membersData, refresh } = useLazyFetch<{ items: any[]; total: number }>(() => `/api/hubs/${slug.value}/members`);
+const members = computed(() => membersData.value?.items ?? []);
 
 const { user } = useAuth();
 const currentUserRole = computed(() => hub.value?.currentUserRole ?? null);
@@ -51,7 +52,7 @@ async function kickMember(userId: string, username: string): Promise<void> {
     <div class="members-header">
       <NuxtLink :to="`/hubs/${slug}`" class="cpub-back-link"><i class="fa-solid fa-arrow-left"></i> {{ hub?.name ?? 'Hub' }}</NuxtLink>
       <h1 class="members-title">Members</h1>
-      <p class="members-count" v-if="members?.length">{{ members.length }} members</p>
+      <p class="members-count" v-if="membersData?.total">{{ membersData.total }} members</p>
     </div>
 
     <div class="members-list" v-if="members?.length">

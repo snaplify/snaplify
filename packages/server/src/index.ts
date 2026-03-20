@@ -76,6 +76,7 @@ export {
   normalizePagination,
   countRows,
   buildPartialUpdates,
+  escapeLike,
 } from './query.js';
 export type { PaginationOpts } from './query.js';
 
@@ -327,6 +328,7 @@ export {
   listConversations,
   getConversationMessages,
   createConversation,
+  findOrCreateConversation,
   sendMessage,
   markMessagesRead,
 } from './messaging/index.js';

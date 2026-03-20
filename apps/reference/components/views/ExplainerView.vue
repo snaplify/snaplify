@@ -12,44 +12,62 @@ const blocks = computed<BlockTuple[]>(() => {
   return raw as BlockTuple[];
 });
 
-// Derive sections from heading blocks (level <= 2)
+// Derive sections from sectionHeader blocks, falling back to H2 headings
 const sections = computed(() => {
-  if (Array.isArray(props.content?.sections) && props.content.sections.length > 0) {
-    return props.content.sections as Array<{ title: string; slug?: string }>;
-  }
+  const result: Array<{ title: string; tag: string; body: string; blockIndex: number }> = [];
 
-  const headings: Array<{ title: string; slug: string; blockIndex: number }> = [];
+  // First try sectionHeader blocks
   for (let i = 0; i < blocks.value.length; i++) {
     const [type, data] = blocks.value[i]!;
-    if (type === 'heading' && ((data.level as number) ?? 2) <= 2) {
-      const title = (data.text as string) || 'Untitled';
-      headings.push({
-        title,
-        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+    if (type === 'sectionHeader') {
+      result.push({
+        title: (data.title as string) || 'Untitled',
+        tag: (data.tag as string) || '',
+        body: (data.body as string) || '',
         blockIndex: i,
       });
     }
   }
 
-  // Fallback: treat entire content as one section
-  if (headings.length === 0 && blocks.value.length > 0) {
-    return [{ title: props.content.title || 'Content', slug: 'content', blockIndex: 0 }];
+  // Fallback to H2 headings if no sectionHeader blocks
+  if (result.length === 0) {
+    for (let i = 0; i < blocks.value.length; i++) {
+      const [type, data] = blocks.value[i]!;
+      if (type === 'heading' && ((data.level as number) ?? 2) <= 2) {
+        result.push({
+          title: (data.text as string) || 'Untitled',
+          tag: `§ ${String(result.length + 1).padStart(2, '0')}`,
+          body: '',
+          blockIndex: i,
+        });
+      }
+    }
   }
 
-  return headings;
+  // Final fallback: treat entire content as one section
+  // blockIndex -1 so that sectionRanges start = -1 + 1 = 0 (don't skip first block)
+  if (result.length === 0 && blocks.value.length > 0) {
+    result.push({
+      title: props.content.title || 'Content',
+      tag: '§ 01',
+      body: props.content.description || '',
+      blockIndex: -1,
+    });
+  }
+
+  return result;
 });
 
-// Compute block ranges per section
+// Compute block ranges per section (blocks between section headers)
 const sectionRanges = computed(() => {
   const ranges: Array<{ start: number; end: number }> = [];
   for (let i = 0; i < sections.value.length; i++) {
-    const sec = sections.value[i] as { blockIndex?: number };
-    const start = sec.blockIndex ?? 0;
-    const nextSec = sections.value[i + 1] as { blockIndex?: number } | undefined;
+    // Start after the sectionHeader block itself
+    const start = sections.value[i]!.blockIndex + 1;
+    const nextSec = sections.value[i + 1];
     const end = nextSec?.blockIndex ?? blocks.value.length;
     ranges.push({ start, end });
   }
-  // Fallback if no blockIndex data
   if (ranges.length === 0 && blocks.value.length > 0) {
     ranges.push({ start: 0, end: blocks.value.length });
   }
@@ -79,7 +97,7 @@ const totalSections = computed(() => sections.value.length);
 const progressPct = computed(() => ((activeSection.value + 1) / totalSections.value) * 100);
 
 function goToSection(idx: number): void {
-  if (idx >= 0 && idx < totalSections.value) {
+  if (idx >= 0 && idx < totalSections.value && idx !== activeSection.value) {
     if (activeSection.value < idx) {
       completedSections.value.add(activeSection.value);
     }
@@ -96,20 +114,33 @@ function nextSection(): void {
   if (activeSection.value < totalSections.value - 1) activeSection.value++;
 }
 
-// Checkpoint state (shown when section is completed)
+// Checkpoint state
 const checkpointVisible = ref(false);
 
 watch(activeSection, () => {
   checkpointVisible.value = false;
+  // Scroll section viewport to top on section change
+  const viewport = document.querySelector('.cpub-section-viewport');
+  if (viewport) viewport.scrollTop = 0;
 });
+
+// Current section data
+const currentSection = computed(() => sections.value[activeSection.value]);
+const currentRange = computed(() => sectionRanges.value[activeSection.value]);
+
+// Keyboard navigation
+function onKeydown(e: KeyboardEvent): void {
+  if (e.key === 'ArrowLeft') { prevSection(); e.preventDefault(); }
+  if (e.key === 'ArrowRight') { nextSection(); e.preventDefault(); }
+}
+
+onMounted(() => { document.addEventListener('keydown', onKeydown); });
+onUnmounted(() => { document.removeEventListener('keydown', onKeydown); });
 </script>
 
 <template>
   <div class="cpub-explainer-view">
-    <!-- SCROLL PROGRESS TRACKER -->
-    <ProgressTracker />
-
-    <!-- SECTION PROGRESS BAR -->
+    <!-- PROGRESS BAR -->
     <div class="cpub-progress-line">
       <div class="cpub-progress-line-fill" :style="{ width: progressPct + '%' }"></div>
     </div>
@@ -122,10 +153,10 @@ watch(activeSection, () => {
       <span class="cpub-progress-text">Section {{ activeSection + 1 }} of {{ totalSections }}</span>
       <div class="cpub-topbar-divider"></div>
       <div class="cpub-nav-btn-group">
-        <button class="cpub-icon-btn" title="Previous section" @click="prevSection">
+        <button class="cpub-icon-btn" :disabled="activeSection === 0" title="Previous section" @click="prevSection">
           <i class="fa-solid fa-arrow-left"></i>
         </button>
-        <button class="cpub-icon-btn" title="Next section" @click="nextSection">
+        <button class="cpub-icon-btn" :disabled="activeSection === totalSections - 1" title="Next section" @click="nextSection">
           <i class="fa-solid fa-arrow-right"></i>
         </button>
       </div>
@@ -135,9 +166,6 @@ watch(activeSection, () => {
       </button>
       <button class="cpub-icon-btn" title="Share" @click="share">
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
-      </button>
-      <button class="cpub-icon-btn" title="Fullscreen">
-        <i class="fa-solid fa-expand"></i>
       </button>
     </header>
 
@@ -165,62 +193,61 @@ watch(activeSection, () => {
         </ul>
       </nav>
 
-      <!-- MAIN CONTENT -->
+      <!-- MAIN CONTENT — one section at a time -->
       <main class="cpub-explainer-main">
-        <div class="cpub-content-wrap">
-          <!-- Section tag -->
-          <div class="cpub-section-tag">§ {{ String(activeSection + 1).padStart(2, '0') }} · {{ sections[activeSection]?.title?.toUpperCase() }}</div>
+        <div class="cpub-section-viewport">
+          <div class="cpub-content-wrap" :key="activeSection">
+            <!-- Section Header (from sectionHeader block data) -->
+            <div v-if="currentSection?.tag" class="cpub-section-tag">{{ currentSection.tag }}</div>
+            <h1 class="cpub-section-title">{{ currentSection?.title || content.title }}</h1>
+            <p v-if="currentSection?.body" class="cpub-section-intro">{{ currentSection.body }}</p>
 
-          <!-- Section title -->
-          <h1 class="cpub-section-title">{{ content.subtitle || sections[activeSection]?.title || content.title }}</h1>
-
-          <!-- Body content -->
-          <div class="cpub-body-text">
-            <template v-if="blocks.length > 0 && sectionRanges[activeSection]">
-              <BlockContentRenderer
-                :blocks="blocks"
-                :start-index="sectionRanges[activeSection]!.start"
-                :end-index="sectionRanges[activeSection]!.end"
-                @quiz-answered="(idx: number, correct: boolean) => { if (correct) { completedSections.value.add(activeSection); checkpointVisible.value = true; } }"
-                @checkpoint-reached="() => { completedSections.value.add(activeSection); checkpointVisible.value = true; }"
-              />
-            </template>
-            <template v-else>
-              <p>This explainer doesn't have any content blocks yet.</p>
-            </template>
-          </div>
-
-          <!-- CHECKPOINT (shown after completing quiz or section) -->
-          <div class="cpub-checkpoint" :class="{ visible: checkpointVisible }">
-            <i class="fa-solid fa-circle-check"></i>
-            <span class="cpub-checkpoint-text">Section {{ activeSection + 1 }} complete</span>
-            <span class="cpub-checkpoint-sub">+1 section · {{ totalSections - activeSection - 1 }} remaining</span>
-          </div>
-
-          <!-- SECTION NAV FOOTER -->
-          <div class="cpub-section-nav">
-            <button v-if="activeSection > 0" class="cpub-prev-btn" @click="prevSection">
-              <i class="fa-solid fa-arrow-left"></i>
-              {{ sections[activeSection - 1]?.title }}
-            </button>
-            <div v-else></div>
-
-            <div class="cpub-progress-dots">
-              <div
-                v-for="(_, i) in totalSections"
-                :key="i"
-                class="cpub-dot"
-                :class="{ done: completedSections.has(i), active: i === activeSection }"
-              ></div>
+            <!-- Section body blocks -->
+            <div class="cpub-body-text">
+              <template v-if="currentRange && currentRange.start < currentRange.end">
+                <BlockContentRenderer
+                  :blocks="blocks"
+                  :start-index="currentRange.start"
+                  :end-index="currentRange.end"
+                  @quiz-answered="(_idx: number, correct: boolean) => { if (correct) { completedSections.add(activeSection); checkpointVisible = true; } }"
+                  @checkpoint-reached="() => { completedSections.add(activeSection); checkpointVisible = true; }"
+                />
+              </template>
+              <p v-else class="cpub-empty-section">This section has no content blocks yet.</p>
             </div>
 
-            <button v-if="activeSection < totalSections - 1" class="cpub-next-btn" @click="nextSection">
-              Next: {{ sections[activeSection + 1]?.title }}
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <div v-else></div>
-          </div>
+            <!-- CHECKPOINT -->
+            <div class="cpub-checkpoint" :class="{ visible: checkpointVisible }">
+              <i class="fa-solid fa-circle-check"></i>
+              <span class="cpub-checkpoint-text">Section {{ activeSection + 1 }} complete</span>
+              <span class="cpub-checkpoint-sub">+1 section · {{ totalSections - activeSection - 1 }} remaining</span>
+            </div>
 
+            <!-- SECTION NAV FOOTER -->
+            <div class="cpub-section-nav">
+              <button v-if="activeSection > 0" class="cpub-prev-btn" @click="prevSection">
+                <i class="fa-solid fa-arrow-left"></i>
+                {{ sections[activeSection - 1]?.title }}
+              </button>
+              <div v-else></div>
+
+              <div class="cpub-progress-dots">
+                <div
+                  v-for="(_, i) in totalSections"
+                  :key="i"
+                  class="cpub-dot"
+                  :class="{ done: completedSections.has(i), active: i === activeSection }"
+                  @click="goToSection(i)"
+                ></div>
+              </div>
+
+              <button v-if="activeSection < totalSections - 1" class="cpub-next-btn" @click="nextSection">
+                Next: {{ sections[activeSection + 1]?.title }}
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+              <div v-else></div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -231,14 +258,11 @@ watch(activeSection, () => {
 /* ── PROGRESS BAR ── */
 .cpub-progress-line {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 3px;
   background: var(--surface3);
   z-index: 200;
 }
-
 .cpub-progress-line-fill {
   height: 100%;
   background: var(--accent);
@@ -248,9 +272,7 @@ watch(activeSection, () => {
 /* ── CUSTOM TOPBAR ── */
 .cpub-explainer-topbar {
   position: fixed;
-  top: 3px;
-  left: 0;
-  right: 0;
+  top: 3px; left: 0; right: 0;
   height: 48px;
   background: var(--surface);
   border-bottom: 2px solid var(--border);
@@ -311,32 +333,14 @@ watch(activeSection, () => {
   color: var(--text-dim);
   cursor: pointer;
   font-size: 12px;
-  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background 0.1s, color 0.1s, box-shadow 0.1s;
   flex-shrink: 0;
 }
-
-.cpub-icon-btn:hover {
-  background: var(--surface2);
-  color: var(--text);
-  box-shadow: 2px 2px 0 var(--border);
-}
-
-.cpub-icon-btn:active {
-  box-shadow: none;
-  transform: translate(1px, 1px);
-}
-
-.cpub-icon-btn.active {
-  background: var(--accent-bg);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.cpub-nav-btn-group {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
+.cpub-icon-btn:hover:not(:disabled) { background: var(--surface2); color: var(--text); box-shadow: 2px 2px 0 var(--border); }
+.cpub-icon-btn:active:not(:disabled) { box-shadow: none; transform: translate(1px, 1px); }
+.cpub-icon-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+.cpub-icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.cpub-nav-btn-group { display: flex; gap: 4px; flex-shrink: 0; }
 
 /* ── LAYOUT ── */
 .cpub-explainer-layout {
@@ -356,7 +360,6 @@ watch(activeSection, () => {
   flex-direction: column;
   overflow-y: auto;
 }
-
 .cpub-toc-header {
   padding: 14px 14px 10px;
   font-family: var(--font-mono);
@@ -366,12 +369,7 @@ watch(activeSection, () => {
   text-transform: uppercase;
   border-bottom: 2px solid var(--border);
 }
-
-.cpub-toc-list {
-  list-style: none;
-  padding: 6px 0;
-}
-
+.cpub-toc-list { list-style: none; padding: 6px 0; }
 .cpub-toc-item a {
   display: flex;
   align-items: center;
@@ -382,63 +380,38 @@ watch(activeSection, () => {
   font-size: 12px;
   line-height: 1.4;
   border-left: 3px solid transparent;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
   cursor: pointer;
 }
-
-.cpub-toc-item a:hover {
-  background: var(--surface2);
-  color: var(--text);
-}
-
+.cpub-toc-item a:hover { background: var(--surface2); color: var(--text); }
+.cpub-toc-item.active a { background: var(--accent-bg); border-left-color: var(--accent); color: var(--accent); font-weight: 500; }
 .cpub-toc-item.completed a { color: var(--text-dim); }
-
-.cpub-toc-item.active a {
-  background: var(--accent-bg);
-  border-left: 3px solid var(--accent);
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.cpub-toc-icon {
-  width: 14px;
-  font-size: 10px;
-  flex-shrink: 0;
-  text-align: center;
-}
-
+.cpub-toc-icon { width: 14px; font-size: 10px; flex-shrink: 0; text-align: center; }
 .cpub-toc-item.completed .cpub-toc-icon { color: var(--green); }
 .cpub-toc-item.active .cpub-toc-icon { color: var(--accent); }
-
-.cpub-toc-num {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--text-faint);
-  flex-shrink: 0;
-}
-
+.cpub-toc-num { font-family: var(--font-mono); font-size: 9px; color: var(--text-faint); flex-shrink: 0; }
 .cpub-toc-item.active .cpub-toc-num { color: var(--accent-border); }
 .cpub-toc-item.completed .cpub-toc-num { color: var(--green-border); }
-
-.cpub-toc-label {
-  flex: 1;
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.cpub-toc-label { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── MAIN CONTENT ── */
 .cpub-explainer-main {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--bg);
+}
+
+/* Section viewport — fills available space, scrolls within */
+.cpub-section-viewport {
+  height: 100%;
+  overflow-y: auto;
 }
 
 .cpub-content-wrap {
   max-width: 720px;
   margin: 0 auto;
   padding: 44px 36px 80px;
+  min-height: calc(100vh - 51px - 80px);
 }
 
 /* ── SECTION TAG ── */
@@ -452,7 +425,6 @@ watch(activeSection, () => {
   align-items: center;
   gap: 6px;
 }
-
 .cpub-section-tag::before {
   content: '';
   display: inline-block;
@@ -471,6 +443,14 @@ watch(activeSection, () => {
   letter-spacing: -0.02em;
 }
 
+.cpub-section-intro {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.75;
+  margin-bottom: 24px;
+  max-width: 560px;
+}
+
 /* ── BODY TEXT ── */
 .cpub-body-text {
   font-size: 15px;
@@ -478,7 +458,6 @@ watch(activeSection, () => {
   color: var(--text);
   margin-bottom: 20px;
 }
-
 .cpub-body-text :deep(p) { margin-bottom: 14px; }
 .cpub-body-text :deep(strong) { color: var(--text); font-weight: 700; }
 .cpub-body-text :deep(em) { color: var(--accent); font-style: normal; font-weight: 500; }
@@ -491,346 +470,11 @@ watch(activeSection, () => {
   color: var(--accent);
 }
 
-/* ── MATH BLOCK ── */
-.cpub-math-block {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  background: var(--border);
-  color: var(--border2);
-  border: 2px solid var(--border);
-  padding: 16px 18px;
-  margin: 16px 0;
-  line-height: 1.7;
-  box-shadow: 4px 4px 0 var(--border);
-}
-
-.cpub-math-sym { color: var(--accent); }
-.cpub-math-comment { color: var(--text-dim); }
-
-/* ── INTERACTIVE SLIDER CARD ── */
-.cpub-interactive-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-left: 4px solid var(--accent);
-  padding: 22px 24px;
-  margin: 28px 0;
-  box-shadow: 4px 4px 0 var(--border);
-}
-
-.cpub-card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.cpub-card-header-icon {
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-bg);
-  border: 2px solid var(--accent-border);
-  color: var(--accent);
-  font-size: 13px;
-  flex-shrink: 0;
-}
-
-.cpub-card-header-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.cpub-card-header-label span {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-dim);
-  margin-left: 4px;
-}
-
-.cpub-slider-value-display {
-  font-family: var(--font-mono);
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 14px;
-  letter-spacing: 0.04em;
-}
-
-.cpub-slider-track-wrap {
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.cpub-slider-fill-track {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  height: 6px;
-  background: var(--accent);
-  transform: translateY(-50%);
-  pointer-events: none;
-  transition: width 0.05s;
-}
-
-.cpub-slider-input {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  background: var(--surface3);
-  border: 2px solid var(--border);
-  outline: none;
-  cursor: pointer;
-  position: relative;
-  z-index: 1;
-}
-
-.cpub-slider-input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  background: var(--accent);
-  border: 2px solid var(--border);
-  cursor: pointer;
-  box-shadow: 2px 2px 0 var(--border);
-}
-
-.cpub-slider-input::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  background: var(--accent);
-  border: 2px solid var(--border);
-  cursor: pointer;
-  box-shadow: 2px 2px 0 var(--border);
-}
-
-.cpub-slider-range-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-}
-
-.cpub-slider-range-labels span {
-  font-family: var(--font-mono);
-  font-size: 10px;
+.cpub-empty-section {
   color: var(--text-faint);
-}
-
-.cpub-slider-output {
-  margin-top: 16px;
-  padding: 12px 14px;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-  min-height: 42px;
-}
-
-.cpub-slider-output.state-slow {
-  background: var(--yellow-bg);
-  border: 2px solid var(--yellow-border);
-  color: var(--yellow);
-}
-
-.cpub-slider-output.state-ok {
-  background: var(--green-bg);
-  border: 2px solid var(--green-border);
-  color: var(--green);
-}
-
-.cpub-slider-output.state-high {
-  background: var(--red-bg);
-  border: 2px solid var(--red-border);
-  color: var(--red);
-}
-
-.cpub-slider-output i { font-size: 13px; flex-shrink: 0; }
-.cpub-slider-output-text { line-height: 1.4; }
-
-/* ── CALLOUT ── */
-.cpub-callout {
-  display: flex;
-  gap: 12px;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  padding: 16px 18px;
-  margin: 20px 0;
-  box-shadow: 4px 4px 0 var(--border);
-}
-
-.cpub-callout-icon {
-  font-size: 14px;
-  color: var(--accent);
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.cpub-callout-text {
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--text-dim);
-}
-
-.cpub-callout-text strong { color: var(--text); }
-
-/* ── DIVIDER ── */
-.cpub-content-divider {
-  border: none;
-  border-top: 2px solid var(--border);
-  margin: 36px 0;
-}
-
-/* ── QUIZ ── */
-.cpub-quiz-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  padding: 22px 24px;
-  margin: 28px 0;
-  box-shadow: 4px 4px 0 var(--border);
-}
-
-.cpub-quiz-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid var(--border);
-}
-
-.cpub-quiz-badge {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  color: var(--yellow);
-  background: var(--yellow-bg);
-  border: 2px solid var(--yellow-border);
-  padding: 3px 8px;
-}
-
-.cpub-quiz-title-text {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.cpub-quiz-question {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.5;
-  margin-bottom: 16px;
-}
-
-.cpub-quiz-options {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cpub-quiz-option {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
-  user-select: none;
-}
-
-.cpub-quiz-option:hover:not(.answered) {
-  background: var(--surface2);
-  box-shadow: 2px 2px 0 var(--border);
-}
-
-.cpub-quiz-option.selected-correct {
-  background: var(--green-bg);
-  border-color: var(--green);
-  cursor: default;
-}
-
-.cpub-quiz-option.selected-wrong {
-  background: var(--red-bg);
-  border-color: var(--red);
-  cursor: default;
-}
-
-.cpub-quiz-option.reveal-correct {
-  background: var(--green-bg);
-  border-color: var(--green-border);
-  cursor: default;
-}
-
-.cpub-quiz-option.answered { cursor: default; box-shadow: none; }
-
-.cpub-quiz-option-key {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-faint);
-  width: 18px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.cpub-quiz-option.selected-correct .cpub-quiz-option-key { color: var(--green); }
-.cpub-quiz-option.selected-wrong .cpub-quiz-option-key { color: var(--red); }
-.cpub-quiz-option.reveal-correct .cpub-quiz-option-key { color: var(--green); }
-
-.cpub-quiz-option-text {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-dim);
-  flex: 1;
-}
-
-.cpub-quiz-option.selected-correct .cpub-quiz-option-text { color: var(--green); }
-.cpub-quiz-option.selected-wrong .cpub-quiz-option-text { color: var(--red); }
-
-.cpub-quiz-option-indicator {
-  font-size: 12px;
-  margin-top: 2px;
-  opacity: 0;
-  transition: opacity 0.15s;
-  flex-shrink: 0;
-}
-
-.cpub-quiz-option.selected-correct .cpub-quiz-option-indicator,
-.cpub-quiz-option.selected-wrong .cpub-quiz-option-indicator,
-.cpub-quiz-option.reveal-correct .cpub-quiz-option-indicator {
-  opacity: 1;
-}
-
-.cpub-quiz-option.selected-correct .cpub-quiz-option-indicator { color: var(--green); }
-.cpub-quiz-option.selected-wrong .cpub-quiz-option-indicator { color: var(--red); }
-.cpub-quiz-option.reveal-correct .cpub-quiz-option-indicator { color: var(--green); }
-
-.cpub-quiz-feedback {
-  margin-top: 14px;
-  padding: 10px 12px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cpub-quiz-feedback.correct {
-  background: var(--green-bg);
-  border: 2px solid var(--green-border);
-  color: var(--green);
-}
-
-.cpub-quiz-feedback.wrong {
-  background: var(--red-bg);
-  border: 2px solid var(--red-border);
-  color: var(--red);
+  font-style: italic;
+  padding: var(--space-10) 0;
+  text-align: center;
 }
 
 /* ── CHECKPOINT ── */
@@ -848,15 +492,9 @@ watch(activeSection, () => {
   transform: translateY(8px);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
-
-.cpub-checkpoint.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
+.cpub-checkpoint.visible { opacity: 1; transform: translateY(0); }
 .cpub-checkpoint i { font-size: 14px; }
 .cpub-checkpoint-text { font-weight: 600; }
-
 .cpub-checkpoint-sub {
   margin-left: auto;
   font-size: 11px;
@@ -874,25 +512,18 @@ watch(activeSection, () => {
   border-top: 2px solid var(--border);
 }
 
-.cpub-progress-dots {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
+.cpub-progress-dots { display: flex; align-items: center; gap: 5px; }
 .cpub-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: var(--border2);
   transition: background 0.15s, transform 0.15s;
+  cursor: pointer;
 }
-
 .cpub-dot.done { background: var(--green); }
-.cpub-dot.active {
-  background: var(--accent);
-  transform: scale(1.3);
-}
+.cpub-dot.active { background: var(--accent); transform: scale(1.3); }
+.cpub-dot:hover { transform: scale(1.4); }
 
 .cpub-next-btn {
   display: flex;
@@ -905,16 +536,10 @@ watch(activeSection, () => {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  text-decoration: none;
   box-shadow: 4px 4px 0 var(--border);
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition: box-shadow 0.1s, transform 0.1s;
 }
-
-.cpub-next-btn:hover {
-  box-shadow: 2px 2px 0 var(--border);
-  transform: translate(1px, 1px);
-}
-
+.cpub-next-btn:hover { box-shadow: 2px 2px 0 var(--border); transform: translate(1px, 1px); }
 .cpub-next-btn i { font-size: 12px; }
 
 .cpub-prev-btn {
@@ -928,21 +553,16 @@ watch(activeSection, () => {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  text-decoration: none;
-  transition: box-shadow var(--transition-fast);
+  transition: box-shadow 0.1s;
 }
-
-.cpub-prev-btn:hover {
-  box-shadow: 2px 2px 0 var(--border);
-}
-
+.cpub-prev-btn:hover { box-shadow: 2px 2px 0 var(--border); }
 .cpub-prev-btn i { font-size: 12px; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .cpub-explainer-sidebar { display: none; }
-  .cpub-explainer-layout { margin-top: 51px; }
   .cpub-content-wrap { padding: 24px 16px 48px; }
   .cpub-section-nav { flex-direction: column; gap: 16px; }
+  .cpub-section-title { font-size: 24px; }
 }
 </style>

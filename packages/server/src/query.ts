@@ -110,6 +110,13 @@ export async function countRows(
   return result[0]?.count ?? 0;
 }
 
+// ---- LIKE Escape ----
+
+/** Escape LIKE/ILIKE wildcard characters in a search term */
+export function escapeLike(term: string): string {
+  return term.replace(/[%_\\]/g, '\\$&');
+}
+
 // ---- Partial Update Builder ----
 
 /**

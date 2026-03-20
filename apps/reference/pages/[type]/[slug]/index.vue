@@ -9,6 +9,17 @@ const slug = computed(() => route.params.slug as string);
 const reqHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
 const { data: content, pending: contentPending } = useLazyFetch(() => `/api/content/${slug.value}`, { headers: reqHeaders });
 
+// Explainer view uses its own topbar + full-height layout — disable the default layout
+// to avoid double-topbar and layout conflicts. Must also reset when navigating away
+// from an explainer (same page component is reused for all content types).
+watch(() => content.value?.type, (type) => {
+  if (type === 'explainer') {
+    setPageLayout(false);
+  } else if (type) {
+    setPageLayout('default');
+  }
+}, { immediate: true });
+
 useSeoMeta({
   title: () => content.value?.title ? `${content.value.title} — CommonPub` : 'CommonPub',
   description: () => content.value?.seoDescription || content.value?.description || '',

@@ -11,13 +11,48 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;');
 }
 
+/** Allowed HTML tags for rich-text block content (TipTap output) */
+const ALLOWED_TAGS = new Set([
+  'p', 'br', 'strong', 'em', 'b', 'i', 'u', 's', 'code', 'pre',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'ul', 'ol', 'li', 'a', 'blockquote', 'span', 'sub', 'sup', 'mark',
+]);
+
+const ALLOWED_ATTRS = new Set(['href', 'target', 'rel', 'class']);
+
+/**
+ * Sanitize TipTap HTML — strip disallowed tags and attributes.
+ * Defense-in-depth: content is also sanitized on write, but the export
+ * renderer must not trust its input blindly.
+ */
+function sanitizeRichHtml(html: string): string {
+  // Strip script tags and their contents
+  let sanitized = html.replace(/<script[\s>][\s\S]*?<\/script>/gi, '');
+  // Strip event handler attributes (on*)
+  sanitized = sanitized.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '');
+  // Strip javascript: URLs
+  sanitized = sanitized.replace(/href\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, '');
+  // Strip disallowed tags (keep content, remove the tag itself)
+  sanitized = sanitized.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, (match, tagName: string) => {
+    const tag = tagName.toLowerCase();
+    if (ALLOWED_TAGS.has(tag)) {
+      // Strip disallowed attributes from allowed tags
+      return match.replace(/\s+([a-zA-Z-]+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/g, (attrMatch, attrName: string) => {
+        return ALLOWED_ATTRS.has(attrName.toLowerCase()) ? attrMatch : '';
+      });
+    }
+    return ''; // Strip the tag entirely
+  });
+  return sanitized;
+}
+
 /** Render a BlockTuple array to HTML */
 export function renderBlockTuples(blocks: BlockTuple[]): string {
   return blocks
     .map(([type, attrs]) => {
       switch (type) {
         case 'text':
-          return `<div class="block-text">${attrs.html as string}</div>`;
+          return `<div class="block-text">${sanitizeRichHtml(attrs.html as string)}</div>`;
         case 'heading': {
           const level = (attrs.level as number) || 2;
           const text = escapeHtml(attrs.text as string);
@@ -45,11 +80,11 @@ export function renderBlockTuples(blocks: BlockTuple[]): string {
           const attribution = attrs.attribution
             ? `<footer>${escapeHtml(attrs.attribution as string)}</footer>`
             : '';
-          return `<blockquote class="block-quote">${attrs.html as string}${attribution}</blockquote>`;
+          return `<blockquote class="block-quote">${sanitizeRichHtml(attrs.html as string)}${attribution}</blockquote>`;
         }
         case 'callout': {
           const variant = (attrs.variant as string) || 'info';
-          return `<div class="block-callout block-callout--${escapeHtml(variant)}" role="note">${attrs.html as string}</div>`;
+          return `<div class="block-callout block-callout--${escapeHtml(variant)}" role="note">${sanitizeRichHtml(attrs.html as string)}</div>`;
         }
         default:
           return `<div class="block-unknown">${escapeHtml(JSON.stringify(attrs))}</div>`;

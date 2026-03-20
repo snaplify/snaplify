@@ -75,7 +75,7 @@ describe('hub integration', () => {
     const hub = await createHub(db, ownerId, { name: 'Joinable Hub' });
     await joinHub(db, memberId, hub.id);
 
-    const members = await listMembers(db, hub.id);
+    const { items: members } = await listMembers(db, hub.id);
     const memberEntry = members.find((m) => m.userId === memberId);
     expect(memberEntry).toBeDefined();
     expect(memberEntry!.role).toBe('member');
@@ -86,7 +86,7 @@ describe('hub integration', () => {
     await joinHub(db, memberId, hub.id);
     await leaveHub(db, memberId, hub.id);
 
-    const members = await listMembers(db, hub.id);
+    const { items: members } = await listMembers(db, hub.id);
     const memberEntry = members.find((m) => m.userId === memberId);
     expect(memberEntry).toBeUndefined();
   });
@@ -147,7 +147,7 @@ describe('hub integration', () => {
 
   it('owner is auto-added as member with owner role', async () => {
     const hub = await createHub(db, ownerId, { name: 'Owner Check Hub' });
-    const members = await listMembers(db, hub.id);
+    const { items: members } = await listMembers(db, hub.id);
     const ownerMember = members.find((m) => m.userId === ownerId);
 
     expect(ownerMember).toBeDefined();

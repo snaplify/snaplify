@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, integer, jsonb, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, integer, jsonb, index, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { users } from './auth.js';
 import { activityDirectionEnum, activityStatusEnum, followRelationshipStatusEnum } from './enums.js';
@@ -44,8 +44,10 @@ export const followRelationships = pgTable('follow_relationships', {
   followingActorUri: text('following_actor_uri').notNull(),
   status: followRelationshipStatusEnum('status').default('pending').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
+}, (t) => [
+  unique('follow_relationships_pair').on(t.followerActorUri, t.followingActorUri),
+]);
 
 /** RSA signing keys per user for ActivityPub HTTP Signatures */
 export const actorKeypairs = pgTable('actor_keypairs', {

@@ -12,6 +12,15 @@ export default defineEventHandler(async (event) => {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
+      let closed = false;
+      function cleanup(): void {
+        if (closed) return;
+        closed = true;
+        clearInterval(interval);
+        clearInterval(keepalive);
+        try { controller.close(); } catch { /* already closed */ }
+      }
+
       // Send initial count
       const count = await getUnreadCount(db, userId);
       controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'count', count })}\n\n`));
@@ -22,9 +31,7 @@ export default defineEventHandler(async (event) => {
           const currentCount = await getUnreadCount(db, userId);
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'count', count: currentCount })}\n\n`));
         } catch {
-          // Client likely disconnected
-          clearInterval(interval);
-          controller.close();
+          cleanup();
         }
       }, 10000);
 
@@ -33,17 +40,12 @@ export default defineEventHandler(async (event) => {
         try {
           controller.enqueue(encoder.encode(': keepalive\n\n'));
         } catch {
-          clearInterval(keepalive);
-          clearInterval(interval);
+          cleanup();
         }
       }, 30000);
 
       // Clean up on close
-      event.node.req.on('close', () => {
-        clearInterval(interval);
-        clearInterval(keepalive);
-        controller.close();
-      });
+      event.node.req.on('close', cleanup);
     },
   });
 

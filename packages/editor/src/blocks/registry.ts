@@ -19,6 +19,7 @@ import {
   interactiveSliderContentSchema,
   checkpointContentSchema,
   mathNotationContentSchema,
+  sectionHeaderContentSchema,
 } from './schemas.js';
 
 const registry = new Map<string, BlockDefinition>();
@@ -82,6 +83,7 @@ export function registerCoreBlocks(): void {
     { type: 'interactiveSlider', schema: interactiveSliderContentSchema, label: 'Interactive Slider' },
     { type: 'checkpoint', schema: checkpointContentSchema, label: 'Checkpoint' },
     { type: 'mathNotation', schema: mathNotationContentSchema, label: 'Math Notation' },
+    { type: 'sectionHeader', schema: sectionHeaderContentSchema, label: 'Section Header' },
   ];
 
   for (const block of coreBlocks) {

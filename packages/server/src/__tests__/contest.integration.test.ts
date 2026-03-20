@@ -140,7 +140,7 @@ describe('contest integration', () => {
     expect(entry!.contestId).toBe(contest.id);
     expect(entry!.userId).toBe(participantId);
 
-    const entries = await listContestEntries(db, contest.id);
+    const { items: entries } = await listContestEntries(db, contest.id);
     expect(entries.length).toBeGreaterThanOrEqual(1);
   });
 

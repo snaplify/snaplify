@@ -1,6 +1,5 @@
 import type { LearningModule, Lesson, CurriculumNode } from './types.js';
-import { calculatePathProgress } from './progress.js';
-import { getLessonStatus } from './progress.js';
+import { calculatePathProgress, getNextLesson } from './progress.js';
 
 /** Flatten all lessons across modules in curriculum order */
 export function flattenLessons(modules: LearningModule[], lessons: Lesson[]): Lesson[] {
@@ -44,6 +43,10 @@ export function buildCurriculumTree(
   const completed = completedLessonIds ?? new Set<string>();
   const sorted = [...modules].sort((a, b) => a.sortOrder - b.sortOrder);
 
+  // Precompute the next lesson ID once (O(n)) instead of per-lesson (O(n² × m))
+  const nextLesson = getNextLesson(modules, lessons, completed);
+  const nextLessonId = nextLesson?.id ?? null;
+
   return sorted.map((mod) => {
     const modLessons = lessons
       .filter((l) => l.moduleId === mod.id)
@@ -55,7 +58,11 @@ export function buildCurriculumTree(
       module: mod,
       lessons: modLessons.map((lesson) => ({
         lesson,
-        status: getLessonStatus(lesson.id, modules, lessons, completed),
+        status: completed.has(lesson.id)
+          ? 'completed' as const
+          : lesson.id === nextLessonId
+            ? 'current' as const
+            : 'locked' as const,
       })),
       completionPercentage: calculatePathProgress(modLessons.length, completedCount),
     };

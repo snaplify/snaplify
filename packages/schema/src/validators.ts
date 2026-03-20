@@ -498,6 +498,7 @@ export type CreateFollowRelationshipInput = z.infer<typeof createFollowRelations
 export const contentFiltersSchema = z.object({
   status: contentStatusSchema.optional(),
   type: contentTypeSchema.optional(),
+  visibility: z.enum(['public', 'members', 'private']).optional(),
   authorId: z.string().uuid().optional(),
   followedBy: z.string().uuid().optional(),
   featured: z.coerce.boolean().optional(),

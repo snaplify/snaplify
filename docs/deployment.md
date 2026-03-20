@@ -92,7 +92,7 @@ Best for: any Docker-compatible host (AWS ECS, Fly.io, Railway, self-hosted k8s,
 
 **Build the image**:
 ```bash
-docker build -f deploy/Dockerfile -t commonpub .
+docker build -t commonpub .
 ```
 
 **Run standalone**:
@@ -116,7 +116,7 @@ docker compose -f deploy/docker-compose.prod.yml up -d
 docker pull ghcr.io/commonpub/commonpub:latest
 ```
 
-**File**: `deploy/Dockerfile`
+**File**: `Dockerfile` (root)
 
 ---
 

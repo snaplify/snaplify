@@ -7,5 +7,9 @@ export default defineEventHandler(async (event) => {
   const { moduleId } = parseParams(event, { moduleId: 'uuid' });
   const input = await parseBody(event, updateModuleSchema);
 
-  return updateModule(db, moduleId, user.id, input);
+  const updated = await updateModule(db, moduleId, user.id, input);
+  if (!updated) {
+    throw createError({ statusCode: 404, statusMessage: 'Module not found or not authorized' });
+  }
+  return updated;
 });

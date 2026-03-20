@@ -7,5 +7,9 @@ export default defineEventHandler(async (event) => {
   const { pageId } = parseParams(event, { pageId: 'uuid' });
   const input = await parseBody(event, updateDocsPageSchema);
 
-  return updateDocsPage(db, pageId, user.id, input);
+  const page = await updateDocsPage(db, pageId, user.id, input);
+  if (!page) {
+    throw createError({ statusCode: 404, statusMessage: 'Page not found or not owned by you' });
+  }
+  return page;
 });

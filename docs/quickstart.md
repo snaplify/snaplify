@@ -51,7 +51,7 @@ The defaults in `.env.example` match the Docker Compose ports. No edits needed f
 pnpm build
 ```
 
-Turborepo builds all 13 packages in dependency order.
+Turborepo builds all 12 packages plus the reference app in dependency order.
 
 ## 5. Push Schema to Database
 

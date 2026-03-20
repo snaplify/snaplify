@@ -2,7 +2,7 @@ import { getPathBySlug, updatePath } from '@commonpub/server';
 import type { LearningPathDetail } from '@commonpub/server';
 import { updateLearningPathSchema } from '@commonpub/schema';
 
-export default defineEventHandler(async (event): Promise<LearningPathDetail | null> => {
+export default defineEventHandler(async (event): Promise<LearningPathDetail> => {
   const user = requireAuth(event);
   const db = useDB();
   const { slug } = parseParams(event, { slug: 'string' });
@@ -11,5 +11,9 @@ export default defineEventHandler(async (event): Promise<LearningPathDetail | nu
   const path = await getPathBySlug(db, slug, user.id);
   if (!path) throw createError({ statusCode: 404, statusMessage: 'Path not found' });
 
-  return updatePath(db, path.id, user.id, input);
+  const updated = await updatePath(db, path.id, user.id, input);
+  if (!updated) {
+    throw createError({ statusCode: 403, statusMessage: 'Not authorized to update this path' });
+  }
+  return updated;
 });

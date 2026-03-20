@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, inArray } from 'drizzle-orm';
+import { eq, and, desc, sql, inArray, isNull } from 'drizzle-orm';
 import { contentItems, contentVersions, contentForks, contentBuilds, tags, contentTags, users, follows } from '@commonpub/schema';
 import type { CommonPubConfig } from '@commonpub/config';
 import type { ContentItemRow } from '@commonpub/schema';
@@ -11,7 +11,7 @@ import type {
 } from '../types.js';
 import type { CreateContentInput, UpdateContentInput } from '@commonpub/schema';
 import { generateSlug } from '../utils.js';
-import { ensureUniqueSlugFor, USER_REF_SELECT, USER_REF_WITH_HEADLINE_SELECT, normalizePagination, countRows } from '../query.js';
+import { ensureUniqueSlugFor, USER_REF_SELECT, USER_REF_WITH_HEADLINE_SELECT, normalizePagination, countRows, escapeLike } from '../query.js';
 import { federateContent, federateUpdate, federateDelete } from '../federation/federation.js';
 
 /** Sanitize HTML strings within block content to prevent XSS */
@@ -79,7 +79,7 @@ export async function listContent(
   db: DB,
   filters: ContentFilters = {},
 ): Promise<{ items: ContentListItem[]; total: number }> {
-  const conditions = [];
+  const conditions = [isNull(contentItems.deletedAt)];
 
   if (filters.status) {
     conditions.push(eq(contentItems.status, filters.status));
@@ -99,7 +99,7 @@ export async function listContent(
     conditions.push(eq(contentItems.difficulty, filters.difficulty));
   }
   if (filters.search) {
-    const searchPattern = `%${filters.search}%`;
+    const searchPattern = `%${escapeLike(filters.search)}%`;
     conditions.push(
       sql`(${contentItems.title} ILIKE ${searchPattern} OR ${contentItems.description} ILIKE ${searchPattern})`,
     );
@@ -113,6 +113,9 @@ export async function listContent(
           .where(eq(follows.followerId, filters.followedBy)),
       ),
     );
+  }
+  if (filters.visibility) {
+    conditions.push(eq(contentItems.visibility, filters.visibility));
   }
   if (filters.tag) {
     conditions.push(
@@ -165,7 +168,7 @@ export async function getContentBySlug(
     })
     .from(contentItems)
     .innerJoin(users, eq(contentItems.authorId, users.id))
-    .where(eq(contentItems.slug, slug))
+    .where(and(eq(contentItems.slug, slug), isNull(contentItems.deletedAt)))
     .limit(1);
 
   if (rows.length === 0) return null;
@@ -232,6 +235,9 @@ export async function getContentBySlug(
     category: item.category,
     buildTime: item.buildTime,
     estimatedCost: item.estimatedCost,
+    estimatedMinutes: item.estimatedMinutes,
+    licenseType: item.licenseType,
+    series: item.series,
     visibility: item.visibility,
     isFeatured: item.isFeatured,
     seoDescription: item.seoDescription,
@@ -269,6 +275,9 @@ export async function createContent(
       difficulty: input.difficulty ?? null,
       buildTime: input.buildTime ?? null,
       estimatedCost: input.estimatedCost ?? null,
+      estimatedMinutes: input.estimatedMinutes ?? null,
+      licenseType: input.licenseType ?? null,
+      series: input.series ?? null,
       visibility: input.visibility ?? 'public',
       seoDescription: input.seoDescription ?? null,
       sections: input.sections as typeof contentItems.$inferInsert.sections ?? null,
@@ -320,6 +329,9 @@ export async function updateContent(
   if (input.sections !== undefined) updates.sections = input.sections;
   if (input.buildTime !== undefined) updates.buildTime = input.buildTime;
   if (input.estimatedCost !== undefined) updates.estimatedCost = input.estimatedCost;
+  if (input.estimatedMinutes !== undefined) updates.estimatedMinutes = input.estimatedMinutes;
+  if (input.licenseType !== undefined) updates.licenseType = input.licenseType;
+  if (input.series !== undefined) updates.series = input.series;
   if (input.visibility !== undefined) updates.visibility = input.visibility;
 
   if (input.status !== undefined) {
@@ -342,7 +354,7 @@ export async function updateContent(
 export async function deleteContent(db: DB, contentId: string, authorId: string): Promise<boolean> {
   const result = await db
     .update(contentItems)
-    .set({ status: 'archived', updatedAt: new Date() })
+    .set({ status: 'archived', deletedAt: new Date(), updatedAt: new Date() })
     .where(and(eq(contentItems.id, contentId), eq(contentItems.authorId, authorId)));
 
   return (result.rowCount ?? 0) > 0;
@@ -458,21 +470,26 @@ async function syncTags(db: DB, contentId: string, tagNames: string[]): Promise<
 
   if (tagNames.length === 0) return;
 
-  // Upsert tags
-  const tagRows = [];
-  for (const name of tagNames) {
-    const slug = generateSlug(name);
-    if (!slug) continue;
+  // Deduplicate and generate slugs
+  const tagEntries = tagNames
+    .map((name) => ({ name, slug: generateSlug(name) }))
+    .filter((t) => t.slug);
 
-    const existing = await db.select().from(tags).where(eq(tags.slug, slug)).limit(1);
+  if (tagEntries.length === 0) return;
 
-    if (existing.length > 0) {
-      tagRows.push(existing[0]!);
-    } else {
-      const [newTag] = await db.insert(tags).values({ name, slug }).returning();
-      tagRows.push(newTag!);
-    }
-  }
+  const slugs = tagEntries.map((t) => t.slug);
+
+  // Batch upsert: insert any new tags, ignore conflicts on existing slugs
+  await db
+    .insert(tags)
+    .values(tagEntries.map((t) => ({ name: t.name, slug: t.slug })))
+    .onConflictDoNothing({ target: tags.slug });
+
+  // Fetch all tag rows in one query
+  const tagRows = await db
+    .select({ id: tags.id, slug: tags.slug })
+    .from(tags)
+    .where(inArray(tags.slug, slugs));
 
   // Create content-tag associations
   if (tagRows.length > 0) {

@@ -6,9 +6,9 @@ import {
 } from '../certificate';
 
 describe('generateVerificationCode', () => {
-  it('should start with SNAP prefix by default', () => {
+  it('should start with CPUB prefix by default', () => {
     const code = generateVerificationCode();
-    expect(code).toMatch(/^SNAP-/);
+    expect(code).toMatch(/^CPUB-/);
   });
 
   it('should use custom prefix', () => {

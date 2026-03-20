@@ -1,7 +1,7 @@
 import type { CertificateData } from './types.js';
 
 /** Generate a unique verification code */
-export function generateVerificationCode(prefix = 'SNAP'): string {
+export function generateVerificationCode(prefix = 'CPUB'): string {
   const timestamp = Date.now().toString(36).toUpperCase();
   const random = randomHex(8);
   return `${prefix}-${timestamp}-${random}`;

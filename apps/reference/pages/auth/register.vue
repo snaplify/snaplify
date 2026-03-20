@@ -21,7 +21,15 @@ async function handleSubmit(): Promise<void> {
 
   try {
     await signUp(email.value, password.value, username.value);
-    const redirect = (useRoute().query.redirect as string) || '/dashboard';
+    const { user: authUser } = useAuth();
+    if (authUser.value && !authUser.value.emailVerified) {
+      // Email verification required — show the check-your-email message
+      registered.value = true;
+      return;
+    }
+    const raw = (useRoute().query.redirect as string) || '/dashboard';
+    // Prevent open redirect — only allow relative paths
+    const redirect = (raw.startsWith('/') && !raw.startsWith('//')) ? raw : '/dashboard';
     await navigateTo(redirect);
     return;
   } catch (err: unknown) {
@@ -88,7 +96,8 @@ async function handleSubmit(): Promise<void> {
           class="field-input"
           autocomplete="new-password"
           required
-          placeholder="Choose a password"
+          minlength="8"
+          placeholder="Choose a password (min. 8 characters)"
         />
       </div>
 

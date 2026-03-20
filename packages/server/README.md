@@ -30,7 +30,7 @@ const published = await getContentBySlug(db, 'project', 'my-project');
 |--------|---------|
 | `content` | Content CRUD, publishing, view counts, federation hooks |
 | `social` | Likes, comments, bookmarks |
-| `community` | Community CRUD, membership, posts, moderation, bans |
+| `hub` | Hub CRUD (community/product/company), membership, posts, moderation, bans |
 | `learning` | Paths, modules, lessons, enrollment, progress, certificates |
 | `docs` | Sites, versions, pages, navigation, search |
 | `federation` | Keypairs, actor resolution, follow management, content federation |

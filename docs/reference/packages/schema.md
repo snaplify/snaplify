@@ -12,7 +12,7 @@
 
 The schema package is the foundation of CommonPub — every other package and app depends on it. It defines:
 
-- **52 database tables** across 12 sub-modules
+- **53 database tables** across 12 sub-modules
 - **30 PostgreSQL enums** for type-safe domain values
 - **59 Zod validators** for input validation at system boundaries
 
@@ -27,7 +27,7 @@ packages/schema/src/
 ├── index.ts          → Re-exports everything
 ├── enums.ts          → 30+ pgEnum definitions
 ├── auth.ts           → users, sessions, accounts, organizations, members, federatedAccounts, oauthClients, oauthCodes, verifications
-├── content.ts        → contentItems, contentVersions, contentForks, tags, contentTags
+├── content.ts        → contentItems, contentVersions, contentForks, contentBuilds, tags, contentTags
 ├── social.ts         → likes, follows, comments, bookmarks, notifications, reports, conversations, messages
 ├── hub.ts            → hubs, hubMembers, hubPosts, hubPostReplies, hubBans, hubInvites, hubShares
 ├── product.ts        → products, contentProducts

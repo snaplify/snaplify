@@ -17,43 +17,97 @@ function updateMeta(key: string, value: unknown): void {
 
 const activeLeftTab = ref<'modules' | 'structure' | 'assets'>('modules');
 
+// Interactive blocks FIRST — they're the core of an explainer
 const blockTypes: BlockTypeGroup[] = [
-  {
-    name: 'Text',
-    blocks: [
-      { type: 'paragraph', label: 'Paragraph', icon: 'fa-align-left', description: 'Body text' },
-      { type: 'heading', label: 'Heading', icon: 'fa-heading', description: 'Section header' },
-      { type: 'image', label: 'Image', icon: 'fa-image', description: 'Upload or embed' },
-      { type: 'code_block', label: 'Code Block', icon: 'fa-code', description: 'Syntax highlighted code' },
-    ],
-  },
   {
     name: 'Interactive',
     blocks: [
-      { type: 'interactiveSlider', label: 'Range Slider', icon: 'fa-sliders', description: 'Interactive slider' },
-      { type: 'quiz', label: 'Quiz', icon: 'fa-circle-question', description: 'Quiz with options' },
-      { type: 'checkpoint', label: 'Checkpoint', icon: 'fa-flag-checkered', description: 'Progress checkpoint' },
+      { type: 'interactiveSlider', label: 'Range Slider', icon: 'fa-sliders', description: 'Slider with feedback ranges' },
+      { type: 'quiz', label: 'Knowledge Check', icon: 'fa-circle-question', description: 'Quiz with answer feedback' },
+      { type: 'checkpoint', label: 'Checkpoint', icon: 'fa-flag-checkered', description: 'Section completion marker' },
+      { type: 'callout', label: 'Key Insight', icon: 'fa-lightbulb', description: 'Highlight discovery moments', attrs: { variant: 'tip' } },
     ],
   },
   {
-    name: 'Rich',
+    name: 'Content',
     blocks: [
-      { type: 'callout', label: 'Callout', icon: 'fa-circle-info', description: 'Tip, warning, or note', attrs: { variant: 'info' } },
-      { type: 'mathNotation', label: 'Math Block', icon: 'fa-square-root-variable', description: 'Mathematical notation' },
-      { type: 'embed', label: 'Embed', icon: 'fa-globe', description: 'External embed' },
+      { type: 'paragraph', label: 'Body Text', icon: 'fa-align-left', description: '2-3 short paragraphs max' },
+      { type: 'heading', label: 'Heading', icon: 'fa-heading', description: 'In-section heading (H2/H3)' },
+      { type: 'image', label: 'Diagram', icon: 'fa-image', description: 'Visual explanation' },
+      { type: 'code_block', label: 'Code Example', icon: 'fa-code', description: 'Runnable code snippet' },
+    ],
+  },
+  {
+    name: 'Data & Viz',
+    blocks: [
+      { type: 'mathNotation', label: 'Math Block', icon: 'fa-square-root-variable', description: 'Formula or equation' },
+      { type: 'embed', label: 'Embed', icon: 'fa-globe', description: 'External interactive' },
+      { type: 'callout', label: 'Warning', icon: 'fa-triangle-exclamation', description: 'Important caveat', attrs: { variant: 'warning' } },
+    ],
+  },
+  {
+    name: 'Structure',
+    blocks: [
+      { type: 'sectionHeader', label: 'Section Header', icon: 'fa-heading', description: 'Tag + title + intro — starts a section' },
+      { type: 'horizontal_rule', label: 'Section Divider', icon: 'fa-minus', description: 'Visual break' },
     ],
   },
 ];
 
-// --- Structure: sections from H2 headings ---
-const structureSections = computed(() => {
-  const result: Array<{ id: string; title: string }> = [];
-  for (const block of props.blockEditor.blocks.value) {
-    if (block.type === 'heading' && block.content.level === 2) {
-      result.push({ id: block.id, title: (block.content.text as string) || 'Untitled section' });
+// Interactive block types for counting
+const INTERACTIVE_TYPES = new Set(['interactiveSlider', 'slider', 'quiz', 'checkpoint']);
+
+// --- Structure: sections from sectionHeader blocks (fallback to H2 headings) ---
+interface ExplainerSection {
+  id: string;
+  title: string;
+  blockCount: number;
+  interactiveCount: number;
+  index: number;
+}
+
+const structureSections = computed<ExplainerSection[]>(() => {
+  const result: ExplainerSection[] = [];
+  const blocks = props.blockEditor.blocks.value;
+  let current: ExplainerSection | null = null;
+  let idx = 0;
+
+  // Check if any sectionHeader blocks exist
+  const hasSectionHeaders = blocks.some(b => b.type === 'sectionHeader');
+  const sectionType = hasSectionHeaders ? 'sectionHeader' : 'heading';
+
+  for (const block of blocks) {
+    const isSectionStart = sectionType === 'sectionHeader'
+      ? block.type === 'sectionHeader'
+      : block.type === 'heading' && ((block.content.level as number) ?? 2) <= 2;
+
+    if (isSectionStart) {
+      if (current) result.push(current);
+      idx++;
+      const title = sectionType === 'sectionHeader'
+        ? (block.content.title as string) || 'Untitled section'
+        : (block.content.text as string) || 'Untitled section';
+      current = {
+        id: block.id,
+        title,
+        blockCount: 1,
+        interactiveCount: 0,
+        index: idx,
+      };
+    } else if (current) {
+      current.blockCount++;
+      if (INTERACTIVE_TYPES.has(block.type)) {
+        current.interactiveCount++;
+      }
     }
   }
+  if (current) result.push(current);
   return result;
+});
+
+// Total interactive blocks across all content
+const totalInteractives = computed(() => {
+  return props.blockEditor.blocks.value.filter(b => INTERACTIVE_TYPES.has(b.type)).length;
 });
 
 // --- Assets ---
@@ -128,16 +182,57 @@ const blockCount = computed(() => props.blockEditor.blocks.value.length);
         <EditorsEditorBlocks :groups="blockTypes" :block-editor="blockEditor" />
       </div>
 
-      <div v-else-if="activeLeftTab === 'structure'" class="cpub-ee-left-body" style="padding: 12px;">
-        <p class="cpub-ee-structure-hint">Sections are defined by H2 headings. Add headings to create structure.</p>
-        <div
-          v-for="section in structureSections"
-          :key="section.id"
-          class="cpub-ee-structure-item"
-          @click="blockEditor.selectBlock(section.id)"
-        >
-          <span class="cpub-ee-structure-dot" />
-          <span>{{ section.title }}</span>
+      <div v-else-if="activeLeftTab === 'structure'" class="cpub-ee-left-body" style="padding: 10px;">
+        <!-- Flow guidance -->
+        <div class="cpub-ee-flow-guide">
+          <div class="cpub-ee-flow-title"><i class="fa-solid fa-route"></i> Section Flow</div>
+          <div class="cpub-ee-flow-steps">
+            <span class="cpub-ee-flow-step">Question</span>
+            <i class="fa-solid fa-arrow-right cpub-ee-flow-arrow"></i>
+            <span class="cpub-ee-flow-step cpub-ee-flow-step--interactive">Interact</span>
+            <i class="fa-solid fa-arrow-right cpub-ee-flow-arrow"></i>
+            <span class="cpub-ee-flow-step">Insight</span>
+            <i class="fa-solid fa-arrow-right cpub-ee-flow-arrow"></i>
+            <span class="cpub-ee-flow-step">Bridge</span>
+          </div>
+        </div>
+
+        <!-- Interactive count summary -->
+        <div class="cpub-ee-interactive-summary">
+          <span class="cpub-ee-interactive-count">{{ totalInteractives }}</span>
+          <span>interactive{{ totalInteractives === 1 ? '' : 's' }} across {{ structureSections.length }} section{{ structureSections.length === 1 ? '' : 's' }}</span>
+        </div>
+
+        <!-- Section list -->
+        <div v-if="structureSections.length > 0" class="cpub-ee-section-list">
+          <div
+            v-for="section in structureSections"
+            :key="section.id"
+            class="cpub-ee-section-item"
+            @click="blockEditor.selectBlock(section.id)"
+          >
+            <span class="cpub-ee-section-num">{{ String(section.index).padStart(2, '0') }}</span>
+            <div class="cpub-ee-section-info">
+              <span class="cpub-ee-section-title">{{ section.title }}</span>
+              <span class="cpub-ee-section-meta">
+                {{ section.blockCount }} blocks
+                <template v-if="section.interactiveCount > 0">
+                  <span class="cpub-ee-section-interactive-badge">
+                    <i class="fa-solid fa-bolt"></i> {{ section.interactiveCount }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="cpub-ee-section-no-interactive">no interactive</span>
+                </template>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="cpub-ee-structure-empty">
+          <i class="fa-solid fa-layer-group"></i>
+          <p>Add Section Header blocks to create sections.</p>
+          <p>Each section should follow:<br /><strong>Question &rarr; Interactive &rarr; Insight</strong></p>
         </div>
       </div>
 
@@ -186,11 +281,13 @@ const blockCount = computed(() => props.blockEditor.blocks.value.length);
 
       <!-- Status bar -->
       <div class="cpub-ee-statusbar">
-        <div class="cpub-ee-status-item"><i class="fa-solid fa-layer-group"></i> <span>{{ blockCount }} blocks</span></div>
+        <div class="cpub-ee-status-item"><i class="fa-solid fa-layer-group"></i> <span>{{ structureSections.length }} sections</span></div>
+        <div class="cpub-ee-status-sep" />
+        <div class="cpub-ee-status-item"><i class="fa-solid fa-bolt"></i> <span>{{ totalInteractives }} interactives</span></div>
         <div class="cpub-ee-status-sep" />
         <div class="cpub-ee-status-item"><i class="fa-solid fa-align-justify"></i> <span>{{ wordCount.toLocaleString() }} words</span></div>
         <div class="cpub-ee-status-sep" />
-        <div class="cpub-ee-status-item"><i class="fa-regular fa-clock"></i> <span>~{{ readTime }} min read</span></div>
+        <div class="cpub-ee-status-item"><i class="fa-regular fa-clock"></i> <span>~{{ readTime }} min</span></div>
       </div>
     </div>
 
@@ -251,10 +348,41 @@ const blockCount = computed(() => props.blockEditor.blocks.value.length);
 .cpub-ee-left-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-bg); }
 .cpub-ee-left-body { flex: 1; overflow-y: auto; }
 
-.cpub-ee-structure-hint { font-size: 11px; color: var(--text-dim); line-height: 1.5; margin-bottom: 12px; }
-.cpub-ee-structure-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; font-size: 12px; color: var(--text-dim); cursor: pointer; border: 2px solid transparent; }
-.cpub-ee-structure-item:hover { background: var(--surface2); border-color: var(--border2); color: var(--text); }
-.cpub-ee-structure-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+/* Flow guide */
+.cpub-ee-flow-guide {
+  background: var(--accent-bg); border: 2px solid var(--accent-border); padding: 10px 12px; margin-bottom: 8px;
+}
+.cpub-ee-flow-title { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.cpub-ee-flow-steps { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.cpub-ee-flow-step { font-size: 10px; font-family: var(--font-mono); color: var(--text-dim); padding: 2px 6px; background: var(--surface); border: 1px solid var(--border2); }
+.cpub-ee-flow-step--interactive { color: var(--accent); border-color: var(--accent-border); font-weight: 600; }
+.cpub-ee-flow-arrow { font-size: 7px; color: var(--text-faint); }
+
+/* Interactive summary */
+.cpub-ee-interactive-summary {
+  display: flex; align-items: center; gap: 6px; padding: 6px 8px; margin-bottom: 8px;
+  font-size: 10px; font-family: var(--font-mono); color: var(--text-dim);
+}
+.cpub-ee-interactive-count { font-size: 16px; font-weight: 700; color: var(--accent); }
+
+/* Section list */
+.cpub-ee-section-list { display: flex; flex-direction: column; gap: 2px; }
+.cpub-ee-section-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.1s; }
+.cpub-ee-section-item:hover { background: var(--surface2); border-color: var(--border2); }
+.cpub-ee-section-num { font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--text-faint); min-width: 18px; margin-top: 1px; }
+.cpub-ee-section-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cpub-ee-section-title { font-size: 12px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cpub-ee-section-meta { font-size: 10px; font-family: var(--font-mono); color: var(--text-faint); display: flex; align-items: center; gap: 6px; }
+.cpub-ee-section-interactive-badge { display: inline-flex; align-items: center; gap: 3px; color: var(--accent); font-weight: 600; }
+.cpub-ee-section-no-interactive { color: var(--yellow); font-style: italic; }
+
+/* Empty state */
+.cpub-ee-structure-empty {
+  text-align: center; padding: 20px 12px; color: var(--text-dim);
+}
+.cpub-ee-structure-empty i { font-size: 20px; color: var(--text-faint); margin-bottom: 8px; }
+.cpub-ee-structure-empty p { font-size: 11px; line-height: 1.6; margin: 0 0 6px; }
+.cpub-ee-structure-empty strong { color: var(--accent); }
 
 /* Assets */
 .cpub-ee-assets-drop {

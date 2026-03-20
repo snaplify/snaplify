@@ -1,12 +1,22 @@
+/** Reserved slugs that conflict with route patterns */
+const RESERVED_SLUGS = new Set(['new', 'create', 'edit', 'delete', 'index', 'api', 'admin', 'auth', 'settings']);
+
 /** Generate a URL-safe slug from a string */
 export function generateSlug(text: string): string {
-  return text
+  let slug = text
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 100);
+
+  // Prevent reserved slugs from colliding with routes
+  if (RESERVED_SLUGS.has(slug)) {
+    slug = `${slug}-${Date.now()}`;
+  }
+
+  return slug;
 }
 
 // --- Hub Permission Helpers ---

@@ -4,12 +4,19 @@ export function useNotifications() {
   const connected = useState<boolean>('notification-connected', () => false);
 
   let eventSource: EventSource | null = null;
+  let retryDelay = 5000;
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  const MAX_RETRY_DELAY = 60_000;
 
   function connect(): void {
     if (import.meta.server || eventSource) return;
 
     eventSource = new EventSource('/api/notifications/stream');
     connected.value = true;
+
+    eventSource.onopen = () => {
+      retryDelay = 5000; // Reset backoff on successful connection
+    };
 
     eventSource.onmessage = (event) => {
       try {
@@ -24,17 +31,27 @@ export function useNotifications() {
 
     eventSource.onerror = () => {
       connected.value = false;
+      // EventSource readyState 2 = CLOSED (server rejected, e.g. 401)
+      const wasClosed = eventSource?.readyState === 2;
       eventSource?.close();
       eventSource = null;
-      // Reconnect after 5 seconds
-      setTimeout(connect, 5000);
+      // If the connection was fully closed (auth error, 401, etc.), don't retry
+      if (wasClosed) return;
+      // Exponential backoff: 5s → 10s → 20s → 40s → 60s cap
+      retryTimer = setTimeout(connect, retryDelay);
+      retryDelay = Math.min(retryDelay * 2, MAX_RETRY_DELAY);
     };
   }
 
   function disconnect(): void {
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
     eventSource?.close();
     eventSource = null;
     connected.value = false;
+    retryDelay = 5000;
   }
 
   function decrement(): void {

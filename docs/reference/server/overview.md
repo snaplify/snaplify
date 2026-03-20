@@ -61,7 +61,7 @@ if (config.features.federation) {
 }
 ```
 
-This pattern appears in content (publish, update, delete), social (like), and community modules. The federation module itself logs all activity attempts to the `activities` table regardless of delivery outcome.
+This pattern appears in content (publish, update, delete), social (like), and hub modules. The federation module itself logs all activity attempts to the `activities` table regardless of delivery outcome.
 
 ---
 

@@ -1,8 +1,9 @@
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
-import { normalizePagination, countRows } from '../query.js';
+import { normalizePagination, countRows, escapeLike } from '../query.js';
 import {
   users,
+  sessions,
   contentItems,
   hubs,
   hubMembers,
@@ -249,7 +250,7 @@ export async function listUsers(
   const conditions = [];
 
   if (filters.search) {
-    const term = `%${filters.search}%`;
+    const term = `%${escapeLike(filters.search)}%`;
     conditions.push(sql`(${ilike(users.username, term)} OR ${ilike(users.email, term)})`);
   }
   if (filters.role) {
@@ -335,6 +336,11 @@ export async function updateUserStatus(
     .update(users)
     .set({ status: newStatus, updatedAt: new Date() })
     .where(eq(users.id, userId));
+
+  // Invalidate all sessions when suspending or deleting a user
+  if (newStatus === 'suspended' || newStatus === 'deleted') {
+    await db.delete(sessions).where(eq(sessions.userId, userId));
+  }
 
   await createAuditEntry(db, {
     userId: adminId,

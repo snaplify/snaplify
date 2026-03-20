@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
 
   if (isProcessableImage(mimeType)) {
     // Process image: generate thumbnails and convert to WebP
-    const processed = await processImage(file.data, filename, purpose, adapter);
+    const processed = await processImage(file.data, filename, purpose, adapter, mimeType);
     publicUrl = processed.originalUrl;
     storageKey = processed.originalKey;
     width = processed.width;

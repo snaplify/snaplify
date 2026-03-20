@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { user, isAuthenticated, signOut } = useAuth();
+const { user, isAuthenticated, signOut, refreshSession } = useAuth();
+const { count: unreadCount, connect: connectNotifications, disconnect: disconnectNotifications } = useNotifications();
 
 useHead({
   link: [
@@ -9,15 +10,6 @@ useHead({
 
 const userMenuOpen = ref(false);
 const mobileMenuOpen = ref(false);
-
-// Notification count polling
-const { data: notifData } = useFetch<{ count: number }>('/api/notifications/count', {
-  default: () => ({ count: 0 }),
-  server: false,
-});
-
-const notifInterval = ref<ReturnType<typeof setInterval> | undefined>();
-const unreadCount = computed(() => notifData.value?.count ?? 0);
 
 // Cmd+K / Ctrl+K → search
 function handleGlobalKeydown(e: KeyboardEvent): void {
@@ -33,50 +25,18 @@ function handleClickOutside(e: MouseEvent): void {
   if (!target.closest('.cpub-user-menu-wrapper')) userMenuOpen.value = false;
 }
 
-let notifEventSource: EventSource | null = null;
-
-onMounted(() => {
-  // Try SSE for real-time notifications, fall back to polling
+onMounted(async () => {
+  // Refresh session to detect expiry (SSR hydration may have stale auth state)
+  await refreshSession();
   if (isAuthenticated.value) {
-    try {
-      notifEventSource = new EventSource('/api/notifications/stream');
-      notifEventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (typeof data.count === 'number') {
-            notifData.value = { count: data.count };
-          }
-        } catch { /* ignore parse errors */ }
-      };
-      notifEventSource.onerror = () => {
-        // SSE failed, fall back to polling
-        notifEventSource?.close();
-        notifEventSource = null;
-        startPolling();
-      };
-    } catch {
-      startPolling();
-    }
+    connectNotifications();
   }
-
-  // Global listeners
   document.addEventListener('keydown', handleGlobalKeydown);
   document.addEventListener('click', handleClickOutside);
 });
 
-function startPolling(): void {
-  notifInterval.value = setInterval(async () => {
-    try {
-      const res = await $fetch<{ count: number }>('/api/notifications/count');
-      if (res && typeof res.count === 'number') notifData.value = res;
-    } catch { /* ignore */ }
-  }, 30_000);
-}
-
 onUnmounted(() => {
-  if (notifInterval.value) clearInterval(notifInterval.value);
-  notifEventSource?.close();
-  notifEventSource = null;
+  disconnectNotifications();
   document.removeEventListener('keydown', handleGlobalKeydown);
   document.removeEventListener('click', handleClickOutside);
 });

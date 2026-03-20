@@ -4,7 +4,8 @@ useSeoMeta({
   description: 'Build, deploy, and document edge AI projects. Share with a community of makers.',
 });
 
-const activeTab = ref('foryou');
+const { user: authUser } = useAuth();
+const activeTab = ref(authUser.value ? 'foryou' : 'latest');
 const tabs = [
   { value: 'foryou', label: 'For You', icon: 'fa-solid fa-sparkles' },
   { value: 'latest', label: 'Latest', icon: 'fa-solid fa-clock' },
@@ -15,7 +16,7 @@ const tabs = [
   { value: 'explainer', label: 'Explainers', icon: 'fa-solid fa-lightbulb' },
 ];
 
-const { user } = useAuth();
+const user = authUser;
 
 const contentQuery = computed(() => ({
   status: 'published',
@@ -45,6 +46,7 @@ const { data: contests } = await useFetch('/api/contests', {
 });
 
 const heroDismissed = ref(false);
+const joinedHubs = ref(new Set<string>());
 
 // Active contest for hero banner
 const activeContest = computed(() => {
@@ -95,6 +97,7 @@ async function handleHubJoin(hubSlug: string): Promise<void> {
   }
   try {
     await $fetch(`/api/hubs/${hubSlug}/join`, { method: 'POST' });
+    joinedHubs.value.add(hubSlug);
     toast.success('Joined hub!');
   } catch {
     toast.error('Failed to join hub');
@@ -117,7 +120,7 @@ async function handleHubJoin(hubSlug: string): Promise<void> {
           <template v-if="activeContest">
             <div class="cpub-hero-eyebrow">
               <span class="cpub-hero-badge cpub-hero-badge-live"><span class="cpub-live-dot" /> Live Contest</span>
-              <span v-if="activeContest.prizePool" class="cpub-hero-badge">{{ activeContest.prizePool }}</span>
+              <span class="cpub-hero-badge">{{ activeContest.entryCount ?? 0 }} entries</span>
             </div>
             <h1 class="cpub-hero-title">{{ activeContest.title }}</h1>
             <p v-if="activeContest.description" class="cpub-hero-excerpt">{{ activeContest.description }}</p>
@@ -241,7 +244,7 @@ async function handleHubJoin(hubSlug: string): Promise<void> {
           <div class="cpub-sb-head">Platform Stats</div>
           <div class="cpub-stats-grid">
             <div class="cpub-stat-block">
-              <span class="cpub-stat-num">{{ stats?.content?.total ?? 0 }}</span>
+              <span class="cpub-stat-num">{{ stats?.content?.byType?.project ?? 0 }}</span>
               <span class="cpub-stat-lbl">Projects</span>
             </div>
             <div class="cpub-stat-block">
@@ -265,9 +268,9 @@ async function handleHubJoin(hubSlug: string): Promise<void> {
           <div v-for="c in contests.items" :key="c.id" class="cpub-contest-item">
             <NuxtLink :to="`/contests/${c.slug}`" class="cpub-contest-name">{{ c.title }}</NuxtLink>
             <div class="cpub-contest-row">
-              <span v-if="c.prizePool" class="cpub-contest-prize">{{ c.prizePool }}</span>
+              <span class="cpub-contest-entries">{{ c.entryCount ?? 0 }} entries</span>
               <span v-if="c.endDate" class="cpub-contest-deadline">
-                <i class="fa-regular fa-clock"></i> {{ c.daysLeft ?? '' }}
+                <i class="fa-regular fa-clock"></i> {{ Math.max(0, Math.ceil((new Date(c.endDate).getTime() - Date.now()) / 86400000)) }}d left
               </span>
             </div>
             <NuxtLink :to="`/contests/${c.slug}`" class="cpub-btn-enter">Enter Contest</NuxtLink>
@@ -285,7 +288,8 @@ async function handleHubJoin(hubSlug: string): Promise<void> {
               <NuxtLink :to="`/hubs/${hub.slug}`" class="cpub-hub-name">{{ hub.name }}</NuxtLink>
               <div class="cpub-hub-members">{{ hub.memberCount ?? 0 }} members</div>
             </div>
-            <button class="cpub-btn-join" @click.prevent="handleHubJoin(hub.slug)">Join</button>
+            <button v-if="joinedHubs.has(hub.slug)" class="cpub-btn-joined" disabled><i class="fa-solid fa-check"></i> Joined</button>
+            <button v-else class="cpub-btn-join" @click.prevent="handleHubJoin(hub.slug)">Join</button>
           </div>
         </div>
 
@@ -745,11 +749,10 @@ async function handleHubJoin(hubSlug: string): Promise<void> {
   margin-bottom: 8px;
 }
 
-.cpub-contest-prize {
-  font-size: 11px;
+.cpub-contest-entries {
+  font-size: 10px;
   font-family: var(--font-mono);
-  color: var(--yellow);
-  font-weight: 600;
+  color: var(--text-faint);
 }
 
 .cpub-contest-deadline {
@@ -844,6 +847,20 @@ async function handleHubJoin(hubSlug: string): Promise<void> {
   border-color: var(--accent);
   color: var(--accent);
   box-shadow: 2px 2px 0 var(--border);
+}
+
+.cpub-btn-joined {
+  padding: 4px 10px;
+  background: var(--green-bg);
+  border: 2px solid var(--green-border);
+  color: var(--green);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: default;
 }
 
 /* Powered badge */

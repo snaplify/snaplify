@@ -48,7 +48,7 @@ export const hubs = pgTable('hubs', {
   apActorId: text('ap_actor_id'),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (t) => [
   index('idx_hubs_created_by_id').on(t.createdById),
   index('idx_hubs_hub_type').on(t.hubType),
@@ -86,7 +86,7 @@ export const hubPosts = pgTable('hub_posts', {
   replyCount: integer('reply_count').default(0).notNull(),
   lastEditedAt: timestamp('last_edited_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (t) => [
   index('idx_hub_posts_hub_id').on(t.hubId),
   index('idx_hub_posts_author_id').on(t.authorId),
@@ -105,7 +105,7 @@ export const hubPostReplies = pgTable('hub_post_replies', {
   content: text('content').notNull(),
   likeCount: integer('like_count').default(0).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (t) => [
   index('idx_hub_post_replies_post_id').on(t.postId),
   index('idx_hub_post_replies_author_id').on(t.authorId),

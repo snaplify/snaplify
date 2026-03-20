@@ -214,29 +214,38 @@ export async function updateContest(
 export async function listContestEntries(
   db: DB,
   contestId: string,
-): Promise<ContestEntryItem[]> {
-  const rows = await db
-    .select({
-      entry: contestEntries,
-      content: {
-        title: contentItems.title,
-        slug: contentItems.slug,
-        type: contentItems.type,
-        coverImageUrl: contentItems.coverImageUrl,
-      },
-      author: {
-        displayName: users.displayName,
-        username: users.username,
-        avatarUrl: users.avatarUrl,
-      },
-    })
-    .from(contestEntries)
-    .innerJoin(contentItems, eq(contestEntries.contentId, contentItems.id))
-    .innerJoin(users, eq(contestEntries.userId, users.id))
-    .where(eq(contestEntries.contestId, contestId))
-    .orderBy(desc(contestEntries.submittedAt));
+  opts: { limit?: number; offset?: number } = {},
+): Promise<{ items: ContestEntryItem[]; total: number }> {
+  const { limit, offset } = normalizePagination(opts);
+  const where = eq(contestEntries.contestId, contestId);
 
-  return rows.map((row) => ({
+  const [rows, total] = await Promise.all([
+    db
+      .select({
+        entry: contestEntries,
+        content: {
+          title: contentItems.title,
+          slug: contentItems.slug,
+          type: contentItems.type,
+          coverImageUrl: contentItems.coverImageUrl,
+        },
+        author: {
+          displayName: users.displayName,
+          username: users.username,
+          avatarUrl: users.avatarUrl,
+        },
+      })
+      .from(contestEntries)
+      .innerJoin(contentItems, eq(contestEntries.contentId, contentItems.id))
+      .innerJoin(users, eq(contestEntries.userId, users.id))
+      .where(where)
+      .orderBy(desc(contestEntries.submittedAt))
+      .limit(limit)
+      .offset(offset),
+    countRows(db, contestEntries, where),
+  ]);
+
+  const items = rows.map((row) => ({
     id: row.entry.id,
     contestId: row.entry.contestId,
     contentId: row.entry.contentId,
@@ -252,6 +261,8 @@ export async function listContestEntries(
     authorUsername: row.author.username,
     authorAvatarUrl: row.author.avatarUrl,
   }));
+
+  return { items, total };
 }
 
 export async function submitContestEntry(
@@ -451,16 +462,15 @@ export async function calculateContestRanks(
   db: DB,
   contestId: string,
 ): Promise<void> {
-  const entries = await db
-    .select({ id: contestEntries.id, score: contestEntries.score })
-    .from(contestEntries)
-    .where(eq(contestEntries.contestId, contestId))
-    .orderBy(desc(contestEntries.score));
-
-  for (let i = 0; i < entries.length; i++) {
-    await db
-      .update(contestEntries)
-      .set({ rank: i + 1 })
-      .where(eq(contestEntries.id, entries[i]!.id));
-  }
+  // Single query: assign ranks by score using a window function
+  await db.execute(sql`
+    UPDATE ${contestEntries}
+    SET rank = ranked.rn
+    FROM (
+      SELECT id, ROW_NUMBER() OVER (ORDER BY score DESC NULLS LAST) AS rn
+      FROM ${contestEntries}
+      WHERE contest_id = ${contestId}
+    ) AS ranked
+    WHERE ${contestEntries}.id = ranked.id
+  `);
 }

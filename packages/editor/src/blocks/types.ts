@@ -19,6 +19,7 @@ import type {
   InteractiveSliderContent,
   CheckpointContent,
   MathNotationContent,
+  SectionHeaderContent,
 } from './schemas.js';
 
 /** Discriminated union of all known block types */
@@ -41,7 +42,8 @@ export type TypedBlockTuple =
   | ['quiz', QuizContent]
   | ['interactiveSlider', InteractiveSliderContent]
   | ['checkpoint', CheckpointContent]
-  | ['mathNotation', MathNotationContent];
+  | ['mathNotation', MathNotationContent]
+  | ['sectionHeader', SectionHeaderContent];
 
 /** A block is a [type, content] tuple — accepts both typed and unknown block types for extensibility */
 export type BlockTuple = TypedBlockTuple | [string, Record<string, unknown>];

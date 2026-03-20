@@ -56,6 +56,7 @@ commonpub/
     ui/            @commonpub/ui          Headless Vue 3 components + theme CSS
     config/        @commonpub/config      defineCommonPubConfig() factory
     server/        @commonpub/server      Framework-agnostic business logic
+    infra/         @commonpub/infra       Storage, image processing, email, security
     docs/          @commonpub/docs        Pluggable docs module
     editor/        @commonpub/editor      TipTap extensions + block types
     explainer/     @commonpub/explainer   Interactive module runtime
@@ -94,7 +95,7 @@ pnpm db:push          # Push schema to database
 
 ## Testing
 
-- **Unit tests** across 13 packages + reference app (Vitest)
+- **Unit tests** across 12 packages + reference app (Vitest)
 - **Component tests** with @testing-library/vue + axe-core
 - **E2E tests** with Playwright (auth, content, theme, admin, a11y)
 - **Accessibility**: axe-core on all UI components, WCAG 2.1 AA
@@ -126,14 +127,14 @@ Each package has its own README with API docs, usage examples, and architecture 
 | `@commonpub/explainer` | [packages/explainer/README.md](packages/explainer/README.md) |
 | `@commonpub/learning` | [packages/learning/README.md](packages/learning/README.md) |
 | `@commonpub/docs` | [packages/docs/README.md](packages/docs/README.md) |
+| `@commonpub/infra` | [packages/infra/README.md](packages/infra/README.md) |
 | `@commonpub/test-utils` | [packages/test-utils/README.md](packages/test-utils/README.md) |
-| Reference App | [apps/reference/README.md](apps/reference/README.md) |
 | Deploy | [deploy/README.md](deploy/README.md) |
 
 ## Project Documentation
 
-- [Master Plan](docs/plan.md): Implementation phases and architecture
-- [Architecture Decision Records](docs/adr/): 26 ADRs documenting key decisions
+- [Master Plan](docs/plan-v2.md): Implementation phases and architecture
+- [Architecture Decision Records](docs/adr/): 25 ADRs documenting key decisions
 - [Contributing Guide](docs/contributing.md): Development workflow and standards
 - [Coding Standards](docs/coding-standards.md): TypeScript, Vue 3, CSS, testing conventions
 - [Deployment Guide](docs/deployment.md): Production setup and operations

@@ -77,7 +77,7 @@ export const contentItems = pgTable('content_items', {
   buildCount: integer('build_count').default(0).notNull(),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (t) => [
   index('idx_content_items_author_id').on(t.authorId),
   index('idx_content_items_status').on(t.status),

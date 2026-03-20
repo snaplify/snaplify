@@ -60,9 +60,9 @@ const following = ref(false);
 const followLoading = ref(false);
 
 // Initialize follow state from API response
-watch(() => profile.value, (p) => {
-  if (p && 'isFollowing' in p) {
-    following.value = (p as Record<string, unknown>).isFollowing as boolean;
+watch(() => profile.value, (profileData) => {
+  if (profileData && typeof (profileData as Record<string, unknown>).isFollowing === 'boolean') {
+    following.value = (profileData as Record<string, unknown>).isFollowing as boolean;
   }
 }, { immediate: true });
 
@@ -89,8 +89,21 @@ async function toggleFollow(): Promise<void> {
   }
 }
 
-function handleMessage(): void {
-  navigateTo('/messages');
+async function handleMessage(): Promise<void> {
+  if (!isAuthenticated.value) {
+    await navigateTo(`/auth/login?redirect=/u/${username}`);
+    return;
+  }
+  if (!profile.value) return;
+  try {
+    const conv = await $fetch<{ id: string }>('/api/messages', {
+      method: 'POST',
+      body: { participants: [profile.value.id] },
+    });
+    await navigateTo(`/messages/${conv.id}`);
+  } catch {
+    toast.error('Failed to start conversation');
+  }
 }
 
 async function handleShare(): Promise<void> {
@@ -106,6 +119,24 @@ async function handleShare(): Promise<void> {
 const showMenu = ref(false);
 function toggleMenu(): void {
   showMenu.value = !showMenu.value;
+}
+
+async function handleReport(): Promise<void> {
+  showMenu.value = false;
+  if (!isAuthenticated.value) {
+    await navigateTo(`/auth/login?redirect=/u/${username}`);
+    return;
+  }
+  if (!profile.value) return;
+  try {
+    await $fetch(`/api/content/${profile.value.id}/report`, {
+      method: 'POST',
+      body: { targetType: 'user', targetId: profile.value.id, reason: 'other' },
+    });
+    toast.success('Report submitted');
+  } catch {
+    toast.error('Failed to submit report');
+  }
 }
 </script>
 
@@ -129,9 +160,6 @@ function toggleMenu(): void {
           <div class="cpub-profile-avatar-wrap">
             <div class="cpub-profile-avatar">
               {{ (p.displayName || p.username || 'U').charAt(0).toUpperCase() }}
-            </div>
-            <div v-if="p.verified" class="cpub-verified-badge" aria-label="Verified">
-              <i class="fa-solid fa-check"></i>
             </div>
           </div>
           <div class="cpub-profile-hero-info">
@@ -169,8 +197,7 @@ function toggleMenu(): void {
                 <div style="position: relative; display: inline-block;">
                   <button class="cpub-btn cpub-btn-sm" aria-label="More options" @click="toggleMenu"><i class="fa-solid fa-ellipsis"></i></button>
                   <div v-if="showMenu" class="cpub-dropdown" @click="showMenu = false">
-                    <button class="cpub-dropdown-item"><i class="fa-solid fa-flag"></i> Report</button>
-                    <button class="cpub-dropdown-item"><i class="fa-solid fa-ban"></i> Block</button>
+                    <button class="cpub-dropdown-item" @click="handleReport"><i class="fa-solid fa-flag"></i> Report</button>
                   </div>
                 </div>
               </div>
@@ -285,46 +312,28 @@ function toggleMenu(): void {
         </div>
       </template>
 
-      <!-- About tab — Experience + Awards + Skills with sidebar -->
+      <!-- About tab — Bio + Skills with sidebar -->
       <template v-if="activeTab === 'about'">
         <div class="cpub-about-grid">
           <div>
-            <!-- Experience -->
-            <div style="margin-bottom: 32px">
+            <!-- Bio -->
+            <div v-if="p.bio" style="margin-bottom: 32px">
               <div class="cpub-sec-head">
-                <h2><i class="fa-solid fa-briefcase" style="color: var(--accent); margin-right: 6px"></i>Experience</h2>
+                <h2><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px"></i>About</h2>
               </div>
-              <div class="cpub-profile-timeline">
-                <TimelineItem
-                  v-for="(exp, i) in (p.experience || [])"
-                  :key="i"
-                  :role="exp.role"
-                  :company="exp.company"
-                  :period="exp.period"
-                  :description="exp.description"
-                  :current="i === 0"
-                />
-                <div v-if="!p.experience?.length" class="cpub-empty-state">
-                  <p class="cpub-empty-state-title">No experience entries yet</p>
-                </div>
-              </div>
+              <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 600px;">{{ p.bio }}</p>
             </div>
 
-            <!-- Awards -->
+            <!-- Info -->
             <div style="margin-bottom: 32px">
               <div class="cpub-sec-head">
-                <h2><i class="fa-solid fa-trophy" style="color: var(--yellow); margin-right: 6px"></i>Awards &amp; Recognition</h2>
+                <h2><i class="fa-solid fa-circle-info" style="color: var(--teal); margin-right: 6px"></i>Details</h2>
               </div>
-              <div class="cpub-awards-grid">
-                <div v-for="(award, i) in (p.awards || [])" :key="i" class="cpub-award-card">
-                  <div class="cpub-award-icon"><i class="fa-solid fa-medal"></i></div>
-                  <div class="cpub-award-title">{{ award.title }}</div>
-                  <div class="cpub-award-org">{{ award.organization }}</div>
-                  <div class="cpub-award-year">{{ award.year }}</div>
-                </div>
-              </div>
-              <div v-if="!p.awards?.length" class="cpub-empty-state">
-                <p class="cpub-empty-state-title">No awards yet</p>
+              <div class="cpub-about-details">
+                <div v-if="p.location" class="cpub-about-detail"><i class="fa-solid fa-location-dot"></i> {{ p.location }}</div>
+                <div v-if="p.website" class="cpub-about-detail"><i class="fa-solid fa-globe"></i> <a :href="p.website" target="_blank" rel="noopener">{{ p.website.replace(/^https?:\/\//, '') }}</a></div>
+                <div v-if="p.pronouns" class="cpub-about-detail"><i class="fa-solid fa-comment"></i> {{ p.pronouns }}</div>
+                <div class="cpub-about-detail"><i class="fa-solid fa-calendar"></i> Joined {{ new Date(p.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}</div>
               </div>
             </div>
 
@@ -436,21 +445,6 @@ function toggleMenu(): void {
   font-family: var(--font-mono);
 }
 
-.cpub-verified-badge {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  color: var(--color-text-inverse);
-}
 
 .cpub-profile-hero-info {
   flex: 1;
@@ -630,59 +624,35 @@ function toggleMenu(): void {
   padding: 32px;
 }
 
-/* Timeline */
-.cpub-profile-timeline {
-  position: relative;
-  padding-left: 20px;
-}
-
-.cpub-profile-timeline::before {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 6px;
-  bottom: 6px;
-  width: 2px;
-  background: var(--border2);
-}
-
-/* Awards */
-.cpub-awards-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+/* About details */
+.cpub-about-details {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
-.cpub-award-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  padding: 12px;
-  box-shadow: var(--shadow-md);
+.cpub-about-detail {
+  font-size: 13px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.cpub-award-icon {
-  font-size: 18px;
-  margin-bottom: 6px;
+.cpub-about-detail i {
+  width: 16px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.cpub-about-detail a {
   color: var(--accent);
+  text-decoration: none;
 }
 
-.cpub-award-title {
-  font-size: 11px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.cpub-award-org {
-  font-size: 10px;
-  color: var(--text-faint);
-  font-family: var(--font-mono);
-}
-
-.cpub-award-year {
-  font-size: 9px;
-  color: var(--text-faint);
-  font-family: var(--font-mono);
-  margin-top: 4px;
+.cpub-about-detail a:hover {
+  text-decoration: underline;
 }
 
 /* Skills */
@@ -708,75 +678,6 @@ function toggleMenu(): void {
   align-items: start;
 }
 
-/* Timeline */
-.cpub-tl-item {
-  position: relative;
-  margin-bottom: 24px;
-}
-
-.cpub-tl-item:last-child { margin-bottom: 0; }
-
-.cpub-tl-dot {
-  position: absolute;
-  left: -17px;
-  top: 4px;
-  width: 7px;
-  height: 7px;
-  background: var(--border2);
-  border: 1px solid var(--border);
-}
-
-.cpub-tl-dot.active {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.cpub-tl-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.cpub-tl-role { font-size: 13px; font-weight: 600; }
-.cpub-tl-period { font-size: 10px; color: var(--text-faint); font-family: var(--font-mono); white-space: nowrap; margin-top: 2px; }
-.cpub-tl-company { font-size: 11px; color: var(--accent); font-family: var(--font-mono); margin-bottom: 4px; }
-.cpub-tl-desc { font-size: 11px; color: var(--text-dim); line-height: 1.55; }
-
-/* Skill bars */
-.cpub-skill-bar-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.cpub-skill-name {
-  font-size: 11px;
-  color: var(--text-dim);
-  width: 130px;
-  flex-shrink: 0;
-  font-family: var(--font-mono);
-}
-
-.cpub-skill-bar {
-  flex: 1;
-  height: 4px;
-  background: var(--surface3);
-  overflow: hidden;
-  border: 1px solid var(--border2);
-}
-
-.cpub-skill-fill { height: 100%; background: var(--accent); }
-
-.cpub-skill-pct {
-  font-size: 9px;
-  color: var(--text-faint);
-  font-family: var(--font-mono);
-  width: 28px;
-  text-align: right;
-}
 
 .cpub-mini-project {
   display: flex;
@@ -886,9 +787,6 @@ function toggleMenu(): void {
   .cpub-profile-stat {
     min-width: 50%;
     border-bottom: 2px solid var(--border);
-  }
-  .cpub-awards-grid {
-    grid-template-columns: 1fr;
   }
   .cpub-about-grid {
     grid-template-columns: 1fr;

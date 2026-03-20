@@ -15,7 +15,7 @@
 
 | Document | Package | Description |
 |----------|---------|-------------|
-| [Schema](./packages/schema.md) | `@commonpub/schema` | 52 Drizzle tables, 30 enums, 59 Zod validators |
+| [Schema](./packages/schema.md) | `@commonpub/schema` | 53 Drizzle tables, 30 enums, 59 Zod validators |
 | [Config](./packages/config.md) | `@commonpub/config` | `defineCommonPubConfig()` factory, 10 feature flags, validation schemas |
 | [Protocol](./packages/protocol.md) | `@commonpub/protocol` | ActivityPub types, activity builders, WebFinger, NodeInfo, OAuth2, HTTP signatures |
 | [Auth](./packages/auth.md) | `@commonpub/auth` | Better Auth wrapper, session management, guards, AP actor SSO |
@@ -24,6 +24,7 @@
 | [Docs](./packages/docs-package.md) | `@commonpub/docs` | Markdown rendering, navigation trees, versioning, search adapters |
 | [Explainer](./packages/explainer.md) | `@commonpub/explainer` | Interactive sections, quiz engine, progress tracking, HTML export |
 | [Learning](./packages/learning.md) | `@commonpub/learning` | Learning path engine, progress calculation, certificates |
+| [Infra](./packages/infra.md) | `@commonpub/infra` | S3/local storage adapter, image processing (sharp), email adapter, security utilities |
 | [Test Utils](./packages/test-utils.md) | `@commonpub/test-utils` | 5 factories, mock config, shared test helpers |
 
 ## Server Module Reference
@@ -49,7 +50,7 @@
 |----------|-------------|
 | [Federation](./guides/federation.md) | v1 capabilities and limitations, OAuth2 SSO flow, endpoint reference, cross-publishing FAQ |
 | [Theming](./guides/theming.md) | Base theme (light/dark), CSS tokens by category, token overrides |
-| [Routing](./guides/routing.md) | All routes — 48 pages, 144 API endpoints, federation endpoints |
+| [Routing](./guides/routing.md) | All routes -- 61 pages, 142 API endpoints, federation endpoints |
 | [Feature Flags](./guides/feature-flags.md) | All 10 flags: what each controls, defaults, dependencies |
 | [v1 Limitations](./guides/v1-limitations.md) | Known blockers, deferred features, federation stubs, honest status |
 

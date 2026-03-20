@@ -7,13 +7,12 @@ const slug = route.params.slug as string;
 import type { Serialized, ContestDetail, ContestEntryItem } from '@commonpub/server';
 
 const { data: contest } = useLazyFetch<Serialized<ContestDetail>>(`/api/contests/${slug}`);
-const { data: entries, refresh: refreshEntries } = useLazyFetch<Serialized<ContestEntryItem>[]>(`/api/contests/${slug}/entries`);
+const { data: entriesData, refresh: refreshEntries } = useLazyFetch<{ items: Serialized<ContestEntryItem>[]; total: number }>(`/api/contests/${slug}/entries`);
 
 useSeoMeta({ title: () => `Judge: ${contest.value?.title || 'Contest'} — CommonPub` });
 
 const entryList = computed(() => {
-  if (!entries.value) return [];
-  const items = Array.isArray(entries.value) ? entries.value : [];
+  const items = entriesData.value?.items ?? [];
   return items.map((entry) => ({
     id: entry.id,
     contentId: entry.contentId,
