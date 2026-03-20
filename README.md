@@ -13,9 +13,40 @@ CommonPub is everything you need to run a maker community: a rich content system
 - **Documentation**: Versioned docs with CodeMirror editor, Meilisearch-powered search
 - **Interactive Explainers**: Scroll-driven interactive explanations with HTML export
 - **Communities**: Moderated spaces with feeds, roles, and content sharing
-- **ActivityPub Federation**: Cross-instance content sharing and actor SSO
+- **ActivityPub Federation**: Full cross-instance content federation ([details below](#federation))
 - **Theming**: 4 built-in themes with CSS custom property switching
 - **Admin Panel**: User management, moderation, audit logs, instance settings
+
+## Federation
+
+CommonPub instances federate with each other and the wider fediverse via [ActivityPub](https://www.w3.org/TR/activitypub/). This isn't just status updates — CommonPub federates **structured maker content**.
+
+```
+  hack.build                          circuits.community
+ ┌──────────────────┐                ┌──────────────────┐
+ │                  │   ActivityPub  │                  │
+ │  Alice's Project │◄──────────────►│  Arduino Nano    │
+ │  (Article + BOM) │   federation   │  (Product)       │
+ │                  │                │                  │
+ │  Robotics Hub    │◄──────────────►│  Bob follows     │
+ │  (Group actor)   │   hub members  │  the hub         │
+ └──────────────────┘                └──────────────────┘
+```
+
+**What federates:**
+
+- **Users** — Follow users on other instances, see their content in your feed
+- **Hubs** — Communities are Group actors ([FEP-1b12](https://codeberg.org/fediverse/fep/src/branch/main/fep/1b12/fep-1b12.md)). Members on any instance can post and participate.
+- **Projects & Articles** — Published as AP Articles. Other CommonPub instances get the full experience (BOM, specs, difficulty). Mastodon/Lemmy see a standard readable article.
+- **Products** — Federated product catalogs. When a project's BOM references a product on another instance, the product gallery updates automatically.
+- **Content Mirroring** — Instance admins can mirror content from other instances, with per-content-type filtering and optional media caching.
+- **SSO** — OAuth2 login across trusted instances
+
+**Interoperability:** Every CommonPub object degrades gracefully to standard AP types. Mastodon users see articles. Lemmy communities can interact with CommonPub hubs. The `cpub:` namespace extensions are only used between CommonPub instances for full fidelity.
+
+**Admin controls:** Selective federation per content type, per hub, per domain. Blocklist, allowlist, or open mode.
+
+See [docs/federation.md](docs/federation.md) for the full guide with diagrams, or [docs/federation-plan.md](docs/federation-plan.md) for the implementation roadmap.
 
 ## Quick Start
 
@@ -133,6 +164,8 @@ Each package has its own README with API docs, usage examples, and architecture 
 
 ## Project Documentation
 
+- [Federation Guide](docs/federation.md): How federation works, with diagrams
+- [Federation Plan](docs/federation-plan.md): 10-phase implementation roadmap
 - [Master Plan](docs/plan-v2.md): Implementation phases and architecture
 - [Architecture Decision Records](docs/adr/): 25 ADRs documenting key decisions
 - [Contributing Guide](docs/contributing.md): Development workflow and standards
