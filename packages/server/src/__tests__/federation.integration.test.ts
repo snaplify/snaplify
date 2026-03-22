@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { followRelationships } from '@commonpub/schema';
 import type { DB } from '../types.js';
-import { createTestDB, createTestUser } from './helpers/testdb.js';
+import { createTestDB, createTestUser, closeTestDB } from './helpers/testdb.js';
 import {
   getOrCreateActorKeypair,
   sendFollow,
@@ -32,6 +32,10 @@ describe('federation integration', () => {
     const user = await createTestUser(db, { username: 'alice' });
     userId = user.id;
     username = user.username;
+  });
+
+  afterAll(async () => {
+    await closeTestDB(db);
   });
 
   // --- Keypair Management ---

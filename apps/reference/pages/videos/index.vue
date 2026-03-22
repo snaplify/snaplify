@@ -4,14 +4,14 @@ useSeoMeta({ title: 'Video Hub — CommonPub' });
 const activeFilter = ref('');
 const sortOption = ref('recent');
 
-const { data: categories } = await useFetch('/api/videos/categories');
+const { data: categories } = await useFetch<Array<{ id: string; name: string; slug: string }>>('/api/videos/categories');
 const page = ref(1);
 const pageSize = 20;
 
 // Reset page on filter change
 watch([activeFilter, sortOption], () => { page.value = 1; });
 
-const { data: videosData, pending: loadingVideos } = useFetch('/api/videos', {
+const { data: videosData, pending: loadingVideos } = useFetch<{ items: any[]; total: number }>('/api/videos', {
   query: computed(() => ({
     categoryId: activeFilter.value || undefined,
     sort: sortOption.value,

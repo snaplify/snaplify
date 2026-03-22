@@ -1,5 +1,6 @@
 // Singleton Drizzle DB instance for Nitro server
 import { drizzle } from 'drizzle-orm/node-postgres';
+// @ts-expect-error no types for pg
 import pg from 'pg';
 import * as schema from '@commonpub/schema';
 import type { DB } from '@commonpub/server';

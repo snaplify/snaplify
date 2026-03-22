@@ -1,7 +1,7 @@
 <script setup lang="ts">
 useSeoMeta({ title: 'Tags — CommonPub', description: 'Browse content by tags.' });
 
-const { data: trending } = await useFetch('/api/search/trending');
+const { data: trending } = await useFetch<any>('/api/search/trending');
 
 // Extract unique tags from trending content
 const tags = computed(() => {

@@ -15,5 +15,5 @@ export default defineEventHandler(async (event) => {
 
   setResponseHeader(event, 'content-type', 'application/activity+json');
 
-  return generateOutboxCollection(actorUri, []);
+  return generateOutboxCollection(0, config.instance.domain, username);
 });

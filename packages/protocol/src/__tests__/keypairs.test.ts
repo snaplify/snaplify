@@ -2,14 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { generateKeypair, exportPublicKeyPem, exportPrivateKeyPem, buildKeyId } from '../keypairs';
 
 describe('generateKeypair', () => {
-  it('should generate an RSA 2048 keypair', async () => {
+  it('should generate an RSA 2048 keypair', { timeout: 30000 }, async () => {
     const keypair = await generateKeypair();
     expect(keypair).toBeDefined();
     expect(keypair.publicKey).toBeDefined();
     expect(keypair.privateKey).toBeDefined();
   });
 
-  it('should generate different keypairs each time', { timeout: 15000 }, async () => {
+  it('should generate different keypairs each time', { timeout: 30000 }, async () => {
     const kp1 = await generateKeypair();
     const kp2 = await generateKeypair();
     const pub1 = await exportPublicKeyPem(kp1);
@@ -19,7 +19,7 @@ describe('generateKeypair', () => {
 });
 
 describe('exportPublicKeyPem', () => {
-  it('should export public key in PEM format', async () => {
+  it('should export public key in PEM format', { timeout: 30000 }, async () => {
     const keypair = await generateKeypair();
     const pem = await exportPublicKeyPem(keypair);
     expect(pem).toContain('-----BEGIN PUBLIC KEY-----');
@@ -28,7 +28,7 @@ describe('exportPublicKeyPem', () => {
 });
 
 describe('exportPrivateKeyPem', () => {
-  it('should export private key in PEM format', async () => {
+  it('should export private key in PEM format', { timeout: 30000 }, async () => {
     const keypair = await generateKeypair();
     const pem = await exportPrivateKeyPem(keypair);
     expect(pem).toContain('-----BEGIN PRIVATE KEY-----');

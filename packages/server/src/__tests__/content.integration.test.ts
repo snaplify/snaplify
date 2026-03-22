@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { DB } from '../types.js';
-import { createTestDB, createTestUser } from './helpers/testdb.js';
+import { createTestDB, createTestUser, closeTestDB } from './helpers/testdb.js';
 import {
   createContent,
   listContent,
@@ -21,6 +21,10 @@ describe('content integration', () => {
     db = await createTestDB();
     const user = await createTestUser(db);
     userId = user.id;
+  });
+
+  afterAll(async () => {
+    await closeTestDB(db);
   });
 
   it('creates a draft content item', async () => {

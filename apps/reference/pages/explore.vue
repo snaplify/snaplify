@@ -118,7 +118,7 @@ const sortOptions = [
         <button class="cpub-btn cpub-btn-sm" @click="refreshContent()">Retry</button>
       </div>
       <div v-else-if="content?.items?.length" class="cpub-explore-grid">
-        <ContentCard v-for="item in content.items" :key="item.id" :item="item" />
+        <ContentCard v-for="item in content.items" :key="item.id" :item="(item as any)" />
       </div>
       <div v-else class="cpub-empty-state">
         <p class="cpub-empty-state-title">No content found</p>

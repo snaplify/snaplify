@@ -41,7 +41,7 @@ async function loadMore(): Promise<void> {
       <ContentCard
         v-for="item in items"
         :key="item.id"
-        :item="item"
+        :item="(item as any)"
       />
     </div>
 

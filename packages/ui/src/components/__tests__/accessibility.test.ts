@@ -22,7 +22,7 @@ import Toolbar from '../Toolbar.vue';
 import Tabs from '../Tabs.vue';
 import VisuallyHidden from '../VisuallyHidden.vue';
 
-async function checkA11y(container: HTMLElement): Promise<void> {
+async function checkA11y(container: Element): Promise<void> {
   const results = await axe.run(container, {
     rules: {
       // Disable color contrast checks in jsdom (no computed styles)
@@ -90,7 +90,7 @@ describe('Accessibility (axe-core)', () => {
 
   it('Avatar has no a11y violations', async () => {
     const { container } = render(Avatar, {
-      props: { name: 'John Doe' },
+      props: { alt: 'John Doe' },
     });
     await checkA11y(container);
   });

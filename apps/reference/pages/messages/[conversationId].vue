@@ -7,13 +7,11 @@ definePageMeta({ middleware: 'auth' });
 
 const { user } = useAuth();
 
-import type { Serialized, MessageItem } from '@commonpub/server';
-
-const { data: convInfo } = useLazyFetch(`/api/messages/${conversationId}/info`, {
+const { data: convInfo } = useLazyFetch<any>(`/api/messages/${conversationId}/info`, {
   default: () => ({ id: conversationId, participants: [] as string[] }),
 });
 
-const { data: initialMessages, refresh } = useLazyFetch<Serialized<MessageItem>[]>(`/api/messages/${conversationId}`, {
+const { data: initialMessages, refresh } = useLazyFetch<any[]>(`/api/messages/${conversationId}`, {
   default: () => [],
 });
 
@@ -62,7 +60,7 @@ async function handleSend(text: string): Promise<void> {
     body: { body: text },
   });
   // SSE will pick up the new message, but also do an immediate refresh for responsiveness
-  refresh().then((result) => {
+  refresh().then((result: any) => {
     if (result?.data?.value) {
       messages.value = result.data.value;
     }

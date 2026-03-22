@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' });
 
-const { theme, setTheme } = useTheme();
+const { themeId: theme, setTheme } = useTheme();
 const themes = [
   { id: 'base', name: 'Light', desc: 'Sharp corners, offset shadows' },
   { id: 'dark', name: 'Dark', desc: 'Dark surfaces, same aesthetic' },

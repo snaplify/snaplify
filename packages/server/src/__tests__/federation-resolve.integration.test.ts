@@ -5,9 +5,9 @@
  * This function calls resolveActor() from @commonpub/protocol which does actual
  * HTTP fetching. We mock that import to test the caching/DB logic in isolation.
  */
-import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vitest';
 import type { DB } from '../types.js';
-import { createTestDB } from './helpers/testdb.js';
+import { createTestDB, closeTestDB } from './helpers/testdb.js';
 import { eq } from 'drizzle-orm';
 import { remoteActors } from '@commonpub/schema';
 
@@ -51,6 +51,10 @@ describe('resolveRemoteActor integration', () => {
 
   beforeAll(async () => {
     db = await createTestDB();
+  });
+
+  afterAll(async () => {
+    await closeTestDB(db);
   });
 
   beforeEach(() => {

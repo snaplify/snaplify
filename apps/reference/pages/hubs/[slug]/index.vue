@@ -42,7 +42,8 @@ useSeoMeta({
 });
 
 const { isAuthenticated } = useAuth();
-const initialTab = hub.value?.hubType === 'community' || !hub.value?.hubType ? 'feed' : 'overview';
+const hubTypeVal = hub.value?.hubType as string | undefined;
+const initialTab = hubTypeVal === 'community' || !hubTypeVal ? 'feed' : 'overview';
 const activeTab = ref(initialTab);
 const newPostContent = ref('');
 const posting = ref(false);
@@ -261,7 +262,7 @@ function handleLinkInsert(): void {
           <template v-if="activeTab === 'feed'">
             <!-- Pinned announcements -->
             <AnnouncementBand
-              v-for="post in filteredPosts.filter(p => p.isPinned && p.type === 'announcement')"
+              v-for="post in filteredPosts.filter(p => p.isPinned && p.type === ('announcement' as string))"
               :key="`ann-${post.id}`"
               :title="post.content?.slice(0, 80) || 'Announcement'"
               :body="post.content || ''"

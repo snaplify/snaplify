@@ -1,6 +1,6 @@
 # v1 Limitations
 
-> Known blockers, deferred features, federation stubs, and honest status. Last updated Session 040.
+> Known blockers, deferred features, federation stubs, and honest status. Last updated Session 065.
 
 ---
 
@@ -26,9 +26,9 @@ Inbound Create, Update, Delete, Like, and Announce activities are handled by stu
 
 See [Federation Roadmap](./federation.md#federation-roadmap-post-v1) phase F3.
 
-### HTTP Signature Signing (Not Implemented)
+### ~~HTTP Signature Signing~~ (Resolved — Session 065)
 
-`verifyHttpSignature()` exists for inbound verification (and correctly rejects unsigned requests as of Session 017), but outbound requests are **not signed**. Most AP implementations will reject unsigned requests. See [Federation Roadmap](./federation.md#federation-roadmap-post-v1) phase F1.
+Moved to [Resolved Limitations](#resolved-limitations).
 
 ### Hubs Are Local-Only
 
@@ -78,6 +78,18 @@ Now uses `crypto.getRandomValues()` for cryptographic randomness.
 
 Expired ban rows are now deleted on access.
 
+### HTTP Signature Signing (Resolved — Session 065)
+
+Outbound HTTP requests are now signed with Ed25519 keypairs via the `signRequest()` function in `@commonpub/protocol`. Includes comprehensive test suite with interoperability tests for Mastodon, Lemmy, GoToSocial, and Misskey.
+
+### Content HTML Sanitization (Resolved — Session 065)
+
+Inbound federated content is now sanitized via `sanitizeHtml()` in `@commonpub/protocol` using isomorphic-dompurify. Includes 50 sanitization tests covering XSS prevention, allowed/blocked elements, and content-injection attack vectors.
+
+### Federation Interoperability Testing (Resolved — Session 065)
+
+388 new federation tests added covering HTTP signatures, content sanitization, activity types, and real-payload interoperability with Mastodon, Lemmy, GoToSocial, and Misskey. SSRF prevention tests also included.
+
 ---
 
 ## Deferred Features
@@ -102,17 +114,15 @@ Documentation sites were planned to support Mermaid diagram rendering during the
 
 ---
 
-## TypeScript Warnings
+## TypeScript Status
 
-**0 type errors, 71 warnings** (all benign).
-
-The warnings are Vue compiler warnings in component files. These do not affect functionality or type safety.
+**0 type errors** across all packages. TypeScript strict mode with `noUncheckedIndexedAccess` enabled.
 
 ---
 
 ## Lint Status
 
-**0 lint errors** as of Session 017.
+**0 lint errors** as of Session 065.
 
 ---
 
@@ -120,10 +130,11 @@ The warnings are Vue compiler warnings in component files. These do not affect f
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Unit tests | 880+ | All passing |
-| Build tasks | 13 | All passing (12 packages + reference app) |
-
-Note: Additional E2E and component tests are planned.
+| Unit + integration tests | 1,433 | All passing |
+| Component tests (a11y) | 214 | All passing (axe-core WCAG 2.1 AA) |
+| Federation interop tests | 388 | All passing (Mastodon, Lemmy, GoToSocial, Misskey) |
+| Build tasks | 15 | All passing (12 packages + reference app + worker + deploy) |
+| E2E (Playwright) | 6 specs | Infrastructure in place, coverage expanding |
 
 ---
 

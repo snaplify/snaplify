@@ -3,7 +3,8 @@
 import DOMPurify from 'isomorphic-dompurify';
 
 // Allow the subset of HTML that TipTap produces for block content
-const PURIFY_CONFIG: DOMPurify.Config = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOMPurify.Config is not directly exported
+const PURIFY_CONFIG: any = {
   ALLOWED_TAGS: [
     'p', 'br', 'strong', 'em', 'u', 's', 'code', 'pre',
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -24,7 +25,7 @@ const PURIFY_CONFIG: DOMPurify.Config = {
 
 /** Sanitize HTML for safe rendering via v-html */
 export function sanitizeBlockHtml(html: string): string {
-  return DOMPurify.sanitize(html, PURIFY_CONFIG) as string;
+  return DOMPurify.sanitize(html, PURIFY_CONFIG) as unknown as string;
 }
 
 /** Composable wrapper for template use */

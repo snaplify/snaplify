@@ -33,7 +33,7 @@ describe('TagInput', () => {
     const input = screen.getByRole('textbox') as HTMLInputElement;
     await fireEvent.update(input, 'newtag');
     await fireEvent.keyDown(input, { key: 'Enter' });
-    expect(emitted()['update:modelValue'][0]).toEqual([['existing', 'newtag']]);
+    expect(emitted()['update:modelValue']![0]).toEqual([['existing', 'newtag']]);
   });
 
   it('does not add duplicate tags', async () => {
@@ -62,7 +62,7 @@ describe('TagInput', () => {
     });
     const removeBtn = screen.getByRole('button', { name: 'Remove vue' });
     await fireEvent.click(removeBtn);
-    expect(emitted()['update:modelValue'][0]).toEqual([['react']]);
+    expect(emitted()['update:modelValue']![0]).toEqual([['react']]);
   });
 
   it('removes last tag on Backspace when input is empty', async () => {
@@ -71,7 +71,7 @@ describe('TagInput', () => {
     });
     const input = screen.getByRole('textbox') as HTMLInputElement;
     await fireEvent.keyDown(input, { key: 'Backspace' });
-    expect(emitted()['update:modelValue'][0]).toEqual([['vue']]);
+    expect(emitted()['update:modelValue']![0]).toEqual([['vue']]);
   });
 
   it('shows placeholder when no tags exist', () => {

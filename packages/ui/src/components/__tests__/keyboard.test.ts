@@ -20,7 +20,7 @@ describe('Tabs keyboard navigation', () => {
 
     const firstTab = screen.getAllByRole('tab')[0]!;
     await fireEvent.keyDown(firstTab, { key: 'ArrowRight' });
-    expect(emitted()['update:modelValue'][0]).toEqual(['two']);
+    expect(emitted()['update:modelValue']![0]).toEqual(['two']);
   });
 
   it('ArrowLeft moves to previous tab', async () => {
@@ -30,7 +30,7 @@ describe('Tabs keyboard navigation', () => {
 
     const secondTab = screen.getAllByRole('tab')[1]!;
     await fireEvent.keyDown(secondTab, { key: 'ArrowLeft' });
-    expect(emitted()['update:modelValue'][0]).toEqual(['one']);
+    expect(emitted()['update:modelValue']![0]).toEqual(['one']);
   });
 
   it('ArrowRight wraps from last to first tab', async () => {
@@ -40,7 +40,7 @@ describe('Tabs keyboard navigation', () => {
 
     const lastTab = screen.getAllByRole('tab')[2]!;
     await fireEvent.keyDown(lastTab, { key: 'ArrowRight' });
-    expect(emitted()['update:modelValue'][0]).toEqual(['one']);
+    expect(emitted()['update:modelValue']![0]).toEqual(['one']);
   });
 
   it('ArrowLeft wraps from first to last tab', async () => {
@@ -50,7 +50,7 @@ describe('Tabs keyboard navigation', () => {
 
     const firstTab = screen.getAllByRole('tab')[0]!;
     await fireEvent.keyDown(firstTab, { key: 'ArrowLeft' });
-    expect(emitted()['update:modelValue'][0]).toEqual(['three']);
+    expect(emitted()['update:modelValue']![0]).toEqual(['three']);
   });
 
   it('Home key moves to first tab', async () => {
@@ -60,7 +60,7 @@ describe('Tabs keyboard navigation', () => {
 
     const lastTab = screen.getAllByRole('tab')[2]!;
     await fireEvent.keyDown(lastTab, { key: 'Home' });
-    expect(emitted()['update:modelValue'][0]).toEqual(['one']);
+    expect(emitted()['update:modelValue']![0]).toEqual(['one']);
   });
 
   it('End key moves to last tab', async () => {
@@ -70,7 +70,7 @@ describe('Tabs keyboard navigation', () => {
 
     const firstTab = screen.getAllByRole('tab')[0]!;
     await fireEvent.keyDown(firstTab, { key: 'End' });
-    expect(emitted()['update:modelValue'][0]).toEqual(['three']);
+    expect(emitted()['update:modelValue']![0]).toEqual(['three']);
   });
 });
 
@@ -150,7 +150,7 @@ describe('Toggle keyboard handling', () => {
 
     const toggle = screen.getByRole('switch');
     await fireEvent.click(toggle);
-    expect(emitted()['update:modelValue'][0]).toEqual([true]);
+    expect(emitted()['update:modelValue']![0]).toEqual([true]);
   });
 
   it('has correct aria-checked attribute', () => {

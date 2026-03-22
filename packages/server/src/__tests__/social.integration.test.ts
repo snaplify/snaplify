@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { DB } from '../types.js';
-import { createTestDB, createTestUser } from './helpers/testdb.js';
+import { createTestDB, createTestUser, closeTestDB } from './helpers/testdb.js';
 import { createContent } from '../content/content.js';
 import {
   toggleLike,
@@ -35,6 +35,10 @@ describe('social integration', () => {
       title: 'Social Test Article',
     });
     contentId = content.id;
+  });
+
+  afterAll(async () => {
+    await closeTestDB(db);
   });
 
   describe('likes', () => {

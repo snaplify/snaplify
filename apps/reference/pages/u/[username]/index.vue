@@ -248,7 +248,7 @@ async function handleReport(): Promise<void> {
         </div>
 
         <div v-if="filteredContent.length" class="cpub-grid-3">
-          <ContentCard v-for="item in filteredContent" :key="item.id" :item="item" />
+          <ContentCard v-for="item in filteredContent" :key="item.id" :item="(item as any)" />
         </div>
         <div v-else class="cpub-empty-state">
           <p class="cpub-empty-state-title">No {{ activeTab }} yet</p>

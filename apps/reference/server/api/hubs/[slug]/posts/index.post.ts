@@ -14,5 +14,6 @@ export default defineEventHandler(async (event): Promise<HubPostItem> => {
 
   const input = await parseBody(event, createPostSchema);
 
-  return createPost(db, user.id, { hubId: community.id, ...input });
+  const { hubId: _hubId, ...rest } = input;
+  return createPost(db, user.id, { hubId: community.id, ...rest });
 });

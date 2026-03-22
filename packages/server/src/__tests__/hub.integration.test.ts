@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { DB } from '../types.js';
-import { createTestDB, createTestUser } from './helpers/testdb.js';
+import { createTestDB, createTestUser, closeTestDB } from './helpers/testdb.js';
 import {
   createHub,
   getHubBySlug,
@@ -31,6 +31,10 @@ describe('hub integration', () => {
     const member = await createTestUser(db, { username: 'hubmember' });
     ownerId = owner.id;
     memberId = member.id;
+  });
+
+  afterAll(async () => {
+    await closeTestDB(db);
   });
 
   it('creates a community hub', async () => {

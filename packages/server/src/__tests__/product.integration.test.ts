@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { DB } from '../types.js';
-import { createTestDB, createTestUser } from './helpers/testdb.js';
+import { createTestDB, createTestUser, closeTestDB } from './helpers/testdb.js';
 import {
   createProduct,
   updateProduct,
@@ -30,6 +30,10 @@ describe('product integration', () => {
       description: 'Hub for product tests',
     });
     hubId = hub.id;
+  });
+
+  afterAll(async () => {
+    await closeTestDB(db);
   });
 
   it('creates a product', async () => {

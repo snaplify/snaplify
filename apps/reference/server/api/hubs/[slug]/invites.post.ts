@@ -13,11 +13,15 @@ export default defineEventHandler(async (event): Promise<HubInviteItem> => {
     throw createError({ statusCode: 404, statusMessage: 'Hub not found' });
   }
 
-  return createInvite(
+  const invite = await createInvite(
     db,
     user.id,
     hub.id,
     input.maxUses,
     input.expiresAt ? new Date(input.expiresAt) : undefined,
   );
+  if (!invite) {
+    throw createError({ statusCode: 403, statusMessage: 'Not authorized to create invites' });
+  }
+  return invite;
 });

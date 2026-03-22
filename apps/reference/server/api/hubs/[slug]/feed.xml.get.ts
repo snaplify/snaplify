@@ -23,19 +23,19 @@ export default defineEventHandler(async (event) => {
 
   const { items } = await listHubGallery(db, hub.id, { limit: 50 });
 
-  const lastBuildDate = items.length > 0
-    ? new Date(items[0].publishedAt ?? items[0].createdAt).toUTCString()
+  const lastBuildDate = items.length > 0 && items[0].publishedAt
+    ? new Date(items[0].publishedAt).toUTCString()
     : new Date().toUTCString();
 
   const rssItems = items.map((item) => {
     const link = `${siteUrl}/${item.type}/${item.slug}`;
-    const pubDate = new Date(item.publishedAt ?? item.createdAt).toUTCString();
+    const pubDate = item.publishedAt ? new Date(item.publishedAt).toUTCString() : new Date().toUTCString();
     return `    <item>
       <title>${escapeXml(item.title)}</title>
       <link>${escapeXml(link)}</link>
       <guid isPermaLink="true">${escapeXml(link)}</guid>
       <pubDate>${pubDate}</pubDate>
-      <description>${escapeXml(item.description ?? '')}</description>
+      <description>${escapeXml(item.title)}</description>
       <author>${escapeXml(item.author.displayName ?? item.author.username)}</author>
       <category>${escapeXml(item.type)}</category>
     </item>`;

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { DB } from '../types.js';
-import { createTestDB, createTestUser } from './helpers/testdb.js';
+import { createTestDB, createTestUser, closeTestDB } from './helpers/testdb.js';
 import {
   createPath,
   listPaths,
@@ -28,6 +28,10 @@ describe('learning integration', () => {
     authorId = author.id;
     const learner = await createTestUser(db, { username: 'learner' });
     learnerId = learner.id;
+  });
+
+  afterAll(async () => {
+    await closeTestDB(db);
   });
 
   it('creates a learning path', async () => {

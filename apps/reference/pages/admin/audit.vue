@@ -17,8 +17,8 @@ interface AuditEntry {
 const logs = computed<AuditEntry[]>(() => {
   if (!logsData.value) return [];
   // Handle both { items, total } and array responses
-  if (Array.isArray(logsData.value)) return logsData.value as AuditEntry[];
-  const data = logsData.value as { items?: AuditEntry[] };
+  if (Array.isArray(logsData.value)) return logsData.value as unknown as AuditEntry[];
+  const data = logsData.value as unknown as { items?: AuditEntry[] };
   return data.items ?? [];
 });
 </script>

@@ -7,9 +7,10 @@ export default defineNuxtPlugin(async () => {
 
   if (import.meta.server) {
     const event = useRequestEvent();
-    if (event?.context?.auth) {
-      user.value = (event.context.auth.user as ClientAuthUser) ?? null;
-      session.value = (event.context.auth.session as ClientAuthSession) ?? null;
+    const authCtx = (event?.context as any)?.auth as { user?: ClientAuthUser; session?: ClientAuthSession } | undefined;
+    if (authCtx) {
+      user.value = (authCtx.user as ClientAuthUser) ?? null;
+      session.value = (authCtx.session as ClientAuthSession) ?? null;
     }
     return;
   }

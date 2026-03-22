@@ -18,8 +18,8 @@ interface Report {
 
 const reports = computed<Report[]>(() => {
   if (!reportsData.value) return [];
-  if (Array.isArray(reportsData.value)) return reportsData.value as Report[];
-  const data = reportsData.value as { items?: Report[] };
+  if (Array.isArray(reportsData.value)) return reportsData.value as unknown as Report[];
+  const data = reportsData.value as unknown as { items?: Report[] };
   return data.items ?? [];
 });
 

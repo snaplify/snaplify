@@ -50,7 +50,7 @@ describe('Menu', () => {
     expect(screen.getByRole('menu')).toBeTruthy();
 
     const wrapper = trigger.closest('.cpub-menu-wrapper')!;
-    await fireEvent.keyDown(wrapper, { key: 'Escape' });
+    await fireEvent.keyDown(wrapper!, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
@@ -60,11 +60,11 @@ describe('Menu', () => {
     await fireEvent.click(trigger);
 
     const items = screen.getAllByRole('menuitem');
-    items[0].focus();
+    items[0]!.focus();
 
     const wrapper = trigger.closest('.cpub-menu-wrapper')!;
-    await fireEvent.keyDown(wrapper, { key: 'ArrowDown' });
-    expect(document.activeElement).toBe(items[1]);
+    await fireEvent.keyDown(wrapper!, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(items[1]!);
   });
 
   it('navigates items with ArrowUp', async () => {
@@ -73,11 +73,11 @@ describe('Menu', () => {
     await fireEvent.click(trigger);
 
     const items = screen.getAllByRole('menuitem');
-    items[1].focus();
+    items[1]!.focus();
 
     const wrapper = trigger.closest('.cpub-menu-wrapper')!;
-    await fireEvent.keyDown(wrapper, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(items[0]);
+    await fireEvent.keyDown(wrapper!, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(items[0]!);
   });
 
   it('wraps ArrowDown from last to first item', async () => {
@@ -86,10 +86,10 @@ describe('Menu', () => {
     await fireEvent.click(trigger);
 
     const items = screen.getAllByRole('menuitem');
-    items[2].focus();
+    items[2]!.focus();
 
     const wrapper = trigger.closest('.cpub-menu-wrapper')!;
-    await fireEvent.keyDown(wrapper, { key: 'ArrowDown' });
-    expect(document.activeElement).toBe(items[0]);
+    await fireEvent.keyDown(wrapper!, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(items[0]!);
   });
 });

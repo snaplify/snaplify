@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { Serialized, VideoDetail } from '@commonpub/server';
-
 const route = useRoute();
 const videoId = computed(() => route.params.id as string);
 
-const { data: video } = useLazyFetch<Serialized<VideoDetail>>(() => `/api/videos/${videoId.value}`);
+// Video API may return enriched data beyond the base VideoDetail type
+const { data: video } = useLazyFetch<any>(() => `/api/videos/${videoId.value}`);
 
 useSeoMeta({
   title: () => video.value?.title ? `${video.value.title} — CommonPub` : 'Video — CommonPub',

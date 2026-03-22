@@ -259,7 +259,7 @@ const { data: relatedCommunities } = await useFetch('/api/hubs', {
             class="cpub-results-grid"
             :class="{ 'list-view': viewMode === 'list' }"
           >
-            <ContentCard v-for="item in results.items" :key="item.id" :item="item" />
+            <ContentCard v-for="item in results.items" :key="item.id" :item="(item as any)" />
           </div>
 
           <!-- PAGINATION -->

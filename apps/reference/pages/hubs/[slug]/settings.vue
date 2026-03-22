@@ -16,7 +16,7 @@ useSeoMeta({
 const form = reactive({
   name: hub.value?.name ?? '',
   description: hub.value?.description ?? '',
-  rules: (hub.value?.rules ?? []).join('\n'),
+  rules: Array.isArray(hub.value?.rules) ? (hub.value!.rules as string[]).join('\n') : (hub.value?.rules ?? ''),
   joinPolicy: hub.value?.joinPolicy ?? 'open',
   privacy: hub.value?.privacy ?? 'public',
   website: hub.value?.website ?? '',
@@ -34,7 +34,7 @@ async function handleSave(): Promise<void> {
       body: {
         name: form.name,
         description: form.description || null,
-        rules: form.rules.split('\n').map((r) => r.trim()).filter(Boolean),
+        rules: form.rules.split('\n').map((r: string) => r.trim()).filter(Boolean),
         joinPolicy: form.joinPolicy,
         privacy: form.privacy,
         website: form.website || null,

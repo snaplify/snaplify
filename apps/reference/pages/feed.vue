@@ -80,7 +80,7 @@ const filters = [
 
     <!-- Content Grid -->
     <div v-if="items.length" class="feed-grid">
-      <ContentCard v-for="item in items" :key="item.id" :item="item" />
+      <ContentCard v-for="item in items" :key="item.id" :item="(item as any)" />
     </div>
 
     <div v-else-if="status === 'pending'" class="feed-loading">Loading...</div>

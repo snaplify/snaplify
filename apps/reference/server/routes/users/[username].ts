@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
   let publicKeyPem = '';
   try {
-    const keypair = await getOrCreateActorKeypair(db, profile.id, domain);
+    const keypair = await getOrCreateActorKeypair(db, profile.id);
     publicKeyPem = keypair.publicKeyPem;
   } catch {
     // Key generation may fail if crypto is unavailable

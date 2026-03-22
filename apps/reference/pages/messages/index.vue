@@ -9,6 +9,7 @@ const { data: conversations, refresh } = await useFetch('/api/messages', {
     lastMessage: string | null;
     lastMessageAt: string;
     createdAt: string;
+    unread?: boolean;
   }>,
 });
 
@@ -90,7 +91,7 @@ async function startConversation(): Promise<void> {
         :key="conv.id"
         :to="`/messages/${conv.id}`"
         class="cpub-conversation-item"
-        :class="{ unread: conv.unread }"
+        :class="{ unread: (conv as any).unread }"
       >
         <div class="cpub-conv-avatar">{{ (conv.participants?.[0] ?? '?').charAt(0).toUpperCase() }}</div>
         <div class="cpub-conv-info">

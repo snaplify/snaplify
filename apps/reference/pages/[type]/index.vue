@@ -35,7 +35,7 @@ const { data } = await useFetch('/api/content', {
     </div>
 
     <div class="cpub-listing-grid" v-if="data?.items?.length">
-      <ContentCard v-for="item in data.items" :key="item.id" :item="item" />
+      <ContentCard v-for="item in data.items" :key="item.id" :item="(item as any)" />
     </div>
     <p class="cpub-listing-empty" v-else>No {{ contentType }}s published yet.</p>
   </div>

@@ -30,9 +30,9 @@ describe('Tabs', () => {
       props: { tabs: testTabs, modelValue: 'details' },
     });
     const tabs = screen.getAllByRole('tab');
-    expect(tabs[0].getAttribute('aria-selected')).toBe('false');
-    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
-    expect(tabs[2].getAttribute('aria-selected')).toBe('false');
+    expect(tabs[0]!.getAttribute('aria-selected')).toBe('false');
+    expect(tabs[1]!.getAttribute('aria-selected')).toBe('true');
+    expect(tabs[2]!.getAttribute('aria-selected')).toBe('false');
   });
 
   it('applies active class to selected tab', () => {
@@ -40,8 +40,8 @@ describe('Tabs', () => {
       props: { tabs: testTabs, modelValue: 'overview' },
     });
     const tabs = screen.getAllByRole('tab');
-    expect(tabs[0].classList.contains('cpub-tabs__tab--active')).toBe(true);
-    expect(tabs[1].classList.contains('cpub-tabs__tab--active')).toBe(false);
+    expect(tabs[0]!.classList.contains('cpub-tabs__tab--active')).toBe(true);
+    expect(tabs[1]!.classList.contains('cpub-tabs__tab--active')).toBe(false);
   });
 
   it('emits update:modelValue on tab click', async () => {
@@ -66,8 +66,8 @@ describe('Tabs', () => {
       props: { tabs: testTabs, modelValue: 'details' },
     });
     const tabs = screen.getAllByRole('tab');
-    expect(tabs[0].getAttribute('tabindex')).toBe('-1');
-    expect(tabs[1].getAttribute('tabindex')).toBe('0');
-    expect(tabs[2].getAttribute('tabindex')).toBe('-1');
+    expect(tabs[0]!.getAttribute('tabindex')).toBe('-1');
+    expect(tabs[1]!.getAttribute('tabindex')).toBe('0');
+    expect(tabs[2]!.getAttribute('tabindex')).toBe('-1');
   });
 });

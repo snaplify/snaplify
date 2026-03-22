@@ -115,7 +115,7 @@ function onCheckpointReached(blockIndex: number): void {
         @reached="() => onCheckpointReached(block.index)"
       />
       <!-- Fallback for unknown block types: render as text if html present -->
-      <div v-else-if="block.data.html" class="cpub-block-fallback" v-html="sanitizeBlockHtml(block.data.html as string)" />
+      <div v-else-if="'html' in block.data && (block.data as Record<string, unknown>).html" class="cpub-block-fallback" v-html="sanitizeBlockHtml((block.data as Record<string, unknown>).html as string)" />
     </template>
   </div>
 </template>

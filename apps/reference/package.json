@@ -24,16 +24,32 @@
     "@commonpub/schema": "workspace:*",
     "@commonpub/server": "workspace:*",
     "@commonpub/ui": "workspace:*",
+    "@tiptap/core": "^2.11.0",
+    "@tiptap/extension-bold": "^2.11.0",
+    "@tiptap/extension-bullet-list": "^2.11.0",
+    "@tiptap/extension-code": "^2.11.0",
+    "@tiptap/extension-document": "^2.11.0",
+    "@tiptap/extension-history": "^2.11.0",
+    "@tiptap/extension-italic": "^2.11.0",
+    "@tiptap/extension-link": "^2.11.0",
+    "@tiptap/extension-list-item": "^2.11.0",
+    "@tiptap/extension-ordered-list": "^2.11.0",
+    "@tiptap/extension-paragraph": "^2.11.0",
+    "@tiptap/extension-placeholder": "^2.11.0",
+    "@tiptap/extension-strike": "^2.11.0",
+    "@tiptap/extension-text": "^2.11.0",
     "drizzle-orm": "^0.45.1",
+    "isomorphic-dompurify": "^3.3.0",
     "nuxt": "^3.16.0",
     "pg": "^8.13.0",
-    "isomorphic-dompurify": "^3.3.0",
     "vue": "^3.4.0",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@nuxt/test-utils": "^3.17.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "vue-tsc": "^2.2.0"
   }
 }

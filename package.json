@@ -1,6 +1,7 @@
 {
   "name": "commonpub",
   "private": true,
+  "type": "module",
   "description": "Open ActivityPub federation protocol and package suite for self-hosted maker communities",
   "packageManager": "pnpm@10.10.0",
   "engines": {

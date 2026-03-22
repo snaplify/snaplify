@@ -11,8 +11,8 @@ export default defineEventHandler(async () => {
 
   try {
     const stats = await getPlatformStats(db);
-    userCount = stats.userCount ?? 0;
-    localPostCount = stats.contentCount ?? 0;
+    userCount = stats.users.total ?? 0;
+    localPostCount = stats.content.total ?? 0;
   } catch {
     // DB may not be available, return zeros
   }

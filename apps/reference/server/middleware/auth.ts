@@ -19,7 +19,7 @@ function getAuthMiddleware(): ReturnType<typeof createAuthMiddleware> {
 
   const auth = createAuth({
     config,
-    db: db as Parameters<typeof createAuth>[0]['db'],
+    db: db as unknown as Parameters<typeof createAuth>[0]['db'],
     secret: (() => {
       const s = runtimeConfig.authSecret as string;
       if (!s && process.env.NODE_ENV === 'production') {

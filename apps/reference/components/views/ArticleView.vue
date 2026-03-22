@@ -34,7 +34,7 @@ const tocHeadings = computed(() => {
 
 const { isAuthenticated } = useAuth();
 const toast = useToast();
-const followingAuthor = ref((props.content as Record<string, unknown>).isFollowingAuthor as boolean ?? false);
+const followingAuthor = ref((props.content as unknown as Record<string, unknown>).isFollowingAuthor as boolean ?? false);
 
 async function handleFollowAuthor(): Promise<void> {
   if (!isAuthenticated.value) {

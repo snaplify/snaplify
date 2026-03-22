@@ -84,6 +84,12 @@ const { data: userContent } = useFetch('/api/content', {
   immediate: isAuthenticated.value,
 });
 
+function copyLink(): void {
+  if (typeof window !== 'undefined' && window.navigator?.clipboard) {
+    window.navigator.clipboard.writeText(window.location.href);
+  }
+}
+
 async function submitEntry(): Promise<void> {
   if (!submitContentId.value) return;
   submitting.value = true;
@@ -295,7 +301,7 @@ async function submitEntry(): Promise<void> {
           <div class="cpub-sb-card">
             <div class="cpub-sb-title"><i class="fa-solid fa-share-nodes" style="margin-right:5px;"></i>Share This Contest</div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <button class="cpub-btn cpub-btn-sm" style="flex:1;justify-content:center;" @click="navigator.clipboard.writeText(window.location.href)"><i class="fa fa-link"></i> Copy Link</button>
+              <button class="cpub-btn cpub-btn-sm" style="flex:1;justify-content:center;" @click="copyLink()"><i class="fa fa-link"></i> Copy Link</button>
             </div>
           </div>
 

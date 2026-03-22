@@ -14,7 +14,7 @@ const { data: content, pending: contentPending } = useLazyFetch(() => `/api/cont
 // from an explainer (same page component is reused for all content types).
 watch(() => content.value?.type, (type) => {
   if (type === 'explainer') {
-    setPageLayout(false);
+    setPageLayout(false as any);
   } else if (type) {
     setPageLayout('default');
   }
@@ -70,7 +70,7 @@ const viewComponent = computed(() => {
 // Related content
 const { data: related } = await useFetch('/api/content', {
   query: { status: 'published', type: contentType.value, limit: 3, sort: 'recent' },
-});
+}) as { data: Ref<{ items: any[]; total: number } | null> };
 
 // Track view
 onMounted(() => {
@@ -114,7 +114,7 @@ onMounted(() => {
             {{ enrichedContent.subtitle || enrichedContent.description }}
           </p>
           <AuthorRow
-            :author="enrichedContent.author"
+            :author="(enrichedContent.author as any)"
             :date="enrichedContent.publishedAt || enrichedContent.createdAt"
             :read-time="readTime"
           />
@@ -137,7 +137,7 @@ onMounted(() => {
           <span class="cpub-view-tag" v-for="tag in enrichedContent.tags" :key="tag.id || tag.name">{{ tag.name || tag }}</span>
         </div>
 
-        <AuthorCard :author="enrichedContent.author" />
+        <AuthorCard :author="(enrichedContent.author as any)" />
         <CommentSection :target-type="enrichedContent.type" :target-id="enrichedContent.id" />
       </div>
     </article>
@@ -148,9 +148,9 @@ onMounted(() => {
         <h2 class="cpub-view-related-title">Related {{ contentType }}s</h2>
         <div class="cpub-view-related-grid">
           <ContentCard
-            v-for="item in related.items.filter((i: Record<string, unknown>) => i.id !== enrichedContent.id).slice(0, 3)"
+            v-for="item in related.items.filter((i: Record<string, unknown>) => i.id !== enrichedContent?.id).slice(0, 3)"
             :key="item.id"
-            :item="item"
+            :item="(item as any)"
           />
         </div>
       </div>

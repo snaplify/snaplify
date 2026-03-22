@@ -16,7 +16,7 @@ export default defineEventHandler(async (event): Promise<PaginatedResponse<Notif
 
   return listNotifications(db, {
     userId: user.id,
-    type: query.type,
+    type: query.type as any,
     read: query.read !== undefined ? query.read === 'true' : undefined,
     limit: query.limit,
     offset: query.offset,

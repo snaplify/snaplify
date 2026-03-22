@@ -9,7 +9,8 @@ import type { Serialized, LearningPathDetail } from '@commonpub/server';
 
 type PathModule = NonNullable<Serialized<LearningPathDetail>['modules']>[number];
 
-const { data: path, pending: pathPending, error: pathError, refresh } = useLazyFetch<Serialized<LearningPathDetail>>(() => `/api/learn/${slug.value}`);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Serialized type is too narrow for lesson fields (contentItemId, content)
+const { data: path, pending: pathPending, error: pathError, refresh } = useLazyFetch(() => `/api/learn/${slug.value}`) as any;
 
 useSeoMeta({ title: () => `Edit ${path.value?.title ?? 'Path'} — CommonPub` });
 
@@ -31,13 +32,13 @@ watch(() => path.value, (p) => {
   editTitle.value = p.title ?? '';
   editDescription.value = p.description ?? '';
   editDifficulty.value = p.difficulty ?? 'beginner';
-  editEstimatedHours.value = p.estimatedHours ?? 0;
+  editEstimatedHours.value = Number(p.estimatedHours) || 0;
 }, { immediate: true });
 
 async function saveMetadata(): Promise<void> {
   savingMeta.value = true;
   try {
-    await $fetch(`/api/learn/${slug.value}`, {
+    await ($fetch as Function)(`/api/learn/${slug.value}`, {
       method: 'PUT',
       body: {
         title: editTitle.value,
@@ -155,7 +156,7 @@ async function removeModule(moduleId: string): Promise<void> {
 async function deletePath(): Promise<void> {
   if (!confirm('Delete this entire learning path? All modules, lessons, and enrollments will be permanently deleted.')) return;
   try {
-    await $fetch(`/api/learn/${slug.value}`, { method: 'DELETE' });
+    await ($fetch as Function)(`/api/learn/${slug.value}`, { method: 'DELETE' });
     toast.success('Learning path deleted');
     await navigateTo('/learn');
   } catch {

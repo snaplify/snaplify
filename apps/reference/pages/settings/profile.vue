@@ -46,7 +46,7 @@ const bannerInput = ref<HTMLInputElement | null>(null);
 const { data: profile } = await useFetch('/api/profile');
 
 if (profile.value) {
-  const p = profile.value;
+  const p = profile.value as any;
   form.value.displayName = p.displayName || '';
   form.value.username = p.username || '';
   form.value.bio = p.bio || '';
@@ -57,7 +57,7 @@ if (profile.value) {
   form.value.bannerUrl = p.bannerUrl || '';
 
   if (Array.isArray(p.skills)) {
-    skills.value = p.skills.map((s) => ({ ...s }));
+    skills.value = [...p.skills];
   }
   if (p.socialLinks) {
     socialLinks.value.github = p.socialLinks.github || '';
@@ -66,7 +66,7 @@ if (profile.value) {
     socialLinks.value.website = p.socialLinks.website || '';
   }
   if (Array.isArray(p.experience)) {
-    experience.value = p.experience.map((e) => ({ ...e }));
+    experience.value = p.experience.map((e: Record<string, unknown>) => ({ ...e }));
   }
 }
 

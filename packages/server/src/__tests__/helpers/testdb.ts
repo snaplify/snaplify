@@ -9,6 +9,9 @@ import { pushSchema } from 'drizzle-kit/api';
 import * as schema from '@commonpub/schema';
 import type { DB } from '../../types.js';
 
+/** Map of DB instances to their underlying PGlite clients for cleanup */
+const clientMap = new WeakMap<object, PGlite>();
+
 export async function createTestDB(): Promise<DB> {
   const client = new PGlite();
   const db = drizzle(client, { schema });
@@ -20,7 +23,18 @@ export async function createTestDB(): Promise<DB> {
     await result.apply();
   }
 
-  return db as unknown as DB;
+  const typedDb = db as unknown as DB;
+  clientMap.set(typedDb, client);
+  return typedDb;
+}
+
+/** Close the underlying PGlite connection to prevent memory leaks in test suites */
+export async function closeTestDB(db: DB): Promise<void> {
+  const client = clientMap.get(db);
+  if (client) {
+    await client.close();
+    clientMap.delete(db);
+  }
 }
 
 /** Create a test user directly in the database */

@@ -7,5 +7,5 @@ export default defineEventHandler(async (event): Promise<ContestDetail> => {
   const db = useDB();
   const input = await parseBody(event, createContestSchema);
 
-  return createContest(db, { ...input, createdBy: user.id });
+  return createContest(db, { ...input, createdBy: user.id } as any);
 });
